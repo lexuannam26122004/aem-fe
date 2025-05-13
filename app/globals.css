@@ -1,0 +1,475 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-size: 15px;
+}
+
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+}
+
+.dark {
+    --background-color: #141a21;
+    --text-color: #fafafa;
+    --background-color-component: #28323d;
+    --border-color: #333e47;
+    --hover-color: #1d242b;
+    --background-color-item: #1c252e;
+    --scrollbar-color: #363434;
+    --primary-color: #3675ff;
+    --report-text-color: #97c7f7;
+    --error-color: #ff5630;
+    --background-color-secondary: #24323f8d;
+
+    --text-color-success: #77ed8b;
+    --background-color-success: rgba(34, 197, 94, 0.16);
+    --border-color-success: #28623e;
+
+    --text-color-pending: #ffd666;
+    --background-color-pending: rgba(255, 171, 0, 0.16);
+    --border-color-pending: #60592f;
+
+    --text-color-cancel: #ffac82;
+    --background-color-cancel: rgba(255, 86, 48, 0.16);
+    --border-color-cancel: #71493a;
+
+    --text-color-blue: #10a8e9;
+    --background-color-blue: #0599ca46;
+
+    --text-color-pink: #dd1e61;
+    --background-color-pink: #c06a9264;
+
+    --text-color-reject: #919eab;
+    --background-color-reject: rgba(145, 158, 171, 0.16);
+
+    --text-color-success-selected: #ffffff;
+    --background-color-success-selected: #22c55e;
+    --text-color-pending-selected: #ffffff;
+    --background-color-pending-selected: #ffab00;
+    --text-color-cancel-selected: #ffffff;
+    --background-color-cancel-selected: #ff5630;
+    --text-color-reject-selected: #ffffff;
+    --background-color-reject-selected: #1c252e;
+    --text-color-all-selected: #141a21;
+    --background-color-all-selected: #ffffff;
+    --text-color-blue-selected: #ffffff;
+    --background-color-blue-selected: #00c8f5;
+    --text-color-pink-selected: #ffffff;
+    --background-color-pink-selected: #da1f57;
+
+    --discount-color-type-percentage: #24338686;
+    --discount-border-color-type-percentage: #315b8d;
+    --discount-text-color-type-percentage: #a4cdff;
+    --discount-text-color-type-fixed: rgb(34, 189, 117);
+    --discount-color-type-fixed: #0e5330a7;
+    --discount-border-color-type-fixed: #19754a;
+    --discount-color-percentage: #71aef9;
+    --discount-color-fixed: rgba(34, 189, 117, 0.806);
+
+    --background-color-new: #4ade80;
+    --background-color-gold: #ffcb2e;
+    --background-color-silver: #b0c4de38;
+    --text-color-silver: #cad5e4;
+    --background-color-silver-selected: #9bb1cd;
+    --text-color-silver-selected: #fff;
+
+    --coupon-color-code: #7e22ce;
+
+    --background-color-button-view: #d2e1f7e1;
+    --background-color-button-edit: #fffbebe9;
+    --background-color-button-delete: #fef2f2ea;
+    --hover-color-button-view: #b7d6fd;
+    --hover-color-button-edit: #fff4c6;
+    --hover-color-button-delete: #fad1d1;
+
+    --label-title-color: #919eab;
+    --background-color-table-header: #28323d;
+    --background-color-table-body: #212932f1;
+    --hover-color-table-body: #2c353f68;
+
+    --text-color-button-cancel: #ffac82;
+    --background-color-button-cancel-hover: #65352e;
+    --background-color-button-cancel: rgba(255, 86, 48, 0.16);
+
+    --background-color-confirm-cancel-hover: #f1f1f1;
+
+    --background-color-button-save-hover: #c4cdd5;
+    --background-color-button-save: #ffffff;
+    --text-color-button-save: #1c252e;
+
+    --background-color-confirm-delete: #ff5630;
+    --background-color-confirm-delete-hover: #a72321;
+
+    --background-input-error: rgba(255, 86, 48, 0.16);
+    --background-input-error-hover: rgba(255, 86, 48, 0.12);
+
+    --field-color-hover: #ffffff;
+    --field-color-selected: #ffffff;
+    --background-color-item-selected: #5ad3ff22;
+    --background-color-item-hover: #8de1ff18;
+    --background-switch: #5a6672;
+    --placeholder-color: #627280;
+
+    --active-color: #22c55e;
+    --border-tab: #252e37;
+    /*
+    --icon-theme-color: #76939e;
+    --text-label-color: #919eab;
+    --text-primary: #68cdf9;
+    --background-primary-selected: #132331;
+    --hover-paper: rgba(145, 158, 171, 0.24);
+    --background-primary-selected-hover: #122d42;
+    --text-not-selected: #919eab;
+    --text-all: #5dcefffd;
+    --background-all: #18344d;
+    --text-all-selected: #ffffff;
+    --background-all-selected: #00b2da;
+    --customShadows-card: 0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12);
+    --placeholder-color: #627280;
+    --button-color: #00b2da;
+    --hover-button-color: #1790ab;
+    --background-button-delete: #ff5630;
+    --background-button-confirm-cancel-hover: #282e37;
+    --background-button-delete-hover: #a72321;
+    --palette-text-disabled: #637381;
+    --palette-grey-500Channel: 145, 158, 171;
+    --bg-header-dialog: #0f0f10;
+    --bg-input-error: rgba(255, 86, 48, 0.16);
+    --bg-input-error-hover: rgba(255, 86, 48, 0.12);
+    --box-shadow-paper: 0 0 2px 0 rgba(0 0 0 / 0.2), 0 12px 24px -4px rgba(0 0 0 / 0.12);
+    --bg-post: rgba(44, 53, 75, 0.2);
+    --created-date-color: #637381;
+    --background-item-hover: #ccc;
+    --label-title: #828995;
+    --bg-new: #4ade80c4;
+    --bg-gold: #ffd92ee0;
+    --bg-silver: #6fc5ffd0;
+    --border-content: #233244;
+    --bg-paper-item: #1c252e; */
+}
+
+.light {
+    --background-color: #fff;
+    --text-color: #09090b;
+    --background-color-component: #f4f6f8;
+    --border-color: #e4e4e7;
+    --hover-color: rgba(117, 126, 136, 0.08);
+    --background-color-item: #ffffff;
+    --scrollbar-color: #e4e4e7;
+    --primary-color: #3675ff;
+    --report-text-color: #044288;
+    --error-color: #ff5630;
+    --background-color-secondary: #eff6ffa4;
+
+    --text-color-success: #118d57;
+    --background-color-success: rgba(34, 197, 94, 0.16);
+    --border-color-success: #abeec2;
+
+    --text-color-pending: #b76e00;
+    --background-color-pending: rgba(255, 171, 0, 0.16);
+    --border-color-pending: #f6d83f;
+
+    --text-color-cancel: #b71d18;
+    --background-color-cancel: rgba(255, 86, 48, 0.16);
+    --border-color-cancel: #fecaca;
+
+    --text-color-blue: #10a8e9;
+    --background-color-blue: #dbf6ff;
+
+    --text-color-pink: #fb1b69;
+    --background-color-pink: #ff9ecb54;
+
+    --text-color-reject: #637381;
+    --background-color-reject: rgba(145, 158, 171, 0.16);
+
+    --text-color-success-selected: #ffffff;
+    --background-color-success-selected: #4ade80;
+    --text-color-pending-selected: #ffffff;
+    --background-color-pending-selected: #ffcb2e;
+    --text-color-cancel-selected: #ffffff;
+    --background-color-cancel-selected: #ff5630;
+    --text-color-reject-selected: #ffffff;
+    --background-color-reject-selected: #1c252e;
+    --text-color-all-selected: #ffffff;
+    --background-color-all-selected: #1c252e;
+    --text-color-blue-selected: #ffffff;
+    --background-color-blue-selected: #00c8f5;
+    --text-color-pink-selected: #ffffff;
+    --background-color-pink-selected: #f32160;
+
+    --discount-color-type-percentage: #dbeafe;
+    --discount-border-color-type-percentage: #bfdbfe;
+    --discount-text-color-type-percentage: rgba(30, 64, 175);
+    --discount-text-color-type-fixed: rgba(6, 95, 70);
+    --discount-color-type-fixed: #d1fae5;
+    --discount-border-color-type-fixed: #a7f3d0;
+    --discount-color-percentage: #164cd4;
+    --discount-color-fixed: #128926;
+
+    --background-color-new: #4ade80;
+    --background-color-gold: #ffcb2e;
+    --background-color-silver: #b0c4de59;
+    --text-color-silver: #4f5865;
+    --background-color-silver-selected: #9bb1cd;
+    --text-color-silver-selected: #fff;
+
+    --coupon-color-code: #7e22ce;
+
+    --background-color-button-view: #e2edfc;
+    --background-color-button-edit: #fef8de;
+    --background-color-button-delete: #fbebeb;
+    --hover-color-button-view: #c2ddff;
+    --hover-color-button-edit: #fff1ba;
+    --hover-color-button-delete: #fad1d1;
+
+    --label-title-color: #6b7280;
+    --background-color-table-header: #f2f6f7;
+    --background-color-table-body: #f7faff;
+    --hover-color-table-body: #eff6ff;
+
+    --text-color-button-cancel: #b71d18;
+    --background-color-button-cancel-hover: #ffc9bc;
+    --background-color-button-cancel: rgba(255, 86, 48, 0.16);
+
+    --background-color-confirm-cancel-hover: #f1f1f1;
+
+    --background-color-button-save-hover: #343c46f7;
+    --background-color-button-save: #1c252e;
+    --text-color-button-save: #ffffff;
+
+    --background-color-confirm-delete: #ff5630;
+    --background-color-confirm-delete-hover: #a72321;
+
+    --background-input-error: rgba(255, 86, 48, 0.12);
+    --background-input-error-hover: rgba(255, 86, 48, 0.16);
+
+    --field-color-hover: #000000;
+    --field-color-selected: #000000;
+    --background-color-item-selected: #62bbff30;
+    --background-color-item-hover: #91cffe30;
+
+    --active-color: #22c55e;
+    --border-tab: #f7f7f8;
+    --background-switch: #dfdfdf;
+
+    /*  */
+
+    --icon-color-theme: #517b89;
+    --text-color-label: #637381;
+    --hover-color-paper: rgba(142, 152, 163, 0.25);
+    --background-color-primary-selected-hover: #d7edfc;
+    --text-color-not-selected: #637381;
+
+    --box-shadow-card: 0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12);
+    --placeholder-color: #98a6b0;
+    --button-color: #37d5f8;
+    --hover-color-button: #2fbedf;
+
+    --palette-text-color-disabled: #919eab;
+    --palette-grey-500-channel: 145, 158, 171;
+
+    --background-color-dialog-header: #f3f4f6;
+    --background-color-input-error: rgba(255, 86, 48, 0.16);
+    --background-color-input-error-hover: rgba(255, 86, 48, 0.1);
+    --background-color-switch: #c4ccd3;
+    --box-shadow-paper: 0 0 2px 0 rgba(145, 158, 171, 0.3), 0 12px 24px -4px rgba(145, 158, 171, 0.22);
+
+    --background-color-post: transparent;
+    --created-date-color: #919eab;
+    --background-color-item-hover: #178fff14;
+
+    --border-color-content: #dbeafe;
+    --background-color-paper-item: #f3f5f7;
+}
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 0 0% 3.9%;
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 3.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 3.9%;
+        --primary: 0 0% 9%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 0 0% 96.1%;
+        --secondary-foreground: 0 0% 9%;
+        --muted: 0 0% 96.1%;
+        --muted-foreground: 0 0% 45.1%;
+        --accent: 0 0% 96.1%;
+        --accent-foreground: 0 0% 9%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 89.8%;
+        --input: 0 0% 89.8%;
+        --ring: 0 0% 3.9%;
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+        --radius: 0.5rem;
+    }
+    .dark {
+        --background: 0 0% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 0 0% 3.9%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 0 0% 9%;
+        --secondary: 0 0% 14.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 0 0% 14.9%;
+        --muted-foreground: 0 0% 63.9%;
+        --accent: 0 0% 14.9%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 14.9%;
+        --input: 0 0% 14.9%;
+        --ring: 0 0% 83.1%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+.tinymce-content {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #212121;
+    word-break: break-word;
+}
+
+/* Paragraph spacing */
+.tinymce-content p {
+    margin: 1em 0;
+}
+
+/* Heading styles */
+.tinymce-content h1,
+.tinymce-content h2,
+.tinymce-content h3,
+.tinymce-content h4,
+.tinymce-content h5,
+.tinymce-content h6 {
+    font-weight: 600;
+    margin: 1.5em 0 0.5em;
+    line-height: 1.3;
+}
+.tinymce-content h1 {
+    font-size: 2em;
+}
+.tinymce-content h2 {
+    font-size: 1.75em;
+}
+.tinymce-content h3 {
+    font-size: 1.5em;
+}
+
+/* Blockquote */
+.tinymce-content blockquote {
+    border-left: 4px solid #ccc;
+    margin: 1.5em 0;
+    padding-left: 1em;
+    color: #555;
+    font-style: italic;
+}
+
+/* Link */
+.tinymce-content a {
+    color: #007bff;
+    text-decoration: underline;
+}
+.tinymce-content a:hover {
+    text-decoration: none;
+}
+
+/* Image */
+.tinymce-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem auto;
+    border-radius: 8px;
+}
+
+/* Table */
+.tinymce-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+.tinymce-content th,
+.tinymce-content td {
+    border: 1px solid #ccc;
+    padding: 0.6em;
+    text-align: left;
+}
+.tinymce-content th {
+    background-color: #f8f8f8;
+    font-weight: 600;
+}
+
+/* List */
+.tinymce-content ul,
+.tinymce-content ol {
+    padding-left: 2em;
+    margin: 1em 0;
+}
+.tinymce-content li {
+    margin-bottom: 0.5em;
+}
+
+/* Code */
+.tinymce-content code {
+    background-color: #f4f4f4;
+    font-family: 'Courier New', monospace;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    color: #d63384;
+}
+
+/* Horizontal line */
+.tinymce-content hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 2em 0;
+}
+
+/* Figure + Caption */
+.tinymce-content figure {
+    margin: 2em auto;
+    text-align: center;
+}
+.tinymce-content figcaption {
+    font-size: 0.875rem;
+    color: #777;
+    margin-top: 0.5em;
+}
+
+/* Responsive video */
+.tinymce-content iframe {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem auto;
+}

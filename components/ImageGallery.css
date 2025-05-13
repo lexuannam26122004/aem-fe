@@ -1,0 +1,147 @@
+.product-gallery-container {
+    max-width: 100%;
+    margin: 0 auto;
+    position: relative;
+}
+
+/* Main Swiper Styles */
+.main-gallery {
+    user-select: none;
+    position: relative;
+    margin-bottom: 15px;
+    background: rgba(74, 74, 74, 0.114);
+    backdrop-filter: blur(8px);
+
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.main-swiper {
+    width: 100%;
+    height: 100%;
+}
+
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 450px;
+    cursor: pointer;
+}
+
+.image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.slide-counter {
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
+    background-color: rgba(59, 57, 57, 0.893);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 30px;
+    font-size: 14px;
+    z-index: 10;
+}
+
+/* Thumbnail Swiper Styles */
+.thumbnail-gallery {
+    position: relative;
+}
+
+.thumbnail-swiper {
+    padding: 0px;
+}
+
+.thumbnail-slide {
+    width: 80px !important;
+    height: 80px;
+}
+
+.thumbnail-container {
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    position: relative;
+}
+
+.thumbnail-container.active {
+    border-color: #3675ff;
+    opacity: 1;
+}
+
+.thumbnail-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.more-images {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Custom Swiper Navigation */
+.swiper-button-next,
+.swiper-button-prev {
+    background-color: rgba(255, 255, 255, 0.8);
+    flex-shrink: 0;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    background-color: rgba(227, 224, 224, 0.8);
+}
+
+.swiper-button-disabled {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    pointer-events: all !important;
+    cursor: default !important;
+}
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+    font-size: 20px !important;
+    color: #333;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .image-container {
+        height: 350px;
+    }
+
+    .thumbnail-slide {
+        width: 60px !important;
+        height: 60px;
+    }
+}
