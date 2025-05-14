@@ -2,10 +2,9 @@
 
 import { Box } from '@mui/material'
 import DisplayInfo from './DisplayInfo'
-import { TopProducts } from './TopProducts'
+import CustomerRateChart from './CustomerRateChart'
+import ChartOrderRevenue from './CustomerTrendChart'
 import ReportTable from './ReportTable'
-import WarrantyRateChart from './WarrantyRateChart'
-import EmployeeCountChart from './AverageTimeChart'
 
 export default function WarrantyReportsPage() {
     return (
@@ -35,31 +34,18 @@ export default function WarrantyReportsPage() {
             >
                 <Box
                     sx={{
-                        width: 'calc(100% / 2 - 12px)',
-                        flex: 1
+                        width: 'calc(100% / 3 * 2 + 24px)'
                     }}
                 >
-                    <TopProducts />
+                    <ChartOrderRevenue />
                 </Box>
 
                 <Box
                     sx={{
-                        flex: 1,
-                        width: 'calc(100% / 2 - 12px)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '24px'
+                        width: 'calc(100% / 3)'
                     }}
                 >
-                    <WarrantyRateChart />
-
-                    <Box
-                        sx={{
-                            flex: 1
-                        }}
-                    >
-                        <EmployeeCountChart />
-                    </Box>
+                    <CustomerRateChart />
                 </Box>
             </Box>
 

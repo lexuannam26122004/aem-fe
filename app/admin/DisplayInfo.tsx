@@ -43,7 +43,6 @@ const responseData = {
 
 function Page() {
     const { t } = useTranslation('common')
-    const currentDate = new Date()
     const daysOfWeek = [
         t('COMMON.WEEK.SUNDAY'),
         t('COMMON.WEEK.MONDAY'),

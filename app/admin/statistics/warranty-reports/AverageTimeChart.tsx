@@ -1,202 +1,156 @@
-import { MenuItem, FormControl, Select, Box, Paper, Typography, SelectChangeEvent, InputLabel } from '@mui/material'
+// src/components/EmployeeCountChart.js
+import React, { useState } from 'react'
+import { Box, Paper, Typography, FormControl, Select, MenuItem, InputLabel } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
-import { useMemo, useState } from 'react'
-import * as echarts from 'echarts'
 import { useTranslation } from 'react-i18next'
-import dayjs from 'dayjs'
+import { SelectChangeEvent } from '@mui/material' // Import SelectChangeEvent
 
-const getChartData = (range: number) => {
-    const dayCount = range === 0 ? 7 : range === 1 ? 14 : 30
-    const today = dayjs()
-
-    const labels = Array.from({ length: dayCount }, (_, i) => today.subtract(dayCount - 1 - i, 'day').format('DD/MM'))
-
-    const revenue = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 5000000) + 8000000)
-
-    const orders = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 100) + 100)
-
-    return { labels, revenue, orders }
-}
-
-export default function ChartOrderRevenue() {
+const AverageTimeChart = () => {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
     const [type, setType] = useState(0)
-
-    const chartData = useMemo(() => getChartData(type), [type])
-
     const handleTypeChange = (event: SelectChangeEvent<number>) => {
         setType(event.target.value as number)
     }
 
     const option = {
+        animation: true,
+        animationDuration: 700,
         tooltip: {
             trigger: 'axis',
             backgroundColor: theme === 'light' ? 'rgba(250, 250, 250, 0.98)' : 'rgba(20, 26, 25, 0.98)',
             borderColor: theme === 'light' ? 'rgba(250, 250, 250, 0.98)' : 'rgba(20, 26, 25, 0.98)',
             textStyle: {
-                fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
-                color: theme === 'light' ? '#000000' : '#ffffff'
+                color: theme === 'light' ? '#000000' : '#ffffff',
+                fontSize: 14,
+                fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
             }
         },
-        legend: {
-            data: [t('COMMON.HOME.REVENUE') + ' (VND)', t('COMMON.HOME.ORDERS')],
-            textStyle: {
-                fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
-                fontSize: 14,
-                color: theme === 'light' ? '#000000' : '#ffffff'
-            },
-            itemWidth: 12,
-            itemHeight: 12,
-            itemGap: 30,
-            icon: 'circle'
+        dataset: {
+            source: [
+                ['score', 'amount', 'product'],
+                [9.2, 9.2, t('COMMON.WARRANTY_REPORT.REPAIR')],
+                [7.5, 7.5, t('COMMON.WARRANTY_REPORT.REPLACE')],
+                [5.3, 5.3, t('COMMON.WARRANTY_REPORT.MAINTENANCE')],
+                [3.1, 3.1, t('COMMON.WARRANTY_REPORT.UPGRADE')],
+                [1.8, 1.8, t('COMMON.WARRANTY_REPORT.OTHER')]
+            ]
         },
+        calculable: true,
         grid: {
-            top: '12%',
-            left: '0.5%',
-            right: '0.5%',
-            bottom: '0%',
+            top: '1%',
+            left: '0%',
+            right: '2%',
+            bottom: '8%',
             containLabel: true
         },
-        xAxis: [
-            {
-                type: 'category',
-                data: chartData.labels,
-                axisLabel: {
-                    fontSize: 14,
-                    fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
-                },
-                axisLine: {
-                    lineStyle: {
-                        color: theme === 'dark' ? '#919EAB' : '#637381'
-                    }
-                }
-            }
-        ],
-        yAxis: [
-            {
-                type: 'value',
-                position: 'left',
-                axisLabel: {
-                    formatter: function (value: number) {
-                        if (value >= 1000000000) return value / 1000000000 + 'B'
-                        if (value >= 1000000) return value / 1000000 + 'M'
-                        if (value >= 1000) return value / 1000 + 'K'
-                        return value
-                    },
-                    fontSize: 14,
-                    fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
-                },
-                axisLine: {
-                    lineStyle: {
-                        color: '#3675ff'
-                    }
-                },
-                splitLine: {
-                    show: true,
-                    lineStyle: {
-                        type: 'dashed',
-                        color: theme === 'light' ? '#e9ecee' : '#333d47'
-                    }
+        xAxis: {
+            name: `${t('COMMON.TIME')} (${t('COMMON.DAYS')})`,
+            nameTextStyle: {
+                fontSize: 14,
+                fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
+                color: theme === 'light' ? '#6b7280' : '#919eab'
+            },
+            axisLabel: {
+                fontSize: 14,
+                fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
+                color: theme === 'light' ? '#6b7280' : '#919eab'
+            },
+            boundaryGap: true,
+            axisLine: {
+                lineStyle: {
+                    color: theme === 'dark' ? '#919EAB' : '#637381'
                 }
             },
-            {
-                type: 'value',
-                position: 'right',
-                axisLabel: {
-                    fontSize: 14,
-                    fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
-                },
-                axisLine: {
-                    lineStyle: {
-                        color: '#ffab00'
-                    }
-                },
-                splitLine: {
-                    show: true,
-                    lineStyle: {
-                        type: 'dashed',
-                        color: theme === 'light' ? '#e9ecee' : '#333d47'
-                    }
+            splitLine: {
+                lineStyle: {
+                    type: 'dashed',
+                    color: theme === 'light' ? '#e9ecee' : '#333d47'
+                }
+            },
+            nameLocation: 'middle',
+            nameGap: 35 // Khoảng cách giữa tên trục và trục
+        },
+        yAxis: {
+            type: 'category',
+            axisLabel: {
+                fontSize: 14,
+                fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
+                color: theme === 'light' ? '#6b7280' : '#919eab'
+            },
+            axisLine: {
+                lineStyle: {
+                    color: theme === 'dark' ? '#919EAB' : '#637381'
+                }
+            },
+            splitLine: {
+                lineStyle: {
+                    type: 'dashed',
+                    color: theme === 'light' ? '#e9ecee' : '#333d47'
                 }
             }
-        ],
+        },
+        visualMap: {
+            show: false,
+            min: 0,
+            max: 10,
+            text: [t('COMMON.HIGH_SCORE'), t('COMMON.LOW_SCORE')],
+            dimension: 0,
+            inRange: {
+                color: ['#16A085', '#1ABC9C', '#2980B9', '#3675FF']
+            }
+        },
         series: [
             {
-                name: t('COMMON.HOME.REVENUE') + ' (VND)',
-                type: 'line',
-                yAxisIndex: 0,
-                data: chartData.revenue,
-                smooth: true,
-                lineStyle: { color: '#3675ff', width: 3 },
-                itemStyle: { color: '#3675ff' },
-                areaStyle: {
-                    opacity: 1,
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: 'rgba(54, 117, 255, 0.2)' },
-                        { offset: 1, color: 'rgba(54, 117, 255, 0)' }
-                    ])
+                type: 'bar',
+                encode: {
+                    x: 'amount',
+                    y: 'product'
                 },
-                emphasis: {
-                    scale: true,
-                    focus: 'none',
-                    itemStyle: {
-                        borderWidth: 6,
-                        borderColor: '#3675ff'
-                    }
-                }
-            },
-            {
-                name: t('COMMON.HOME.ORDERS'),
-                type: 'line',
-                yAxisIndex: 1,
-                data: chartData.orders,
-                smooth: true,
-                lineStyle: { color: '#ffab00', width: 3 },
-                itemStyle: { color: '#ffab00' },
-                areaStyle: {
-                    opacity: 1,
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: 'rgba(255, 171, 0, 0.2)' }, // Màu vàng cam đậm
-                        { offset: 1, color: 'rgba(255, 171, 0, 0)' } // Mờ dần
-                    ])
+                barWidth: '65%',
+                itemStyle: {
+                    borderRadius: [0, 8, 8, 0]
                 },
-                emphasis: {
-                    scale: true,
-                    focus: 'none',
-                    itemStyle: {
-                        borderWidth: 6,
-                        borderColor: '#ffab00'
-                    }
+                label: {
+                    show: false
                 }
             }
         ]
     }
 
     return (
-        <>
+        <Paper
+            elevation={0}
+            sx={{
+                width: '100%',
+                padding: '24px',
+                boxShadow: 'var(--box-shadow-paper)',
+                borderRadius: '15px',
+                height: '100%',
+                backgroundColor: 'var(--background-color-item)'
+            }}
+        >
             <Box
                 sx={{
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    mb: '5px'
+                    mb: '18px',
+                    justifyContent: 'space-between'
                 }}
             >
                 <Typography
                     sx={{
                         fontSize: '18px',
-                        mb: '24px',
                         fontWeight: 'bold',
                         color: 'var(--text-color)'
                     }}
                 >
-                    {t('COMMON.HOME.REVENUE_ORDER')}
+                    {t('COMMON.WARRANTY_REPORT.AVERAGE_WARRANTY_TIME_BY_TYPE')}
                 </Typography>
 
                 <FormControl
                     sx={{
-                        width: '150px',
+                        width: '132px',
                         mb: 'auto',
                         '& .MuiOutlinedInput-root:hover fieldset': {
                             borderColor: 'var(--field-color-hover)'
@@ -225,10 +179,9 @@ export default function ChartOrderRevenue() {
                         }
                     }}
                 >
-                    <InputLabel id='select-label'>{t('COMMON.HOME.TIME_RANGE')}</InputLabel>
+                    <InputLabel id='select-label'>{t('COMMON.RANGE')}</InputLabel>
                     <Select
-                        label={t('COMMON.HOME.TIME_RANGE')}
-                        defaultValue={1}
+                        label={t('COMMON.RANGE')}
                         value={type}
                         onChange={handleTypeChange}
                         sx={{
@@ -288,7 +241,7 @@ export default function ChartOrderRevenue() {
                                 borderRadius: '6px'
                             }}
                         >
-                            {t('COMMON.HOME.LAST_7_DAYS')}
+                            {t('COMMON.THIS_WEEK')}
                         </MenuItem>
 
                         <MenuItem
@@ -298,7 +251,7 @@ export default function ChartOrderRevenue() {
                                 mt: '3px'
                             }}
                         >
-                            {t('COMMON.HOME.LAST_14_DAYS')}
+                            {t('COMMON.THIS_MONTH')}
                         </MenuItem>
 
                         <MenuItem
@@ -308,13 +261,15 @@ export default function ChartOrderRevenue() {
                                 mt: '3px'
                             }}
                         >
-                            {t('COMMON.HOME.LAST_30_DAYS')}
+                            {t('COMMON.THIS_YEAR')}
                         </MenuItem>
                     </Select>
                 </FormControl>
             </Box>
 
-            <ReactECharts option={option} style={{ height: 375 }} />
-        </>
+            <ReactECharts option={option} style={{ height: '85%' }} />
+        </Paper>
     )
 }
+
+export default AverageTimeChart

@@ -515,7 +515,7 @@ function Page() {
 
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
-                                label={t('COMMON.ACTIVITY_LOG.TO_DATE')}
+                                label={t('COMMON.ACTIVITY_LOG.FROM_DATE')}
                                 value={dayjs(filter.fromDate)}
                                 onChange={value => {
                                     setFilter({
@@ -560,7 +560,7 @@ function Page() {
 
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
-                                label={t('COMMON.ACTIVITY_LOG.FROM_DATE')}
+                                label={t('COMMON.ACTIVITY_LOG.TO_DATE')}
                                 value={dayjs(filter.toDate)}
                                 onChange={value => {
                                     setFilter({

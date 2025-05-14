@@ -3,7 +3,8 @@ import { IFilter } from './Common'
 export interface IWarrantyReportFilter extends IFilter {
     fromDate: string
     toDate: string
-    statusOrder?: string
+    type?: string
+    status?: string
 }
 
 export interface IWarrantyTopProducts {
@@ -22,18 +23,13 @@ export interface IWarrantyTopProducts {
 }
 
 export interface IWarrantyReports {
-    date: string // "dd/MM/yyyy"
-    orderCount: number
-    warranty: number // Tổng doanh thu trước giảm
-    discountValue: number
-    netRevenue: number // Doanh thu thực nhận
-    costOfGoods: number
-    grossProfit: number
-    grossProfitRate: number // %
-    averageOrderValue: number
-    discountOrderCount: number
-    discountOrderRate: number // %
-    quoteCount: number
-    quoteConvertedCount: number
-    quoteConversionRate: number // %
+    productName: string
+    warrantyCount: number
+    warrantyRate: number
+    averageTime: number
+    onTimeRate: number
+    status: string
+    mainReason: string
+    images: string[]
+    serialNumber: string
 }

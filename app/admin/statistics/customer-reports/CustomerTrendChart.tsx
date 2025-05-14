@@ -12,14 +12,14 @@ const getChartData = (range: number) => {
 
     const labels = Array.from({ length: dayCount }, (_, i) => today.subtract(dayCount - 1 - i, 'day').format('DD/MM'))
 
-    const revenue = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 5000000) + 8000000)
+    const newCustomers = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 40) + 15)
+    const returningCustomers = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 20) + 3)
+    const orders = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 50) + 25)
 
-    const orders = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 100) + 100)
-
-    return { labels, revenue, orders }
+    return { labels, newCustomers, returningCustomers, orders }
 }
 
-export default function ChartOrderRevenue() {
+export default function CustomerTrendChart() {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
     const [type, setType] = useState(0)
@@ -41,125 +41,69 @@ export default function ChartOrderRevenue() {
             }
         },
         legend: {
-            data: [t('COMMON.HOME.REVENUE') + ' (VND)', t('COMMON.HOME.ORDERS')],
+            data: [
+                t('COMMON.CUSTOMER_REPORTS.NEW_CUSTOMERS'),
+                t('COMMON.CUSTOMER_REPORTS.RETURNING_CUSTOMERS'),
+                t('COMMON.CUSTOMER_REPORTS.ORDERS')
+            ],
             textStyle: {
-                fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
                 fontSize: 14,
-                color: theme === 'light' ? '#000000' : '#ffffff'
+                color: theme === 'light' ? '#000000' : '#ffffff',
+                fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
             },
             itemWidth: 12,
             itemHeight: 12,
-            itemGap: 30,
+            itemGap: 25,
             icon: 'circle'
         },
         grid: {
             top: '12%',
-            left: '0.5%',
-            right: '0.5%',
-            bottom: '0%',
+            left: '0%',
+            right: '1%',
+            bottom: '1%',
             containLabel: true
         },
-        xAxis: [
-            {
-                type: 'category',
-                data: chartData.labels,
-                axisLabel: {
-                    fontSize: 14,
-                    fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
-                },
-                axisLine: {
-                    lineStyle: {
-                        color: theme === 'dark' ? '#919EAB' : '#637381'
-                    }
-                }
-            }
-        ],
-        yAxis: [
-            {
-                type: 'value',
-                position: 'left',
-                axisLabel: {
-                    formatter: function (value: number) {
-                        if (value >= 1000000000) return value / 1000000000 + 'B'
-                        if (value >= 1000000) return value / 1000000 + 'M'
-                        if (value >= 1000) return value / 1000 + 'K'
-                        return value
-                    },
-                    fontSize: 14,
-                    fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
-                },
-                axisLine: {
-                    lineStyle: {
-                        color: '#3675ff'
-                    }
-                },
-                splitLine: {
-                    show: true,
-                    lineStyle: {
-                        type: 'dashed',
-                        color: theme === 'light' ? '#e9ecee' : '#333d47'
-                    }
-                }
+        xAxis: {
+            type: 'category',
+            data: chartData.labels,
+            axisLabel: {
+                fontSize: 14,
+                fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
             },
-            {
-                type: 'value',
-                position: 'right',
-                axisLabel: {
-                    fontSize: 14,
-                    fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
-                },
-                axisLine: {
-                    lineStyle: {
-                        color: '#ffab00'
-                    }
-                },
-                splitLine: {
-                    show: true,
-                    lineStyle: {
-                        type: 'dashed',
-                        color: theme === 'light' ? '#e9ecee' : '#333d47'
-                    }
+            axisLine: {
+                lineStyle: {
+                    color: theme === 'dark' ? '#919EAB' : '#637381'
                 }
             }
-        ],
+        },
+        yAxis: {
+            type: 'value',
+            axisLabel: {
+                fontSize: 14,
+                fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
+                color: theme === 'dark' ? '#919EAB' : '#637381'
+            },
+            splitLine: {
+                show: true,
+                lineStyle: {
+                    type: 'dashed',
+                    color: theme === 'light' ? '#e9ecee' : '#333d47'
+                }
+            }
+        },
         series: [
             {
-                name: t('COMMON.HOME.REVENUE') + ' (VND)',
+                name: t('COMMON.CUSTOMER_REPORTS.NEW_CUSTOMERS'),
                 type: 'line',
-                yAxisIndex: 0,
-                data: chartData.revenue,
-                smooth: true,
-                lineStyle: { color: '#3675ff', width: 3 },
-                itemStyle: { color: '#3675ff' },
-                areaStyle: {
-                    opacity: 1,
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: 'rgba(54, 117, 255, 0.2)' },
-                        { offset: 1, color: 'rgba(54, 117, 255, 0)' }
-                    ])
-                },
-                emphasis: {
-                    scale: true,
-                    focus: 'none',
-                    itemStyle: {
-                        borderWidth: 6,
-                        borderColor: '#3675ff'
-                    }
-                }
-            },
-            {
-                name: t('COMMON.HOME.ORDERS'),
-                type: 'line',
-                yAxisIndex: 1,
-                data: chartData.orders,
+                data: chartData.newCustomers,
                 smooth: true,
                 lineStyle: { color: '#ffab00', width: 3 },
                 itemStyle: { color: '#ffab00' },
                 areaStyle: {
-                    opacity: 1,
+                    opacity: 0.2,
                     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: 'rgba(255, 171, 0, 0.2)' }, // Màu vàng cam đậm
-                        { offset: 1, color: 'rgba(255, 171, 0, 0)' } // Mờ dần
+                        { offset: 0, color: '#FFB300' },
+                        { offset: 1, color: 'rgba(255, 179, 0, 0.05)' }
                     ])
                 },
                 emphasis: {
@@ -170,12 +114,65 @@ export default function ChartOrderRevenue() {
                         borderColor: '#ffab00'
                     }
                 }
+            },
+            {
+                name: t('COMMON.CUSTOMER_REPORTS.RETURNING_CUSTOMERS'),
+                type: 'line',
+                data: chartData.returningCustomers,
+                smooth: true,
+                lineStyle: { color: '#00a76f', width: 3 },
+                itemStyle: { color: '#00a76f' },
+                areaStyle: {
+                    opacity: 0.2,
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#00BFA5' },
+                        { offset: 1, color: 'rgba(0, 191, 165, 0.05)' }
+                    ])
+                },
+                emphasis: {
+                    scale: true,
+                    focus: 'none',
+                    itemStyle: {
+                        borderWidth: 6,
+                        borderColor: '#00a76f'
+                    }
+                }
+            },
+            {
+                name: t('COMMON.CUSTOMER_REPORTS.ORDERS'),
+                type: 'line',
+                data: chartData.orders,
+                smooth: true,
+                lineStyle: { color: '#3675ff', width: 3 },
+                itemStyle: { color: '#3675ff' },
+                areaStyle: {
+                    opacity: 0.2,
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#2979FF' },
+                        { offset: 1, color: 'rgba(41, 121, 255, 0.05)' }
+                    ])
+                },
+                emphasis: {
+                    scale: true,
+                    focus: 'none',
+                    itemStyle: {
+                        borderWidth: 6,
+                        borderColor: '#3675ff'
+                    }
+                }
             }
         ]
     }
 
     return (
-        <>
+        <Box
+            sx={{
+                padding: '24px',
+                borderRadius: '15px',
+                backgroundColor: 'var(--background-color-item)',
+                boxShadow: 'var(--box-shadow-paper)'
+            }}
+        >
             <Box
                 sx={{
                     display: 'flex',
@@ -191,7 +188,7 @@ export default function ChartOrderRevenue() {
                         color: 'var(--text-color)'
                     }}
                 >
-                    {t('COMMON.HOME.REVENUE_ORDER')}
+                    {t('COMMON.CUSTOMER_REPORTS.CUSTOMER_TREND')}
                 </Typography>
 
                 <FormControl
@@ -315,6 +312,6 @@ export default function ChartOrderRevenue() {
             </Box>
 
             <ReactECharts option={option} style={{ height: 375 }} />
-        </>
+        </Box>
     )
 }

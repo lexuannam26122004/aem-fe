@@ -131,7 +131,7 @@ export default function FinancialOverviewChart() {
                 name: t('COMMON.HOME.EXPENSES'),
                 type: 'bar',
                 data: expenses,
-                barWidth: '25%', // Điều chỉnh độ rộng của cột
+                barWidth: '26%', // Điều chỉnh độ rộng của cột
                 itemStyle: {
                     color: '#f1aa2e',
                     borderRadius: [6, 6, 0, 0] // Bo tròn đỉnh cột
@@ -141,7 +141,7 @@ export default function FinancialOverviewChart() {
                 name: t('COMMON.HOME.REVENUE'),
                 type: 'bar',
                 data: revenue,
-                barWidth: '25%', // Điều chỉnh độ rộng của cột
+                barWidth: '26%', // Điều chỉnh độ rộng của cột
                 itemStyle: {
                     color: '#3675ff',
                     borderRadius: [6, 6, 0, 0] // Bo tròn đỉnh cột

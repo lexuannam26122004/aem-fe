@@ -57,6 +57,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TableHeader } from '@/components/ui/table'
 import { ICustomer, ICustomerFilter } from '@/models/Customer'
+import { formatCurrency } from '@/common/format'
 
 function getStatusBgColor(status: boolean): string {
     if (!status) {
@@ -375,6 +376,33 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                             </TableCell>
 
                             <TableCell sx={{ borderColor: 'var(--border-color)' }}>
+                                <TableSortLabel
+                                    active={'TotalSpent' === orderBy}
+                                    direction={orderBy === 'TotalSpent' ? order : 'asc'}
+                                    onClick={() => handleSort('TotalSpent')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            maxWidth: '300px',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.CUSTOMER.TOTAL_SPEND')}
+                                    </Typography>
+                                </TableSortLabel>
+                            </TableCell>
+
+                            <TableCell sx={{ borderColor: 'var(--border-color)' }}>
                                 <Typography
                                     sx={{
                                         fontWeight: 'bold',
@@ -599,6 +627,27 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                             month: '2-digit',
                                             year: 'numeric'
                                         })}
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed',
+                                            pr: '24px'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                fontWeight: 'bold',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: '#00B85E'
+                                            }}
+                                        >
+                                            {formatCurrency(row.totalSpent)}
+                                        </Typography>
                                     </TableCell>
 
                                     <TableCell sx={{ borderColor: 'var(--border-color)', borderStyle: 'dashed' }}>

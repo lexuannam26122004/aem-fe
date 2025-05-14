@@ -230,7 +230,7 @@ export function TopCustomers() {
                             <Typography
                                 sx={{
                                     fontSize: '15px',
-                                    maxWidth: '280px',
+                                    maxWidth: '260px',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
@@ -264,7 +264,7 @@ export function TopCustomers() {
                                     sx={{
                                         color: 'var(--text-color)',
                                         fontSize: '13px',
-                                        maxWidth: '280px',
+                                        maxWidth: '260px',
                                         mt: '2px',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',

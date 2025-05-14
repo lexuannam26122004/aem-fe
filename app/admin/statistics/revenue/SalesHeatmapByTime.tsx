@@ -332,6 +332,7 @@ const SalesHeatmapByTime = () => {
                 show: false // Ẩn đánh dấu trục y
             },
             axisLabel: {
+                color: theme === 'light' ? '#6b7280' : '#919eab',
                 fontSize: '14px',
                 fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
             },
@@ -349,6 +350,7 @@ const SalesHeatmapByTime = () => {
                 show: false
             },
             axisLabel: {
+                color: theme === 'light' ? '#6b7280' : '#919eab',
                 fontSize: '14px',
                 fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
             },
@@ -364,7 +366,7 @@ const SalesHeatmapByTime = () => {
             left: 'right',
             top: 'center',
             textStyle: {
-                color: theme === 'light' ? '#000000' : '#ffffff'
+                color: theme === 'light' ? '#6b7280' : '#919eab'
             },
             inRange: {
                 color: ['#cbdcff', '#5f8eff', '#3675ff']

@@ -33,4 +33,7 @@ export interface ICustomer extends ICustomerUpdate {
     isActive: boolean
 }
 
-export interface ICustomerFilter extends IFilter {}
+export interface ICustomerFilter extends IFilter {
+    fromDate?: string
+    toDate?: string
+}

@@ -21,126 +21,184 @@ import {
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Divider, Paper, Tab, Tabs } from '@mui/material'
-import { useToast } from '@/hooks/useToast'
-import { IRevenueReportFilter, IRevenueReports } from '@/models/RevenueReports'
 import dayjs from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { convertToVietnamTime, formatCurrency, formatWorkingTime } from '@/common/format'
+import { convertToVietnamTime, formatCurrency } from '@/common/format'
 import { Download } from 'lucide-react'
-import { IWarrantyReportFilter, IWarrantyReports } from '@/models/WarrantyReports'
+import { IOrderReportFilter, IOrderReports } from '@/models/OrderReports'
 
-const warrantyReports: IWarrantyReports[] = [
+const orderReportData: IOrderReports[] = [
     {
-        productName: 'Omron Proximity Sensor E2E-X5ME1',
-        warrantyCount: 45,
-        warrantyRate: 2.8,
-        averageTime: 3.1,
-        onTimeRate: 94.2,
-        status: 'increasing',
-        mainReason: 'Signal deviation',
+        date: '01/05/2025',
+        orderCount: 120,
+        successfulOrders: 110,
+        cancelledOrders: 5,
+        returnedOrders: 5,
+        totalRevenue: 58000000,
+        successRate: 91.67,
+        cancelRate: 4.17,
+        averageOrderValue: 483333,
+        returnValue: 2500000,
+        totalProductQuantity: 320,
+        productTypeCount: 24,
+        productName: 'Tai nghe Bluetooth Sony WH-1000XM5',
         images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-1.webp'],
-        serialNumber: 'SN-OMR-E2E-001'
+        serialNumber: 'SN20250501-001'
     },
     {
-        productName: 'Siemens PLC S7-1200',
-        warrantyCount: 60,
-        warrantyRate: 3.5,
-        averageTime: 4.0,
-        onTimeRate: 90.0,
-        status: 'decreasing',
-        mainReason: 'PLC disconnection',
+        date: '02/05/2025',
+        orderCount: 98,
+        successfulOrders: 90,
+        cancelledOrders: 4,
+        returnedOrders: 4,
+        totalRevenue: 47000000,
+        successRate: 91.84,
+        cancelRate: 4.08,
+        averageOrderValue: 479592,
+        returnValue: 1800000,
+        totalProductQuantity: 270,
+        productTypeCount: 21,
+        productName: 'Máy ảnh Canon EOS R6',
         images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-2.webp'],
-        serialNumber: 'SN-SIE-S71200-002'
+        serialNumber: 'SN20250502-002'
     },
     {
-        productName: 'IDEC Timer Relay GT3A',
-        warrantyCount: 20,
-        warrantyRate: 1.5,
-        averageTime: 2.3,
-        onTimeRate: 96.7,
-        status: 'stable',
-        mainReason: 'Delay in switching',
+        date: '03/05/2025',
+        orderCount: 135,
+        successfulOrders: 130,
+        cancelledOrders: 3,
+        returnedOrders: 2,
+        totalRevenue: 69000000,
+        successRate: 96.3,
+        cancelRate: 2.22,
+        averageOrderValue: 511111,
+        returnValue: 2200000,
+        totalProductQuantity: 340,
+        productTypeCount: 26,
+        productName: 'Laptop Dell XPS 13',
         images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-3.webp'],
-        serialNumber: 'SN-IDC-GT3A-003'
+        serialNumber: 'SN20250503-003'
     },
     {
-        productName: 'SMC Pressure Sensor ISE30A',
-        warrantyCount: 38,
-        warrantyRate: 3.1,
-        averageTime: 3.4,
-        onTimeRate: 91.5,
-        status: 'monitor',
-        mainReason: 'Incorrect pressure reading',
+        date: '04/05/2025',
+        orderCount: 85,
+        successfulOrders: 80,
+        cancelledOrders: 3,
+        returnedOrders: 2,
+        totalRevenue: 41000000,
+        successRate: 94.12,
+        cancelRate: 3.53,
+        averageOrderValue: 482353,
+        returnValue: 1500000,
+        totalProductQuantity: 230,
+        productTypeCount: 19,
+        productName: 'Smartwatch Apple Watch Series 9',
         images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-4.webp'],
-        serialNumber: 'SN-SMC-ISE30-004'
+        serialNumber: 'SN20250504-004'
     },
     {
-        productName: 'ABB Welding Robot IRB 1520ID',
-        warrantyCount: 15,
-        warrantyRate: 2.2,
-        averageTime: 5.1,
-        onTimeRate: 87.0,
-        status: 'alert',
-        mainReason: 'Axis instability',
+        date: '05/05/2025',
+        orderCount: 150,
+        successfulOrders: 140,
+        cancelledOrders: 6,
+        returnedOrders: 4,
+        totalRevenue: 75000000,
+        successRate: 93.33,
+        cancelRate: 4.0,
+        averageOrderValue: 500000,
+        returnValue: 3000000,
+        totalProductQuantity: 400,
+        productTypeCount: 30,
+        productName: 'Điện thoại Samsung Galaxy S24 Ultra',
         images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-5.webp'],
-        serialNumber: 'SN-ABB-1520-005'
+        serialNumber: 'SN20250505-005'
     },
     {
-        productName: 'Weintek HMI MT8071iE',
-        warrantyCount: 42,
-        warrantyRate: 2.9,
-        averageTime: 3.6,
-        onTimeRate: 92.4,
-        status: 'increasing',
-        mainReason: 'No UI display',
+        date: '06/05/2025',
+        orderCount: 112,
+        successfulOrders: 106,
+        cancelledOrders: 4,
+        returnedOrders: 2,
+        totalRevenue: 56500000,
+        successRate: 94.64,
+        cancelRate: 3.57,
+        averageOrderValue: 504464,
+        returnValue: 1600000,
+        totalProductQuantity: 290,
+        productTypeCount: 23,
+        productName: 'Máy chơi game Nintendo Switch OLED',
         images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-6.webp'],
-        serialNumber: 'SN-WTK-MT80-006'
+        serialNumber: 'SN20250506-006'
     },
     {
-        productName: 'Delta Inverter VFD-L',
-        warrantyCount: 33,
-        warrantyRate: 4.0,
-        averageTime: 4.4,
-        onTimeRate: 89.0,
-        status: 'monitor',
-        mainReason: 'Overheating',
+        date: '07/05/2025',
+        orderCount: 103,
+        successfulOrders: 98,
+        cancelledOrders: 3,
+        returnedOrders: 2,
+        totalRevenue: 49500000,
+        successRate: 95.15,
+        cancelRate: 2.91,
+        averageOrderValue: 480583,
+        returnValue: 1700000,
+        totalProductQuantity: 280,
+        productTypeCount: 22,
+        productName: 'Camera hành trình GoPro HERO12',
         images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-7.webp'],
-        serialNumber: 'SN-DLT-VFDL-007'
+        serialNumber: 'SN20250507-007'
     },
     {
-        productName: 'Autonics Encoder E50S8-1024',
-        warrantyCount: 26,
-        warrantyRate: 2.6,
-        averageTime: 2.8,
-        onTimeRate: 95.0,
-        status: 'decreasing',
-        mainReason: 'Signal loss',
+        date: '08/05/2025',
+        orderCount: 140,
+        successfulOrders: 132,
+        cancelledOrders: 5,
+        returnedOrders: 3,
+        totalRevenue: 71500000,
+        successRate: 94.29,
+        cancelRate: 3.57,
+        averageOrderValue: 510714,
+        returnValue: 2500000,
+        totalProductQuantity: 360,
+        productTypeCount: 27,
+        productName: 'Tivi LG OLED evo C3 55 inch',
         images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-8.webp'],
-        serialNumber: 'SN-ATN-E50S-008'
+        serialNumber: 'SN20250508-008'
     },
     {
-        productName: 'Keyence Laser Sensor LR-ZB250AP',
-        warrantyCount: 18,
-        warrantyRate: 1.9,
-        averageTime: 2.6,
-        onTimeRate: 98.1,
-        status: 'stable',
-        mainReason: 'Detection error',
+        date: '09/05/2025',
+        orderCount: 95,
+        successfulOrders: 90,
+        cancelledOrders: 3,
+        returnedOrders: 2,
+        totalRevenue: 46000000,
+        successRate: 94.74,
+        cancelRate: 3.16,
+        averageOrderValue: 484211,
+        returnValue: 1400000,
+        totalProductQuantity: 250,
+        productTypeCount: 20,
+        productName: 'Máy chiếu Xiaomi Mi Smart Projector 2',
         images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-9.webp'],
-        serialNumber: 'SN-KYC-LRZB-009'
+        serialNumber: 'SN20250509-009'
     },
     {
-        productName: 'Panasonic Servo Motor Minas A6',
-        warrantyCount: 50,
-        warrantyRate: 4.4,
-        averageTime: 4.7,
-        onTimeRate: 85.5,
-        status: 'alert',
-        mainReason: 'Vibration under load',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-10.webp'],
-        serialNumber: 'SN-PNS-MNA6-010'
+        date: '10/05/2025',
+        orderCount: 100,
+        successfulOrders: 95,
+        cancelledOrders: 4,
+        returnedOrders: 1,
+        totalRevenue: 50000000,
+        successRate: 95.0,
+        cancelRate: 4.0,
+        averageOrderValue: 500000,
+        returnValue: 1000000,
+        totalProductQuantity: 270,
+        productTypeCount: 21,
+        productName: 'Loa thông minh Google Nest Audio',
+        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-11.webp'],
+        serialNumber: 'SN20250510-010'
     }
 ]
 
@@ -152,14 +210,14 @@ function ReportTable() {
     const [rowsPerPage, setRowsPerPage] = useState('10')
     const [from, setFrom] = useState(1)
     const [to, setTo] = useState(10)
-    const [filter, setFilter] = useState<IWarrantyReportFilter>({
+    const [filter, setFilter] = useState<IOrderReportFilter>({
         pageSize: 10,
         pageNumber: 1,
         fromDate: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
         toDate: dayjs().format('YYYY-MM-DD')
     })
 
-    const totalRecords = warrantyReports.length
+    const totalRecords = orderReportData.length
 
     const handleSort = (property: string) => {
         setFilter(prev => ({
@@ -176,14 +234,14 @@ function ReportTable() {
     }
 
     useEffect(() => {
-        if (/*!isFetching && */ warrantyReports) {
-            const from = (page - 1) * Number(rowsPerPage) + Math.min(1, warrantyReports?.length)
+        if (/*!isFetching && */ orderReportData) {
+            const from = (page - 1) * Number(rowsPerPage) + Math.min(1, orderReportData?.length)
             setFrom(from)
 
-            const to = Math.min(warrantyReports?.length + (page - 1) * Number(rowsPerPage), totalRecords)
+            const to = Math.min(orderReportData?.length + (page - 1) * Number(rowsPerPage), totalRecords)
             setTo(to)
         }
-    }, [, /*isFetching*/ warrantyReports, page, rowsPerPage])
+    }, [, /*isFetching*/ orderReportData, page, rowsPerPage])
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -228,7 +286,7 @@ function ReportTable() {
                     padding: '20px 24px'
                 }}
             >
-                {t('COMMON.WARRANTY_REPORT.WARRANTY_REPORT')}
+                {t('COMMON.ORDER_REPORTS.ORDER_REPORTS')}
             </Typography>
 
             <Divider
@@ -255,7 +313,7 @@ function ReportTable() {
                 >
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label={t('COMMON.ACTIVITY_LOG.TO_DATE')}
+                            label={t('COMMON.ACTIVITY_LOG.FROM_DATE')}
                             value={dayjs(filter.fromDate)}
                             onChange={value => {
                                 setFilter({
@@ -300,7 +358,7 @@ function ReportTable() {
 
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label={t('COMMON.ACTIVITY_LOG.FROM_DATE')}
+                            label={t('COMMON.ACTIVITY_LOG.TO_DATE')}
                             value={dayjs(filter.toDate)}
                             onChange={value => {
                                 setFilter({
@@ -342,316 +400,6 @@ function ReportTable() {
                             }}
                         />
                     </LocalizationProvider>
-
-                    <FormControl
-                        sx={{
-                            width: '170px',
-                            '& .MuiOutlinedInput-root:hover fieldset': {
-                                borderColor: 'var(--field-color-hover)'
-                            },
-                            '& .MuiOutlinedInput-root.Mui-error:hover fieldset': {
-                                borderColor: 'var(--error-color)' // Màu hover khi lỗi
-                            },
-                            '& .MuiOutlinedInput-root.Mui-error fieldset': {
-                                borderColor: 'var(--error-color)' // Màu viền khi lỗi
-                            },
-                            '& .MuiOutlinedInput-root.Mui-focused fieldset': {
-                                border: '2px solid var(--field-color-selected)' // Màu viền khi focus
-                            },
-                            '& .MuiInputLabel-root': {
-                                color: 'var(--label-title-color)' // Label mặc định
-                            },
-                            '&:hover .MuiInputLabel-root': {
-                                color: 'var(--field-color-selected)' // Thay đổi màu label khi hover vào input
-                            },
-                            '& .MuiInputLabel-root.Mui-focused': {
-                                fontWeight: 'bold',
-                                color: 'var(--field-color-selected)' // Label khi focus
-                            }
-                        }}
-                    >
-                        <InputLabel id='select-label'>{t('COMMON.REVENUE.ORDER_STATUS')}</InputLabel>
-                        <Select
-                            defaultValue='all'
-                            label={t('COMMON.REVENUE.ORDER_STATUS')}
-                            value={filter.type === undefined ? 'all' : filter.type}
-                            onChange={e =>
-                                setFilter({
-                                    ...filter,
-                                    type: e.target.value
-                                })
-                            }
-                            sx={{
-                                width: '100%',
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: 'var(--border-color)'
-                                },
-                                '& fieldset': {
-                                    borderRadius: '8px',
-                                    borderColor: 'var(--border-color)'
-                                },
-                                '& .MuiSelect-icon': {
-                                    color: 'var(--text-color)'
-                                },
-                                '& .MuiInputBase-input': {
-                                    color: 'var(--text-color)',
-                                    padding: '14px 14px'
-                                }
-                            }}
-                            MenuProps={{
-                                PaperProps: {
-                                    elevation: 0,
-                                    sx: {
-                                        mt: '4px',
-                                        borderRadius: '8px',
-                                        padding: '0 8px',
-                                        backgroundImage:
-                                            'url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI3BhaW50MF9yYWRpYWxfMjc0OV8xNDUxODYpIiBmaWxsLW9wYWNpdHk9IjAuMTIiLz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0icGFpbnQwX3JhZGlhbF8yNzQ5XzE0NTE4NiIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxMjAgMS44MTgxMmUtMDUpIHJvdGF0ZSgtNDUpIHNjYWxlKDEyMy4yNSkiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMDBCOEQ5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwQjhEOSIgc3RvcC1vcGFjaXR5PSIwIi8+CjwvcmFkaWFsR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==), url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI3BhaW50MF9yYWRpYWxfMjc0OV8xNDUxODcpIiBmaWxsLW9wYWNpdHk9IjAuMTIiLz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0icGFpbnQwX3JhZGlhbF8yNzQ5XzE0NTE4NyIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgwIDEyMCkgcm90YXRlKDEzNSkgc2NhbGUoMTIzLjI1KSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRjU2MzAiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRkY1NjMwIiBzdG9wLW9wYWNpdHk9IjAiLz4KPC9yYWRpYWxHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K)',
-                                        backgroundPosition: 'top right, bottom left',
-                                        backgroundSize: '50%, 50%',
-                                        backgroundRepeat: 'no-repeat',
-                                        backdropFilter: 'blur(20px)',
-                                        backgroundColor: 'var(--background-color-item)',
-                                        color: 'var(--text-color)',
-                                        border: '1px solid var(--border-color)',
-                                        '& .MuiMenuItem-root': {
-                                            '&:hover': {
-                                                backgroundColor: 'var(--background-color-item-hover)'
-                                            },
-                                            '&.Mui-selected': {
-                                                backgroundColor: 'var(--background-color-item-selected)',
-                                                '&:hover': {
-                                                    backgroundColor: 'var(--background-color-item-hover)'
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                anchorOrigin: {
-                                    vertical: 'bottom',
-                                    horizontal: 'right' // Căn chỉnh bên phải
-                                },
-                                transformOrigin: {
-                                    vertical: 'top',
-                                    horizontal: 'right' // Căn chỉnh bên phải
-                                }
-                            }}
-                        >
-                            <MenuItem
-                                value='all'
-                                sx={{
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.COUPON.ALL_CUSTOMER')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='repair'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.REPAIR')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='replace'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.REPLACE')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='maintenance'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.MAINTENANCE')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='upgrade'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.UPGRADE')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='other'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.OTHER')}
-                            </MenuItem>
-                        </Select>
-                    </FormControl>
-
-                    <FormControl
-                        sx={{
-                            width: '170px',
-                            '& .MuiOutlinedInput-root:hover fieldset': {
-                                borderColor: 'var(--field-color-hover)'
-                            },
-                            '& .MuiOutlinedInput-root.Mui-error:hover fieldset': {
-                                borderColor: 'var(--error-color)' // Màu hover khi lỗi
-                            },
-                            '& .MuiOutlinedInput-root.Mui-error fieldset': {
-                                borderColor: 'var(--error-color)' // Màu viền khi lỗi
-                            },
-                            '& .MuiOutlinedInput-root.Mui-focused fieldset': {
-                                border: '2px solid var(--field-color-selected)' // Màu viền khi focus
-                            },
-                            '& .MuiInputLabel-root': {
-                                color: 'var(--label-title-color)' // Label mặc định
-                            },
-                            '&:hover .MuiInputLabel-root': {
-                                color: 'var(--field-color-selected)' // Thay đổi màu label khi hover vào input
-                            },
-                            '& .MuiInputLabel-root.Mui-focused': {
-                                fontWeight: 'bold',
-                                color: 'var(--field-color-selected)' // Label khi focus
-                            }
-                        }}
-                    >
-                        <InputLabel id='select-label'>{t('COMMON.WARRANTY_REPORT.STATUS')}</InputLabel>
-                        <Select
-                            defaultValue='all'
-                            label={t('COMMON.WARRANTY_REPORT.STATUS')}
-                            value={filter.status === undefined ? 'all' : filter.status}
-                            onChange={e =>
-                                setFilter({
-                                    ...filter,
-                                    status: e.target.value
-                                })
-                            }
-                            sx={{
-                                width: '100%',
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: 'var(--border-color)'
-                                },
-                                '& fieldset': {
-                                    borderRadius: '8px',
-                                    borderColor: 'var(--border-color)'
-                                },
-                                '& .MuiSelect-icon': {
-                                    color: 'var(--text-color)'
-                                },
-                                '& .MuiInputBase-input': {
-                                    color: 'var(--text-color)',
-                                    padding: '14px 14px'
-                                }
-                            }}
-                            MenuProps={{
-                                PaperProps: {
-                                    elevation: 0,
-                                    sx: {
-                                        mt: '4px',
-                                        borderRadius: '8px',
-                                        padding: '0 8px',
-                                        backgroundImage:
-                                            'url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI3BhaW50MF9yYWRpYWxfMjc0OV8xNDUxODYpIiBmaWxsLW9wYWNpdHk9IjAuMTIiLz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0icGFpbnQwX3JhZGlhbF8yNzQ5XzE0NTE4NiIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxMjAgMS44MTgxMmUtMDUpIHJvdGF0ZSgtNDUpIHNjYWxlKDEyMy4yNSkiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMDBCOEQ5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwQjhEOSIgc3RvcC1vcGFjaXR5PSIwIi8+CjwvcmFkaWFsR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==), url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI3BhaW50MF9yYWRpYWxfMjc0OV8xNDUxODcpIiBmaWxsLW9wYWNpdHk9IjAuMTIiLz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0icGFpbnQwX3JhZGlhbF8yNzQ5XzE0NTE4NyIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgwIDEyMCkgcm90YXRlKDEzNSkgc2NhbGUoMTIzLjI1KSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRjU2MzAiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRkY1NjMwIiBzdG9wLW9wYWNpdHk9IjAiLz4KPC9yYWRpYWxHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K)',
-                                        backgroundPosition: 'top right, bottom left',
-                                        backgroundSize: '50%, 50%',
-                                        backgroundRepeat: 'no-repeat',
-                                        backdropFilter: 'blur(20px)',
-                                        backgroundColor: 'var(--background-color-item)',
-                                        color: 'var(--text-color)',
-                                        border: '1px solid var(--border-color)',
-                                        '& .MuiMenuItem-root': {
-                                            '&:hover': {
-                                                backgroundColor: 'var(--background-color-item-hover)'
-                                            },
-                                            '&.Mui-selected': {
-                                                backgroundColor: 'var(--background-color-item-selected)',
-                                                '&:hover': {
-                                                    backgroundColor: 'var(--background-color-item-hover)'
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                anchorOrigin: {
-                                    vertical: 'bottom',
-                                    horizontal: 'right' // Căn chỉnh bên phải
-                                },
-                                transformOrigin: {
-                                    vertical: 'top',
-                                    horizontal: 'right' // Căn chỉnh bên phải
-                                }
-                            }}
-                        >
-                            <MenuItem
-                                value='all'
-                                sx={{
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.COUPON.ALL_CUSTOMER')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='increasing'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.STATUS_INCREASING')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='decreasing'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.STATUS_DECREASING')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='stable'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.STATUS_STABLE')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='monitor'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.STATUS_MONITOR')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='alert'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.STATUS_ALERT')}
-                            </MenuItem>
-                        </Select>
-                    </FormControl>
                 </Box>
 
                 <Button
@@ -718,6 +466,312 @@ function ReportTable() {
                                 }}
                             >
                                 <TableSortLabel
+                                    active={'Date' === orderBy}
+                                    direction={orderBy === 'Date' ? order : 'asc'}
+                                    onClick={() => handleSort('Date')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.REVENUE.DATE')}
+                                    </Typography>
+                                </TableSortLabel>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
+                                    active={'OrderCount' === orderBy}
+                                    direction={orderBy === 'OrderCount' ? order : 'asc'}
+                                    onClick={() => handleSort('OrderCount')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.ORDER_REPORTS.ORDER_COUNT')}
+                                    </Typography>
+                                </TableSortLabel>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        color: 'var(--text-color)',
+                                        fontSize: '15px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {t('COMMON.ORDER_REPORTS.SUCCESSFUL_ORDERS')}
+                                </Typography>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        color: 'var(--text-color)',
+                                        fontSize: '15px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {t('COMMON.ORDER_REPORTS.CANCELLED_ORDERS')}
+                                </Typography>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        color: 'var(--text-color)',
+                                        fontSize: '15px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {t('COMMON.ORDER_REPORTS.RETURNED_ORDERS')}
+                                </Typography>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
+                                    active={'SuccessRate' === orderBy}
+                                    direction={orderBy === 'SuccessRate' ? order : 'asc'}
+                                    onClick={() => handleSort('SuccessRate')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.ORDER_REPORTS.SUCCESS_RATE')}
+                                    </Typography>
+                                </TableSortLabel>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
+                                    active={'CancelRate' === orderBy}
+                                    direction={orderBy === 'CancelRate' ? order : 'asc'}
+                                    onClick={() => handleSort('CancelRate')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.ORDER_REPORTS.CANCEL_RATE')}
+                                    </Typography>
+                                </TableSortLabel>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
+                                    active={'Revenue' === orderBy}
+                                    direction={orderBy === 'Revenue' ? order : 'asc'}
+                                    onClick={() => handleSort('Revenue')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.ORDER_REPORTS.TOTAL_REVENUE')}
+                                    </Typography>
+                                </TableSortLabel>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
+                                    active={'Revenue' === orderBy}
+                                    direction={orderBy === 'Revenue' ? order : 'asc'}
+                                    onClick={() => handleSort('Revenue')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.ORDER_REPORTS.AVERAGE_ORDER_VALUE')}
+                                    </Typography>
+                                </TableSortLabel>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        color: 'var(--text-color)',
+                                        fontSize: '15px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {t('COMMON.ORDER_REPORTS.RETURN_VALUE')}
+                                </Typography>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        color: 'var(--text-color)',
+                                        fontSize: '15px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {t('COMMON.ORDER_REPORTS.TOTAL_PRODUCT_QUANTITY')}
+                                </Typography>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        color: 'var(--text-color)',
+                                        fontSize: '15px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {t('COMMON.ORDER_REPORTS.PRODUCT_TYPE_COUNT')}
+                                </Typography>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
                                     active={'ProductName' === orderBy}
                                     direction={orderBy === 'ProductName' ? order : 'asc'}
                                     onClick={() => handleSort('ProductName')}
@@ -737,147 +791,16 @@ function ReportTable() {
                                             whiteSpace: 'nowrap'
                                         }}
                                     >
-                                        {t('COMMON.WARRANTY_REPORT.PRODUCT_NAME')}
+                                        {t('COMMON.ORDER_REPORTS.BEST_SELLER')}
                                     </Typography>
                                 </TableSortLabel>
-                            </TableCell>
-
-                            <TableCell
-                                sx={{
-                                    backgroundColor: 'var(--background-color-table-header)',
-                                    borderColor: 'var(--border-color)'
-                                }}
-                            >
-                                <TableSortLabel
-                                    active={'WarrantyCount' === orderBy}
-                                    direction={orderBy === 'WarrantyCount' ? order : 'asc'}
-                                    onClick={() => handleSort('WarrantyCount')}
-                                    sx={{
-                                        '& .MuiTableSortLabel-icon': {
-                                            color: 'var(--text-color) !important'
-                                        }
-                                    }}
-                                >
-                                    <Typography
-                                        sx={{
-                                            fontWeight: 'bold',
-                                            color: 'var(--text-color)',
-                                            fontSize: '15px',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap'
-                                        }}
-                                    >
-                                        {t('COMMON.WARRANTY_REPORT.WARRANTY_COUNT')}
-                                    </Typography>
-                                </TableSortLabel>
-                            </TableCell>
-
-                            <TableCell
-                                sx={{
-                                    backgroundColor: 'var(--background-color-table-header)',
-                                    borderColor: 'var(--border-color)'
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontWeight: 'bold',
-                                        color: 'var(--text-color)',
-                                        fontSize: '15px',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {t('COMMON.WARRANTY_REPORT.WARRANTY_RATE')}
-                                </Typography>
-                            </TableCell>
-
-                            <TableCell
-                                sx={{
-                                    backgroundColor: 'var(--background-color-table-header)',
-                                    borderColor: 'var(--border-color)'
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontWeight: 'bold',
-                                        color: 'var(--text-color)',
-                                        fontSize: '15px',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {t('COMMON.WARRANTY_REPORT.AVERAGE_TIME')}
-                                </Typography>
-                            </TableCell>
-
-                            <TableCell
-                                sx={{
-                                    backgroundColor: 'var(--background-color-table-header)',
-                                    borderColor: 'var(--border-color)'
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontWeight: 'bold',
-                                        color: 'var(--text-color)',
-                                        fontSize: '15px',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {t('COMMON.WARRANTY_REPORT.MAIN_REASON')}
-                                </Typography>
-                            </TableCell>
-
-                            <TableCell
-                                sx={{
-                                    backgroundColor: 'var(--background-color-table-header)',
-                                    borderColor: 'var(--border-color)'
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontWeight: 'bold',
-                                        color: 'var(--text-color)',
-                                        fontSize: '15px',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {t('COMMON.WARRANTY_REPORT.ON_TIME_RATE')}
-                                </Typography>
-                            </TableCell>
-
-                            <TableCell
-                                sx={{
-                                    backgroundColor: 'var(--background-color-table-header)',
-                                    borderColor: 'var(--border-color)'
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontWeight: 'bold',
-                                        color: 'var(--text-color)',
-                                        fontSize: '15px',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {t('COMMON.WARRANTY_REPORT.STATUS')}
-                                </Typography>
                             </TableCell>
                         </TableRow>
                     </TableHead>
 
                     <TableBody>
-                        {warrantyReports &&
-                            warrantyReports.map((row: IWarrantyReports, index: number) => (
+                        {orderReportData &&
+                            orderReportData.map((row: IOrderReports, index: number) => (
                                 <TableRow
                                     key={index}
                                     sx={{
@@ -892,6 +815,255 @@ function ReportTable() {
                                         }
                                     }}
                                 >
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed',
+                                            pl: '24px'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                fontWeight: 'bold',
+                                                color: 'var(--primary-color)'
+                                            }}
+                                        >
+                                            {row.date}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                                ml: '-25px',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: '#00B85E'
+                                            }}
+                                        >
+                                            {row.orderCount}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {row.successfulOrders}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {row.cancelledOrders}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {row.returnedOrders}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                ml: '-25px',
+                                                fontWeight: 'bold',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--report-text-color)'
+                                            }}
+                                        >
+                                            {row.successRate}%
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                ml: '-25px',
+                                                fontWeight: 'bold',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--report-text-color)'
+                                            }}
+                                        >
+                                            {row.cancelRate}%
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                fontWeight: 'bold',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--report-text-color)'
+                                            }}
+                                        >
+                                            {formatCurrency(row.returnValue)}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                fontWeight: 'bold',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--report-text-color)'
+                                            }}
+                                        >
+                                            {formatCurrency(row.averageOrderValue)}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'right',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {formatCurrency(row.returnValue)}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {row.totalProductQuantity}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {row.productTypeCount}
+                                        </Typography>
+                                    </TableCell>
+
                                     <TableCell
                                         sx={{
                                             borderColor: 'var(--border-color)',
@@ -952,139 +1124,6 @@ function ReportTable() {
                                                 </Typography>
                                             </Box>
                                         </Box>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sx={{
-                                            borderColor: 'var(--border-color)',
-                                            borderStyle: 'dashed'
-                                        }}
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontSize: '15px',
-                                                overflow: 'hidden',
-                                                ml: '-25px',
-                                                fontWeight: 'bold',
-                                                textAlign: 'center',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                color: 'var(--report-text-color)'
-                                            }}
-                                        >
-                                            {row.warrantyCount}
-                                        </Typography>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sx={{
-                                            borderColor: 'var(--border-color)',
-                                            borderStyle: 'dashed'
-                                        }}
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontSize: '15px',
-                                                overflow: 'hidden',
-                                                textAlign: 'center',
-                                                ml: '-25px',
-                                                fontWeight: 'bold',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                color: 'var(--report-text-color)'
-                                            }}
-                                        >
-                                            {row.warrantyRate}%
-                                        </Typography>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sx={{
-                                            borderColor: 'var(--border-color)',
-                                            borderStyle: 'dashed'
-                                        }}
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontSize: '15px',
-                                                overflow: 'hidden',
-                                                textAlign: 'center',
-                                                textTransform: 'lowercase',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                color: 'var(--text-color)'
-                                            }}
-                                        >
-                                            {formatWorkingTime(row.averageTime, t)}
-                                        </Typography>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sx={{
-                                            borderColor: 'var(--border-color)',
-                                            borderStyle: 'dashed'
-                                        }}
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontSize: '15px',
-                                                maxWidth: '300px',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: 3,
-                                                WebkitBoxOrient: 'vertical',
-                                                color: 'var(--text-color)'
-                                            }}
-                                        >
-                                            {row.mainReason}
-                                        </Typography>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sx={{
-                                            borderColor: 'var(--border-color)',
-                                            borderStyle: 'dashed'
-                                        }}
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontSize: '15px',
-                                                overflow: 'hidden',
-                                                textAlign: 'center',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                color: 'var(--text-color)'
-                                            }}
-                                        >
-                                            {row.onTimeRate}%
-                                        </Typography>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sx={{
-                                            borderColor: 'var(--border-color)',
-                                            borderStyle: 'dashed'
-                                        }}
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontSize: '15px',
-                                                overflow: 'hidden',
-                                                fontWeight: 'bold',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                color: 'var(--report-text-color)'
-                                            }}
-                                        >
-                                            {row.status === 'stable' && t('COMMON.WARRANTY_REPORT.STATUS_STABLE')}
-                                            {row.status === 'decreasing' &&
-                                                t('COMMON.WARRANTY_REPORT.STATUS_DECREASING')}
-                                            {row.status === 'increasing' &&
-                                                t('COMMON.WARRANTY_REPORT.STATUS_INCREASING')}
-                                            {row.status === 'alert' && t('COMMON.WARRANTY_REPORT.STATUS_ALERT')}
-                                            {row.status === 'monitor' && t('COMMON.WARRANTY_REPORT.STATUS_MONITOR')}
-                                        </Typography>
                                     </TableCell>
                                 </TableRow>
                             ))}

@@ -2,37 +2,36 @@
 
 import { Avatar, Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { formatWorkingTime } from '@/common/format'
+import { formatCurrency, formatWorkingTime } from '@/common/format'
 
 const responseData = {
     data: {
         statsByDay: [
             {
-                totalWarranty: 280, // Tổng tháng này
-                averageTime: 6.4, // Hôm nay
-                repeatRate: 10
+                totalCustomers: 280,
+                totalSpending: 12850000,
+                activeCustomers: 42
             }
         ],
         rate: {
-            totalWarranty: 7.69,
-            averageTime: 16.36,
-            repeatRate: -25.0
+            totalCustomers: 5.2,
+            totalSpending: 12.8,
+            activeCustomers: -8.4
         }
     }
 }
 
 function Page() {
     const { t } = useTranslation('common')
-    const currentDate = new Date()
 
     // const { data: responseData, isLoading } = useStatsDisplayQuery(currentDate.toISOString().split('T')[0])
 
-    const totalWarranty = responseData?.data?.statsByDay[0]?.totalWarranty || 0
-    const averageTime = responseData?.data?.statsByDay[0]?.averageTime || 0
-    const repeatRate = responseData?.data?.statsByDay[0]?.repeatRate || 0
-    const totalWarrantyRate = responseData?.data?.rate.totalWarranty
-    const averageTimeRate = responseData?.data?.rate.averageTime
-    const repeatRateRate = responseData?.data?.rate.repeatRate
+    const totalCustomers = responseData?.data?.statsByDay[0]?.totalCustomers || 0
+    const totalSpending = responseData?.data?.statsByDay[0]?.totalSpending || 0
+    const activeCustomers = responseData?.data?.statsByDay[0]?.activeCustomers || 0
+    const totalCustomersRate = responseData?.data?.rate.totalCustomers
+    const totalSpendingRate = responseData?.data?.rate.totalSpending
+    const activeCustomersRate = responseData?.data?.rate.activeCustomers
 
     return (
         <Box
@@ -91,7 +90,7 @@ function Page() {
                                 color: 'var(--label-title-color)'
                             }}
                         >
-                            {t('COMMON.WARRANTY_REPORT.TOTAL_WARRANTY_CLAIMS')}
+                            {t('COMMON.CUSTOMER_REPORTS.TOTAL_CUSTOMERS')}
                         </Typography>
                         <Typography
                             sx={{
@@ -101,7 +100,7 @@ function Page() {
                                 fontWeight: 'bold'
                             }}
                         >
-                            {totalWarranty}
+                            {totalCustomers}
                         </Typography>
                         <Box
                             sx={{
@@ -113,8 +112,8 @@ function Page() {
                                 alignItems: 'center'
                             }}
                         >
-                            {totalWarrantyRate !== null &&
-                                (!(!totalWarrantyRate || totalWarrantyRate >= 0) ? (
+                            {totalCustomersRate !== null &&
+                                (!(!totalCustomersRate || totalCustomersRate >= 0) ? (
                                     <img
                                         src='/images/down.svg'
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
@@ -125,7 +124,7 @@ function Page() {
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
                                     />
                                 ))}
-                            {totalWarrantyRate !== null ? totalWarrantyRate + '%' : t('COMMON.HOME.NO_CHANGE')}
+                            {totalCustomersRate !== null ? totalCustomersRate + '%' : t('COMMON.HOME.NO_CHANGE')}
                             <Typography
                                 sx={{
                                     textTransform: 'lowercase',
@@ -141,7 +140,7 @@ function Page() {
 
                     <Box sx={{ width: '53px', height: '53px', position: 'absolute', right: '24px' }}>
                         <Avatar
-                            src='/images/warranty.png'
+                            src='/images/client_icon.png'
                             sx={{
                                 width: '100%',
                                 height: '100%',
@@ -189,7 +188,7 @@ function Page() {
                                 color: 'var(--label-title-color)'
                             }}
                         >
-                            {t('COMMON.WARRANTY_REPORT.AVERAGE_RESOLUTION_TIME')}
+                            {t('COMMON.CUSTOMER_REPORTS.TOTAL_SPENDING')}
                         </Typography>
                         <Typography
                             sx={{
@@ -200,7 +199,7 @@ function Page() {
                                 fontWeight: 'bold'
                             }}
                         >
-                            {formatWorkingTime(averageTime, t)}
+                            {formatCurrency(totalSpending).replace('VNĐ', '')}
                         </Typography>
                         <Box
                             sx={{
@@ -212,8 +211,8 @@ function Page() {
                                 alignItems: 'center'
                             }}
                         >
-                            {averageTimeRate !== null &&
-                                (!(!averageTimeRate || averageTimeRate >= 0) ? (
+                            {totalSpendingRate !== null &&
+                                (!(!totalSpendingRate || totalSpendingRate >= 0) ? (
                                     <img
                                         src='/images/down.svg'
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
@@ -224,7 +223,7 @@ function Page() {
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
                                     />
                                 ))}
-                            {averageTimeRate !== null ? averageTimeRate + '%' : t('COMMON.HOME.NO_CHANGE')}
+                            {totalSpendingRate !== null ? totalSpendingRate + '%' : t('COMMON.HOME.NO_CHANGE')}
                             <Typography
                                 sx={{
                                     textTransform: 'lowercase',
@@ -238,9 +237,9 @@ function Page() {
                         </Box>
                     </Box>
 
-                    <Box sx={{ width: '55px', height: '55px', position: 'absolute', right: '24px' }}>
+                    <Box sx={{ width: '53px', height: '53px', position: 'absolute', right: '24px' }}>
                         <Avatar
-                            src='/images/time_icon.png'
+                            src='/images/cash-flow.png'
                             sx={{
                                 width: '100%',
                                 height: '100%',
@@ -288,7 +287,7 @@ function Page() {
                                 color: 'var(--label-title-color)'
                             }}
                         >
-                            {t('COMMON.WARRANTY_REPORT.REPEAT_WARRANTY_RATE')}
+                            {t('COMMON.CUSTOMER_REPORTS.ACTIVE_CUSTOMERS')}
                         </Typography>
                         <Typography
                             sx={{
@@ -298,7 +297,7 @@ function Page() {
                                 fontWeight: 'bold'
                             }}
                         >
-                            {repeatRate}%
+                            {activeCustomers}
                         </Typography>
                         <Box
                             sx={{
@@ -310,8 +309,8 @@ function Page() {
                                 alignItems: 'center'
                             }}
                         >
-                            {repeatRateRate !== null &&
-                                (!(!repeatRateRate || repeatRateRate >= 0) ? (
+                            {activeCustomersRate !== null &&
+                                (!(!activeCustomersRate || activeCustomersRate >= 0) ? (
                                     <img
                                         src='/images/down.svg'
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
@@ -322,7 +321,7 @@ function Page() {
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
                                     />
                                 ))}
-                            {repeatRateRate !== null ? repeatRateRate + '%' : t('COMMON.HOME.NO_CHANGE')}
+                            {activeCustomersRate !== null ? activeCustomersRate + '%' : t('COMMON.HOME.NO_CHANGE')}
                             <Typography
                                 sx={{
                                     textTransform: 'lowercase',
@@ -336,9 +335,9 @@ function Page() {
                         </Box>
                     </Box>
 
-                    <Box sx={{ width: '52px', height: '52px', position: 'absolute', right: '24px' }}>
+                    <Box sx={{ width: '53px', height: '53px', position: 'absolute', right: '24px' }}>
                         <Avatar
-                            src='/images/repeat_icon.png'
+                            src='/images/active_customer.png'
                             sx={{
                                 width: '100%',
                                 height: '100%',

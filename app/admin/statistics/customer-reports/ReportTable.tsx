@@ -21,126 +21,164 @@ import {
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Divider, Paper, Tab, Tabs } from '@mui/material'
-import { useToast } from '@/hooks/useToast'
-import { IRevenueReportFilter, IRevenueReports } from '@/models/RevenueReports'
 import dayjs from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { convertToVietnamTime, formatCurrency, formatWorkingTime } from '@/common/format'
+import { convertToVietnamTime, formatCurrency } from '@/common/format'
 import { Download } from 'lucide-react'
-import { IWarrantyReportFilter, IWarrantyReports } from '@/models/WarrantyReports'
+import { ICustomerReportFilter, ICustomerReports } from '@/models/CustomerReports'
 
-const warrantyReports: IWarrantyReports[] = [
+const customerReportData: ICustomerReports[] = [
     {
-        productName: 'Omron Proximity Sensor E2E-X5ME1',
-        warrantyCount: 45,
-        warrantyRate: 2.8,
-        averageTime: 3.1,
-        onTimeRate: 94.2,
-        status: 'increasing',
-        mainReason: 'Signal deviation',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-1.webp'],
-        serialNumber: 'SN-OMR-E2E-001'
+        date: '05/05/2025',
+        customerCount: 105,
+        newCustomerCount: 35,
+        returningCustomerCount: 70,
+        returningRate: 66.7,
+        repeatCustomerCount: 15,
+        newCustomerRate: 33.3,
+        sameDayRepeatRate: 10,
+        orderCount: 130,
+        averageOrderPerCustomer: 1.24,
+        revenue: 104500000,
+        averageSpendPerCustomer: 995238,
+        averageSpendPerOrder: 803846
     },
     {
-        productName: 'Siemens PLC S7-1200',
-        warrantyCount: 60,
-        warrantyRate: 3.5,
-        averageTime: 4.0,
-        onTimeRate: 90.0,
-        status: 'decreasing',
-        mainReason: 'PLC disconnection',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-2.webp'],
-        serialNumber: 'SN-SIE-S71200-002'
+        date: '06/05/2025',
+        customerCount: 112,
+        newCustomerCount: 40,
+        returningCustomerCount: 72,
+        returningRate: 64.3,
+        repeatCustomerCount: 18,
+        newCustomerRate: 35.7,
+        sameDayRepeatRate: 8.9,
+        orderCount: 145,
+        averageOrderPerCustomer: 1.29,
+        revenue: 110200000,
+        averageSpendPerCustomer: 983929,
+        averageSpendPerOrder: 760000
     },
     {
-        productName: 'IDEC Timer Relay GT3A',
-        warrantyCount: 20,
-        warrantyRate: 1.5,
-        averageTime: 2.3,
-        onTimeRate: 96.7,
-        status: 'stable',
-        mainReason: 'Delay in switching',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-3.webp'],
-        serialNumber: 'SN-IDC-GT3A-003'
+        date: '07/05/2025',
+        customerCount: 98,
+        newCustomerCount: 30,
+        returningCustomerCount: 68,
+        returningRate: 69.4,
+        repeatCustomerCount: 12,
+        newCustomerRate: 30.6,
+        sameDayRepeatRate: 6.1,
+        orderCount: 120,
+        averageOrderPerCustomer: 1.22,
+        revenue: 94500000,
+        averageSpendPerCustomer: 964286,
+        averageSpendPerOrder: 787500
     },
     {
-        productName: 'SMC Pressure Sensor ISE30A',
-        warrantyCount: 38,
-        warrantyRate: 3.1,
-        averageTime: 3.4,
-        onTimeRate: 91.5,
-        status: 'monitor',
-        mainReason: 'Incorrect pressure reading',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-4.webp'],
-        serialNumber: 'SN-SMC-ISE30-004'
+        date: '08/05/2025',
+        customerCount: 123,
+        newCustomerCount: 50,
+        returningCustomerCount: 73,
+        returningRate: 59.3,
+        repeatCustomerCount: 20,
+        newCustomerRate: 40.7,
+        sameDayRepeatRate: 11.4,
+        orderCount: 160,
+        averageOrderPerCustomer: 1.3,
+        revenue: 125000000,
+        averageSpendPerCustomer: 1016260,
+        averageSpendPerOrder: 781250
     },
     {
-        productName: 'ABB Welding Robot IRB 1520ID',
-        warrantyCount: 15,
-        warrantyRate: 2.2,
-        averageTime: 5.1,
-        onTimeRate: 87.0,
-        status: 'alert',
-        mainReason: 'Axis instability',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-5.webp'],
-        serialNumber: 'SN-ABB-1520-005'
+        date: '09/05/2025',
+        customerCount: 90,
+        newCustomerCount: 20,
+        returningCustomerCount: 70,
+        returningRate: 77.8,
+        repeatCustomerCount: 22,
+        newCustomerRate: 22.2,
+        sameDayRepeatRate: 14,
+        orderCount: 115,
+        averageOrderPerCustomer: 1.28,
+        revenue: 91500000,
+        averageSpendPerCustomer: 1016667,
+        averageSpendPerOrder: 795652
     },
     {
-        productName: 'Weintek HMI MT8071iE',
-        warrantyCount: 42,
-        warrantyRate: 2.9,
-        averageTime: 3.6,
-        onTimeRate: 92.4,
-        status: 'increasing',
-        mainReason: 'No UI display',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-6.webp'],
-        serialNumber: 'SN-WTK-MT80-006'
+        date: '10/05/2025',
+        customerCount: 87,
+        newCustomerCount: 33,
+        returningCustomerCount: 54,
+        returningRate: 62.1,
+        repeatCustomerCount: 13,
+        newCustomerRate: 37.9,
+        sameDayRepeatRate: 9.2,
+        orderCount: 108,
+        averageOrderPerCustomer: 1.24,
+        revenue: 83000000,
+        averageSpendPerCustomer: 954023,
+        averageSpendPerOrder: 768519
     },
     {
-        productName: 'Delta Inverter VFD-L',
-        warrantyCount: 33,
-        warrantyRate: 4.0,
-        averageTime: 4.4,
-        onTimeRate: 89.0,
-        status: 'monitor',
-        mainReason: 'Overheating',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-7.webp'],
-        serialNumber: 'SN-DLT-VFDL-007'
+        date: '11/05/2025',
+        customerCount: 100,
+        newCustomerCount: 36,
+        returningCustomerCount: 64,
+        returningRate: 64,
+        repeatCustomerCount: 16,
+        newCustomerRate: 36,
+        sameDayRepeatRate: 10,
+        orderCount: 125,
+        averageOrderPerCustomer: 1.25,
+        revenue: 97000000,
+        averageSpendPerCustomer: 970000,
+        averageSpendPerOrder: 776000
     },
     {
-        productName: 'Autonics Encoder E50S8-1024',
-        warrantyCount: 26,
-        warrantyRate: 2.6,
-        averageTime: 2.8,
-        onTimeRate: 95.0,
-        status: 'decreasing',
-        mainReason: 'Signal loss',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-8.webp'],
-        serialNumber: 'SN-ATN-E50S-008'
+        date: '12/05/2025',
+        customerCount: 115,
+        newCustomerCount: 45,
+        returningCustomerCount: 70,
+        returningRate: 60.9,
+        repeatCustomerCount: 19,
+        newCustomerRate: 39.1,
+        sameDayRepeatRate: 9.6,
+        orderCount: 140,
+        averageOrderPerCustomer: 1.22,
+        revenue: 112000000,
+        averageSpendPerCustomer: 973913,
+        averageSpendPerOrder: 800000
     },
     {
-        productName: 'Keyence Laser Sensor LR-ZB250AP',
-        warrantyCount: 18,
-        warrantyRate: 1.9,
-        averageTime: 2.6,
-        onTimeRate: 98.1,
-        status: 'stable',
-        mainReason: 'Detection error',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-9.webp'],
-        serialNumber: 'SN-KYC-LRZB-009'
+        date: '13/05/2025',
+        customerCount: 109,
+        newCustomerCount: 38,
+        returningCustomerCount: 71,
+        returningRate: 65.1,
+        repeatCustomerCount: 17,
+        newCustomerRate: 34.9,
+        sameDayRepeatRate: 10.1,
+        orderCount: 135,
+        averageOrderPerCustomer: 1.24,
+        revenue: 105000000,
+        averageSpendPerCustomer: 963303,
+        averageSpendPerOrder: 777778
     },
     {
-        productName: 'Panasonic Servo Motor Minas A6',
-        warrantyCount: 50,
-        warrantyRate: 4.4,
-        averageTime: 4.7,
-        onTimeRate: 85.5,
-        status: 'alert',
-        mainReason: 'Vibration under load',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-10.webp'],
-        serialNumber: 'SN-PNS-MNA6-010'
+        date: '14/05/2025',
+        customerCount: 120,
+        newCustomerCount: 40,
+        returningCustomerCount: 80,
+        returningRate: 66.7,
+        repeatCustomerCount: 20,
+        newCustomerRate: 33.3,
+        sameDayRepeatRate: 10,
+        orderCount: 150,
+        averageOrderPerCustomer: 1.25,
+        revenue: 120000000,
+        averageSpendPerCustomer: 1000000,
+        averageSpendPerOrder: 800000
     }
 ]
 
@@ -152,14 +190,14 @@ function ReportTable() {
     const [rowsPerPage, setRowsPerPage] = useState('10')
     const [from, setFrom] = useState(1)
     const [to, setTo] = useState(10)
-    const [filter, setFilter] = useState<IWarrantyReportFilter>({
+    const [filter, setFilter] = useState<ICustomerReportFilter>({
         pageSize: 10,
         pageNumber: 1,
         fromDate: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
         toDate: dayjs().format('YYYY-MM-DD')
     })
 
-    const totalRecords = warrantyReports.length
+    const totalRecords = customerReportData.length
 
     const handleSort = (property: string) => {
         setFilter(prev => ({
@@ -176,14 +214,14 @@ function ReportTable() {
     }
 
     useEffect(() => {
-        if (/*!isFetching && */ warrantyReports) {
-            const from = (page - 1) * Number(rowsPerPage) + Math.min(1, warrantyReports?.length)
+        if (/*!isFetching && */ customerReportData) {
+            const from = (page - 1) * Number(rowsPerPage) + Math.min(1, customerReportData?.length)
             setFrom(from)
 
-            const to = Math.min(warrantyReports?.length + (page - 1) * Number(rowsPerPage), totalRecords)
+            const to = Math.min(customerReportData?.length + (page - 1) * Number(rowsPerPage), totalRecords)
             setTo(to)
         }
-    }, [, /*isFetching*/ warrantyReports, page, rowsPerPage])
+    }, [, /*isFetching*/ customerReportData, page, rowsPerPage])
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -228,7 +266,7 @@ function ReportTable() {
                     padding: '20px 24px'
                 }}
             >
-                {t('COMMON.WARRANTY_REPORT.WARRANTY_REPORT')}
+                {t('COMMON.CUSTOMER_REPORTS.CUSTOMER_REPORTS')}
             </Typography>
 
             <Divider
@@ -255,7 +293,7 @@ function ReportTable() {
                 >
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label={t('COMMON.ACTIVITY_LOG.TO_DATE')}
+                            label={t('COMMON.ACTIVITY_LOG.FROM_DATE')}
                             value={dayjs(filter.fromDate)}
                             onChange={value => {
                                 setFilter({
@@ -300,7 +338,7 @@ function ReportTable() {
 
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label={t('COMMON.ACTIVITY_LOG.FROM_DATE')}
+                            label={t('COMMON.ACTIVITY_LOG.TO_DATE')}
                             value={dayjs(filter.toDate)}
                             onChange={value => {
                                 setFilter({
@@ -342,316 +380,6 @@ function ReportTable() {
                             }}
                         />
                     </LocalizationProvider>
-
-                    <FormControl
-                        sx={{
-                            width: '170px',
-                            '& .MuiOutlinedInput-root:hover fieldset': {
-                                borderColor: 'var(--field-color-hover)'
-                            },
-                            '& .MuiOutlinedInput-root.Mui-error:hover fieldset': {
-                                borderColor: 'var(--error-color)' // Màu hover khi lỗi
-                            },
-                            '& .MuiOutlinedInput-root.Mui-error fieldset': {
-                                borderColor: 'var(--error-color)' // Màu viền khi lỗi
-                            },
-                            '& .MuiOutlinedInput-root.Mui-focused fieldset': {
-                                border: '2px solid var(--field-color-selected)' // Màu viền khi focus
-                            },
-                            '& .MuiInputLabel-root': {
-                                color: 'var(--label-title-color)' // Label mặc định
-                            },
-                            '&:hover .MuiInputLabel-root': {
-                                color: 'var(--field-color-selected)' // Thay đổi màu label khi hover vào input
-                            },
-                            '& .MuiInputLabel-root.Mui-focused': {
-                                fontWeight: 'bold',
-                                color: 'var(--field-color-selected)' // Label khi focus
-                            }
-                        }}
-                    >
-                        <InputLabel id='select-label'>{t('COMMON.REVENUE.ORDER_STATUS')}</InputLabel>
-                        <Select
-                            defaultValue='all'
-                            label={t('COMMON.REVENUE.ORDER_STATUS')}
-                            value={filter.type === undefined ? 'all' : filter.type}
-                            onChange={e =>
-                                setFilter({
-                                    ...filter,
-                                    type: e.target.value
-                                })
-                            }
-                            sx={{
-                                width: '100%',
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: 'var(--border-color)'
-                                },
-                                '& fieldset': {
-                                    borderRadius: '8px',
-                                    borderColor: 'var(--border-color)'
-                                },
-                                '& .MuiSelect-icon': {
-                                    color: 'var(--text-color)'
-                                },
-                                '& .MuiInputBase-input': {
-                                    color: 'var(--text-color)',
-                                    padding: '14px 14px'
-                                }
-                            }}
-                            MenuProps={{
-                                PaperProps: {
-                                    elevation: 0,
-                                    sx: {
-                                        mt: '4px',
-                                        borderRadius: '8px',
-                                        padding: '0 8px',
-                                        backgroundImage:
-                                            'url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI3BhaW50MF9yYWRpYWxfMjc0OV8xNDUxODYpIiBmaWxsLW9wYWNpdHk9IjAuMTIiLz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0icGFpbnQwX3JhZGlhbF8yNzQ5XzE0NTE4NiIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxMjAgMS44MTgxMmUtMDUpIHJvdGF0ZSgtNDUpIHNjYWxlKDEyMy4yNSkiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMDBCOEQ5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwQjhEOSIgc3RvcC1vcGFjaXR5PSIwIi8+CjwvcmFkaWFsR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==), url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI3BhaW50MF9yYWRpYWxfMjc0OV8xNDUxODcpIiBmaWxsLW9wYWNpdHk9IjAuMTIiLz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0icGFpbnQwX3JhZGlhbF8yNzQ5XzE0NTE4NyIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgwIDEyMCkgcm90YXRlKDEzNSkgc2NhbGUoMTIzLjI1KSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRjU2MzAiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRkY1NjMwIiBzdG9wLW9wYWNpdHk9IjAiLz4KPC9yYWRpYWxHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K)',
-                                        backgroundPosition: 'top right, bottom left',
-                                        backgroundSize: '50%, 50%',
-                                        backgroundRepeat: 'no-repeat',
-                                        backdropFilter: 'blur(20px)',
-                                        backgroundColor: 'var(--background-color-item)',
-                                        color: 'var(--text-color)',
-                                        border: '1px solid var(--border-color)',
-                                        '& .MuiMenuItem-root': {
-                                            '&:hover': {
-                                                backgroundColor: 'var(--background-color-item-hover)'
-                                            },
-                                            '&.Mui-selected': {
-                                                backgroundColor: 'var(--background-color-item-selected)',
-                                                '&:hover': {
-                                                    backgroundColor: 'var(--background-color-item-hover)'
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                anchorOrigin: {
-                                    vertical: 'bottom',
-                                    horizontal: 'right' // Căn chỉnh bên phải
-                                },
-                                transformOrigin: {
-                                    vertical: 'top',
-                                    horizontal: 'right' // Căn chỉnh bên phải
-                                }
-                            }}
-                        >
-                            <MenuItem
-                                value='all'
-                                sx={{
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.COUPON.ALL_CUSTOMER')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='repair'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.REPAIR')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='replace'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.REPLACE')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='maintenance'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.MAINTENANCE')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='upgrade'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.UPGRADE')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='other'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.OTHER')}
-                            </MenuItem>
-                        </Select>
-                    </FormControl>
-
-                    <FormControl
-                        sx={{
-                            width: '170px',
-                            '& .MuiOutlinedInput-root:hover fieldset': {
-                                borderColor: 'var(--field-color-hover)'
-                            },
-                            '& .MuiOutlinedInput-root.Mui-error:hover fieldset': {
-                                borderColor: 'var(--error-color)' // Màu hover khi lỗi
-                            },
-                            '& .MuiOutlinedInput-root.Mui-error fieldset': {
-                                borderColor: 'var(--error-color)' // Màu viền khi lỗi
-                            },
-                            '& .MuiOutlinedInput-root.Mui-focused fieldset': {
-                                border: '2px solid var(--field-color-selected)' // Màu viền khi focus
-                            },
-                            '& .MuiInputLabel-root': {
-                                color: 'var(--label-title-color)' // Label mặc định
-                            },
-                            '&:hover .MuiInputLabel-root': {
-                                color: 'var(--field-color-selected)' // Thay đổi màu label khi hover vào input
-                            },
-                            '& .MuiInputLabel-root.Mui-focused': {
-                                fontWeight: 'bold',
-                                color: 'var(--field-color-selected)' // Label khi focus
-                            }
-                        }}
-                    >
-                        <InputLabel id='select-label'>{t('COMMON.WARRANTY_REPORT.STATUS')}</InputLabel>
-                        <Select
-                            defaultValue='all'
-                            label={t('COMMON.WARRANTY_REPORT.STATUS')}
-                            value={filter.status === undefined ? 'all' : filter.status}
-                            onChange={e =>
-                                setFilter({
-                                    ...filter,
-                                    status: e.target.value
-                                })
-                            }
-                            sx={{
-                                width: '100%',
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                    borderColor: 'var(--border-color)'
-                                },
-                                '& fieldset': {
-                                    borderRadius: '8px',
-                                    borderColor: 'var(--border-color)'
-                                },
-                                '& .MuiSelect-icon': {
-                                    color: 'var(--text-color)'
-                                },
-                                '& .MuiInputBase-input': {
-                                    color: 'var(--text-color)',
-                                    padding: '14px 14px'
-                                }
-                            }}
-                            MenuProps={{
-                                PaperProps: {
-                                    elevation: 0,
-                                    sx: {
-                                        mt: '4px',
-                                        borderRadius: '8px',
-                                        padding: '0 8px',
-                                        backgroundImage:
-                                            'url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI3BhaW50MF9yYWRpYWxfMjc0OV8xNDUxODYpIiBmaWxsLW9wYWNpdHk9IjAuMTIiLz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0icGFpbnQwX3JhZGlhbF8yNzQ5XzE0NTE4NiIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxMjAgMS44MTgxMmUtMDUpIHJvdGF0ZSgtNDUpIHNjYWxlKDEyMy4yNSkiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMDBCOEQ5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwQjhEOSIgc3RvcC1vcGFjaXR5PSIwIi8+CjwvcmFkaWFsR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==), url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI3BhaW50MF9yYWRpYWxfMjc0OV8xNDUxODcpIiBmaWxsLW9wYWNpdHk9IjAuMTIiLz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0icGFpbnQwX3JhZGlhbF8yNzQ5XzE0NTE4NyIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgwIDEyMCkgcm90YXRlKDEzNSkgc2NhbGUoMTIzLjI1KSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRjU2MzAiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRkY1NjMwIiBzdG9wLW9wYWNpdHk9IjAiLz4KPC9yYWRpYWxHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K)',
-                                        backgroundPosition: 'top right, bottom left',
-                                        backgroundSize: '50%, 50%',
-                                        backgroundRepeat: 'no-repeat',
-                                        backdropFilter: 'blur(20px)',
-                                        backgroundColor: 'var(--background-color-item)',
-                                        color: 'var(--text-color)',
-                                        border: '1px solid var(--border-color)',
-                                        '& .MuiMenuItem-root': {
-                                            '&:hover': {
-                                                backgroundColor: 'var(--background-color-item-hover)'
-                                            },
-                                            '&.Mui-selected': {
-                                                backgroundColor: 'var(--background-color-item-selected)',
-                                                '&:hover': {
-                                                    backgroundColor: 'var(--background-color-item-hover)'
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                anchorOrigin: {
-                                    vertical: 'bottom',
-                                    horizontal: 'right' // Căn chỉnh bên phải
-                                },
-                                transformOrigin: {
-                                    vertical: 'top',
-                                    horizontal: 'right' // Căn chỉnh bên phải
-                                }
-                            }}
-                        >
-                            <MenuItem
-                                value='all'
-                                sx={{
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.COUPON.ALL_CUSTOMER')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='increasing'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.STATUS_INCREASING')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='decreasing'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.STATUS_DECREASING')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='stable'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.STATUS_STABLE')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='monitor'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.STATUS_MONITOR')}
-                            </MenuItem>
-
-                            <MenuItem
-                                value='alert'
-                                sx={{
-                                    mt: '3px',
-                                    borderRadius: '6px'
-                                }}
-                            >
-                                {t('COMMON.WARRANTY_REPORT.STATUS_ALERT')}
-                            </MenuItem>
-                        </Select>
-                    </FormControl>
                 </Box>
 
                 <Button
@@ -718,9 +446,9 @@ function ReportTable() {
                                 }}
                             >
                                 <TableSortLabel
-                                    active={'ProductName' === orderBy}
-                                    direction={orderBy === 'ProductName' ? order : 'asc'}
-                                    onClick={() => handleSort('ProductName')}
+                                    active={'Date' === orderBy}
+                                    direction={orderBy === 'Date' ? order : 'asc'}
+                                    onClick={() => handleSort('Date')}
                                     sx={{
                                         '& .MuiTableSortLabel-icon': {
                                             color: 'var(--text-color) !important'
@@ -737,7 +465,7 @@ function ReportTable() {
                                             whiteSpace: 'nowrap'
                                         }}
                                     >
-                                        {t('COMMON.WARRANTY_REPORT.PRODUCT_NAME')}
+                                        {t('COMMON.REVENUE.DATE')}
                                     </Typography>
                                 </TableSortLabel>
                             </TableCell>
@@ -749,9 +477,9 @@ function ReportTable() {
                                 }}
                             >
                                 <TableSortLabel
-                                    active={'WarrantyCount' === orderBy}
-                                    direction={orderBy === 'WarrantyCount' ? order : 'asc'}
-                                    onClick={() => handleSort('WarrantyCount')}
+                                    active={'CustomerCount' === orderBy}
+                                    direction={orderBy === 'CustomerCount' ? order : 'asc'}
+                                    onClick={() => handleSort('CustomerCount')}
                                     sx={{
                                         '& .MuiTableSortLabel-icon': {
                                             color: 'var(--text-color) !important'
@@ -768,7 +496,38 @@ function ReportTable() {
                                             whiteSpace: 'nowrap'
                                         }}
                                     >
-                                        {t('COMMON.WARRANTY_REPORT.WARRANTY_COUNT')}
+                                        {t('COMMON.CUSTOMER_REPORTS.TOTAL_CUSTOMERS')}
+                                    </Typography>
+                                </TableSortLabel>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
+                                    active={'NewCustomerCount' === orderBy}
+                                    direction={orderBy === 'NewCustomerCount' ? order : 'asc'}
+                                    onClick={() => handleSort('NewCustomerCount')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.CUSTOMER_REPORTS.NEW_CUSTOMER_COUNT')}
                                     </Typography>
                                 </TableSortLabel>
                             </TableCell>
@@ -789,7 +548,58 @@ function ReportTable() {
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    {t('COMMON.WARRANTY_REPORT.WARRANTY_RATE')}
+                                    {t('COMMON.CUSTOMER_REPORTS.RETURNING_CUSTOMER_COUNT')}
+                                </Typography>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
+                                    active={'ReturningRate' === orderBy}
+                                    direction={orderBy === 'ReturningRate' ? order : 'asc'}
+                                    onClick={() => handleSort('ReturningRate')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.CUSTOMER_REPORTS.RETURNING_RATE')}
+                                    </Typography>
+                                </TableSortLabel>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        color: 'var(--text-color)',
+                                        fontSize: '15px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {t('COMMON.CUSTOMER_REPORTS.REPEAT_CUSTOMER_COUNT')}
                                 </Typography>
                             </TableCell>
 
@@ -809,7 +619,7 @@ function ReportTable() {
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    {t('COMMON.WARRANTY_REPORT.AVERAGE_TIME')}
+                                    {t('COMMON.CUSTOMER_REPORTS.NEW_CUSTOMER_RATE')}
                                 </Typography>
                             </TableCell>
 
@@ -829,8 +639,39 @@ function ReportTable() {
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    {t('COMMON.WARRANTY_REPORT.MAIN_REASON')}
+                                    {t('COMMON.CUSTOMER_REPORTS.SAME_DAY_REPEAT_RATE')}
                                 </Typography>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
+                                    active={'OrderCount' === orderBy}
+                                    direction={orderBy === 'OrderCount' ? order : 'asc'}
+                                    onClick={() => handleSort('OrderCount')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.CUSTOMER_REPORTS.ORDER_COUNT')}
+                                    </Typography>
+                                </TableSortLabel>
                             </TableCell>
 
                             <TableCell
@@ -849,8 +690,70 @@ function ReportTable() {
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    {t('COMMON.WARRANTY_REPORT.ON_TIME_RATE')}
+                                    {t('COMMON.CUSTOMER_REPORTS.AVERAGE_ORDER_PER_CUSTOMER')}
                                 </Typography>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
+                                    active={'Revenue' === orderBy}
+                                    direction={orderBy === 'Revenue' ? order : 'asc'}
+                                    onClick={() => handleSort('Revenue')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.CUSTOMER_REPORTS.REVENUE')}
+                                    </Typography>
+                                </TableSortLabel>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <TableSortLabel
+                                    active={'AverageSpendPerCustomer' === orderBy}
+                                    direction={orderBy === 'AverageSpendPerCustomer' ? order : 'asc'}
+                                    onClick={() => handleSort('AverageSpendPerCustomer')}
+                                    sx={{
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.CUSTOMER_REPORTS.AVERAGE_SPEND_PER_CUSTOMER')}
+                                    </Typography>
+                                </TableSortLabel>
                             </TableCell>
 
                             <TableCell
@@ -869,15 +772,15 @@ function ReportTable() {
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    {t('COMMON.WARRANTY_REPORT.STATUS')}
+                                    {t('COMMON.CUSTOMER_REPORTS.AVERAGE_SPEND_PER_ORDER')}
                                 </Typography>
                             </TableCell>
                         </TableRow>
                     </TableHead>
 
                     <TableBody>
-                        {warrantyReports &&
-                            warrantyReports.map((row: IWarrantyReports, index: number) => (
+                        {customerReportData &&
+                            customerReportData.map((row: ICustomerReports, index: number) => (
                                 <TableRow
                                     key={index}
                                     sx={{
@@ -896,62 +799,21 @@ function ReportTable() {
                                         sx={{
                                             borderColor: 'var(--border-color)',
                                             borderStyle: 'dashed',
-                                            padding: '14px 24px'
+                                            pl: '24px'
                                         }}
                                     >
-                                        <Box
+                                        <Typography
                                             sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '16px'
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                fontWeight: 'bold',
+                                                color: 'var(--primary-color)'
                                             }}
                                         >
-                                            <Avatar
-                                                src={row.images[0]}
-                                                sx={{
-                                                    width: '42px',
-                                                    height: '42px',
-                                                    borderRadius: '8px'
-                                                }}
-                                            />
-                                            <Box
-                                                display='flex'
-                                                alignItems='left'
-                                                sx={{
-                                                    gap: '2px',
-                                                    flexDirection: 'column'
-                                                }}
-                                            >
-                                                <Typography
-                                                    sx={{
-                                                        fontSize: '15px',
-                                                        maxWidth: '280px',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        whiteSpace: 'nowrap',
-                                                        fontWeight: 'bold',
-                                                        color: 'var(--primary-color)'
-                                                    }}
-                                                >
-                                                    {row.productName}
-                                                </Typography>
-
-                                                <Typography
-                                                    sx={{
-                                                        color: 'var(--label-title-color)',
-                                                        fontSize: '13px',
-                                                        maxWidth: '280px',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        whiteSpace: 'nowrap'
-                                                    }}
-                                                >
-                                                    {t('COMMON.PRODUCT.SERIAL_NUMBER')}
-                                                    {': '}
-                                                    {row.serialNumber}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
+                                            {row.date}
+                                        </Typography>
                                     </TableCell>
 
                                     <TableCell
@@ -964,15 +826,15 @@ function ReportTable() {
                                             sx={{
                                                 fontSize: '15px',
                                                 overflow: 'hidden',
-                                                ml: '-25px',
                                                 fontWeight: 'bold',
                                                 textAlign: 'center',
+                                                ml: '-25px',
                                                 textOverflow: 'ellipsis',
                                                 whiteSpace: 'nowrap',
-                                                color: 'var(--report-text-color)'
+                                                color: '#00B85E'
                                             }}
                                         >
-                                            {row.warrantyCount}
+                                            {row.customerCount}
                                         </Typography>
                                     </TableCell>
 
@@ -994,50 +856,7 @@ function ReportTable() {
                                                 color: 'var(--report-text-color)'
                                             }}
                                         >
-                                            {row.warrantyRate}%
-                                        </Typography>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sx={{
-                                            borderColor: 'var(--border-color)',
-                                            borderStyle: 'dashed'
-                                        }}
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontSize: '15px',
-                                                overflow: 'hidden',
-                                                textAlign: 'center',
-                                                textTransform: 'lowercase',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                color: 'var(--text-color)'
-                                            }}
-                                        >
-                                            {formatWorkingTime(row.averageTime, t)}
-                                        </Typography>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sx={{
-                                            borderColor: 'var(--border-color)',
-                                            borderStyle: 'dashed'
-                                        }}
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontSize: '15px',
-                                                maxWidth: '300px',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: 3,
-                                                WebkitBoxOrient: 'vertical',
-                                                color: 'var(--text-color)'
-                                            }}
-                                        >
-                                            {row.mainReason}
+                                            {row.newCustomerCount}
                                         </Typography>
                                     </TableCell>
 
@@ -1057,7 +876,153 @@ function ReportTable() {
                                                 color: 'var(--text-color)'
                                             }}
                                         >
-                                            {row.onTimeRate}%
+                                            {row.returningCustomerCount}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                ml: '-25px',
+                                                fontWeight: 'bold',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--report-text-color)'
+                                            }}
+                                        >
+                                            {row.returningRate}%
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {row.repeatCustomerCount}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {row.newCustomerRate}%
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {row.sameDayRepeatRate}%
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                ml: '-25px',
+                                                fontWeight: 'bold',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--report-text-color)'
+                                            }}
+                                        >
+                                            {row.orderCount}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                textAlign: 'center',
+                                                ml: '-25px',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {row.averageOrderPerCustomer}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed',
+                                            pr: '24px'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                fontWeight: 'bold',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: '#00B85E'
+                                            }}
+                                        >
+                                            {formatCurrency(row.revenue)}
                                         </Typography>
                                     </TableCell>
 
@@ -1077,13 +1042,26 @@ function ReportTable() {
                                                 color: 'var(--report-text-color)'
                                             }}
                                         >
-                                            {row.status === 'stable' && t('COMMON.WARRANTY_REPORT.STATUS_STABLE')}
-                                            {row.status === 'decreasing' &&
-                                                t('COMMON.WARRANTY_REPORT.STATUS_DECREASING')}
-                                            {row.status === 'increasing' &&
-                                                t('COMMON.WARRANTY_REPORT.STATUS_INCREASING')}
-                                            {row.status === 'alert' && t('COMMON.WARRANTY_REPORT.STATUS_ALERT')}
-                                            {row.status === 'monitor' && t('COMMON.WARRANTY_REPORT.STATUS_MONITOR')}
+                                            {formatCurrency(row.averageSpendPerCustomer)}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {formatCurrency(row.averageSpendPerOrder)}
                                         </Typography>
                                     </TableCell>
                                 </TableRow>

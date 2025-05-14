@@ -102,7 +102,7 @@ export default function HomePage() {
             >
                 <Box
                     sx={{
-                        width: 'calc(100% / 2)',
+                        width: 'calc(100% / 2 - 12px)',
                         boxShadow: 'var(--box-shadow-paper)',
                         borderRadius: '15px',
                         backgroundColor: 'var(--background-color-item)',
@@ -114,7 +114,7 @@ export default function HomePage() {
 
                 <Box
                     sx={{
-                        width: 'calc(100% / 2)',
+                        width: 'calc(100% / 2 - 12px)',
                         boxShadow: 'var(--box-shadow-paper)',
                         borderRadius: '15px',
                         backgroundColor: 'var(--background-color-item)',

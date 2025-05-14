@@ -85,7 +85,7 @@ export default function Page() {
     return (
         <Box
             sx={{
-                maxWidth: '1150px',
+                maxWidth: '1200px',
                 margin: '0 auto',
                 backgroundColor: 'var(--background-color-component)',
                 borderRadius: '0 0 15px 15px',

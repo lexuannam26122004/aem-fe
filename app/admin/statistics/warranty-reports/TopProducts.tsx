@@ -1,7 +1,7 @@
 'use client'
 
 import { Avatar, Box, Tooltip, Typography } from '@mui/material'
-import { Barcode, Flame, ScanBarcode, ShieldCheck, ShieldPlus, ShoppingBag, StarIcon } from 'lucide-react'
+import { BadgePercent, Barcode, Flame, ScanBarcode, ShieldCheck, ShieldPlus, ShoppingBag, StarIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { keyframes } from '@emotion/react'
 import { IWarrantyTopProducts } from '@/models/WarrantyReports'
@@ -200,6 +200,7 @@ export function TopProducts() {
         <Box
             sx={{
                 padding: '24px',
+                height: '100%',
                 borderRadius: '15px',
                 boxShadow: 'var(--box-shadow-paper)',
                 backgroundColor: 'var(--background-color-item)'
@@ -242,7 +243,7 @@ export function TopProducts() {
                             <Typography
                                 sx={{
                                     fontSize: '15px',
-                                    maxWidth: '280px',
+                                    maxWidth: '260px',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
@@ -343,26 +344,6 @@ export function TopProducts() {
                                     gap: '5px'
                                 }}
                             >
-                                <StarIcon size={16} color='#ffb81e' fill='#ffb81e' />
-
-                                <Typography
-                                    sx={{
-                                        mt: '2px',
-                                        fontSize: '13px',
-                                        color: 'var(--text-color)'
-                                    }}
-                                >
-                                    {item.rating}
-                                </Typography>
-                            </Box>
-
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '5px'
-                                }}
-                            >
                                 <Tooltip title={t('COMMON.WARRANTY_REPORT.WARRANTY_COUNT')}>
                                     <ShieldPlus size={16} color='#29b741' />
                                 </Tooltip>
@@ -376,6 +357,29 @@ export function TopProducts() {
                                     }}
                                 >
                                     {item.warrantyCount} {t('COMMON.WARRANTY_REPORT.COUNT')}
+                                </Typography>
+                            </Box>
+
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '5px'
+                                }}
+                            >
+                                <Tooltip title={t('COMMON.WARRANTY_REPORT.REPEAT_WARRANTY_RATE')}>
+                                    <BadgePercent size={16} color='#ffb81e' />
+                                </Tooltip>
+
+                                <Typography
+                                    sx={{
+                                        mt: '2px',
+                                        fontSize: '13px',
+                                        textTransform: 'lowercase',
+                                        color: 'var(--text-color)'
+                                    }}
+                                >
+                                    {item.warrantyRate}%
                                 </Typography>
                             </Box>
                         </Box>
