@@ -10,12 +10,10 @@ import {
     XCircleIcon,
     MailIcon,
     PhoneIcon,
-    BadgeCheckIcon,
     TrendingUpIcon,
     ShoppingBagIcon,
     HeartIcon,
     StarIcon,
-    ArrowRightIcon,
     GiftIcon,
     BellIcon,
     PackageIcon,
@@ -50,8 +48,7 @@ import { useTheme } from 'next-themes'
 import TrendByCategories from '../TrendByCategories'
 import Chart from '../AverageByMonth'
 import OrderStatusChart from '../OrderStatus'
-import { ICustomer } from '@/models/Customer'
-import TextareaAutosize from 'react-textarea-autosize'
+import GetStyleCustomer from '@/components/GetStyleCustomer'
 
 const customerNotes = [
     {
@@ -76,25 +73,6 @@ const customerOrders = [
     { id: 'ORD-2025024', date: '12/02/2025', total: 850000, status: 'cancelled', items: 2 },
     { id: 'ORD-2025018', date: '28/01/2025', total: 1750000, status: 'progressing', items: 4 },
     { id: 'ORD-2024156', date: '14/12/2024', total: 650000, status: 'done', items: 1 }
-]
-
-// Monthly spend data for line chart
-const monthlySpendData = [
-    { name: 'T9/24', amount: 750000 },
-    { name: 'T10/24', amount: 1200000 },
-    { name: 'T11/24', amount: 850000 },
-    { name: 'T12/24', amount: 650000 },
-    { name: 'T1/25', amount: 1750000 },
-    { name: 'T2/25', amount: 850000 },
-    { name: 'T3/25', amount: 1250000 }
-]
-
-// Product category data for pie chart
-const categoryData = [
-    { name: 'Điện thoại', value: 7500000, color: '#3b82f6' },
-    { name: 'Phụ kiện', value: 2150000, color: '#10b981' },
-    { name: 'Máy tính bảng', value: 2200000, color: '#8b5cf6' },
-    { name: 'Tai nghe', value: 650000, color: '#f59e0b' }
 ]
 
 // Recent activity data
@@ -181,73 +159,6 @@ export default function Page() {
     const [activeTab, setActiveTab] = useState('info')
     const { t } = useTranslation('common')
     const { theme } = useTheme()
-
-    // Render rank badge based on customer rank
-    const getRankBadge = () => {
-        switch (customer.rank) {
-            case 'gold':
-                return (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            padding: '5px 14px',
-                            color: 'white',
-                            fontSize: '13px',
-                            borderRadius: '9999px',
-                            fontWeight: 'bold',
-                            backgroundColor: '#ffcb2e'
-                        }}
-                    >
-                        <StarIcon className='w-4 h-4 mr-1' />
-                        {t('COMMON.CUSTOMER.GOLD_CUSTOMER')}
-                    </Box>
-                )
-            case 'silver':
-                return (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            padding: '5px 14px',
-                            color: '#2d2d2d',
-                            fontSize: '13px',
-                            borderRadius: '9999px',
-                            fontWeight: 'bold',
-                            backgroundColor: '#e9e9e9'
-                        }}
-                    >
-                        <StarIcon className='w-4 h-4 mr-1' />
-                        {t('COMMON.CUSTOMER.SILVER_CUSTOMER')}
-                    </Box>
-                )
-            default:
-                return (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            padding: '5px 14px',
-                            color: 'white',
-                            fontSize: '13px',
-                            borderRadius: '9999px',
-                            fontWeight: 'bold',
-                            backgroundColor: '#4ade80'
-                        }}
-                    >
-                        {' '}
-                        <BadgeCheckIcon className='w-4 h-4 mr-1' />
-                        {t('COMMON.CUSTOMER.NEW_CUSTOMER')}
-                    </Box>
-                )
-        }
-    }
-
-    const currentMonth = new Date().getMonth() + 1
-    const currentYear = new Date().getFullYear()
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
 
@@ -479,7 +390,7 @@ export default function Page() {
                                     {customer.fullName}
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1 }}>
-                                    {getRankBadge()}
+                                    {<GetStyleCustomer customerRank={customer.rank} />}
                                     {customer.isActive ? (
                                         <Chip
                                             icon={

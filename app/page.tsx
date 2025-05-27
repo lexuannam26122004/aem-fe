@@ -14,8 +14,7 @@ import {
     Phone,
     MapPin,
     ArrowRight,
-    Star,
-    Quote
+    Star
 } from 'lucide-react'
 
 import FacebookIcon from '@mui/icons-material/Facebook'
@@ -216,7 +215,7 @@ const HeroSection = () => {
                                 {slide.title}
                             </h1>
                             <p className='text-xl md:text-2xl text-white mb-8 animate-fadeUp'>{slide.subtitle}</p>
-                            <button className='bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-md font-medium transition-all duration-300 transform hover:scale-105 animate-fadeIn'>
+                            <button className='bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 animate-fadeIn'>
                                 {slide.cta}
                             </button>
                         </div>

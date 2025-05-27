@@ -115,7 +115,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                 // await changeStatusSupplierMutation(selectedDeleteId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
-            } catch (error) {
+            } catch {
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_FAIL'), 'error')
             }
         }
@@ -538,7 +538,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                 padding: '7px 15px',
                                                 border: getBorderColor(row.isActive),
                                                 display: 'flex',
-                                                maxWidth: '200px',
+                                                maxWidth: '170px',
                                                 alignItems: 'center',
                                                 gap: '10px',
                                                 justifyContent: 'left',

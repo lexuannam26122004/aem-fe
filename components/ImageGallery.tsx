@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Thumbs, FreeMode } from 'swiper/modules'
 import Lightbox from 'yet-another-react-lightbox'
@@ -18,9 +18,9 @@ import 'yet-another-react-lightbox/plugins/counter.css'
 import './ImageGallery.css'
 
 interface ImageType {
-    id: number
-    src: string
-    alt: string
+    id?: number
+    url: string
+    alt?: string
 }
 
 interface ImageGalleryProps {
@@ -52,8 +52,8 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
                     onSlideChange={handleMainSlideChange}
                     className='main-swiper'
                 >
-                    {images.map(image => (
-                        <SwiperSlide key={image.id}>
+                    {images.map((image, index) => (
+                        <SwiperSlide key={index}>
                             <div
                                 className='image-container'
                                 onClick={e => {
@@ -75,7 +75,7 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
                                     openLightbox() // Chỉ mở nếu không click vào nút Swiper
                                 }}
                             >
-                                <img src={image.src} alt={image.alt} />
+                                <img src={image.url} alt={image.alt} />
                             </div>
                         </SwiperSlide>
                     ))}
@@ -99,7 +99,7 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
                     {images.map((image, index) => (
                         <SwiperSlide key={image.id} className='thumbnail-slide'>
                             <div className={`thumbnail-container ${index === activeIndex ? 'active' : ''}`}>
-                                <img src={image.src} alt={`Thumbnail ${image.alt}`} />
+                                <img src={image.url} alt={`Thumbnail ${image.alt}`} />
                                 {/* {index === images.length - 1 && images.length > 8 && (
                                     <div className='more-images'>+{images.length - 8}</div>
                                 )} */}
@@ -112,7 +112,7 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
             <Lightbox
                 open={lightboxOpen}
                 close={() => setLightboxOpen(false)}
-                slides={images.map(img => ({ src: img.src, alt: img.alt }))}
+                slides={images.map(img => ({ src: img.url, alt: img.alt }))}
                 index={activeIndex}
                 plugins={[Zoom, Thumbnails, Counter]}
                 counter={{ container: { style: { top: '30px', right: '30px' } } }}

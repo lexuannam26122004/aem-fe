@@ -1,6 +1,5 @@
 import { MenuItem, Popper, Grow, MenuList, Paper, ClickAwayListener } from '@mui/material'
 import { Box } from '@mui/material'
-import LanguageIcon from '@mui/icons-material/Language'
 import { useTranslation } from 'react-i18next'
 import { useEffect, useRef, useState } from 'react'
 import { useLanguage } from '@/providers/LanguageProvider'

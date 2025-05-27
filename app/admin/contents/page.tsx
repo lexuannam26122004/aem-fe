@@ -15,13 +15,8 @@ import {
     SaveIcon
 } from 'lucide-react'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { Box, Button, Grid2 as Grid, Paper, TextField, Typography } from '@mui/material'
+import { Box, Button, Paper, TextField, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { formatCurrency } from '@/common/format'
-import ReactECharts from 'echarts-for-react'
-import { useTheme } from 'next-themes'
-import { ICustomer } from '@/models/Customer'
-import TextareaAutosize from 'react-textarea-autosize'
 import { FiFacebook, FiGlobe, FiInstagram, FiKey, FiRefreshCw, FiTruck } from 'react-icons/fi'
 
 // Định nghĩa kiểu dữ liệu

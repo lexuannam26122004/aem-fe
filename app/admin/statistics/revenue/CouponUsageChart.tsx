@@ -4,7 +4,6 @@ import ReactECharts from 'echarts-for-react'
 import { Box, Divider, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
-import Loading from '@/components/Loading'
 //import { useGetEmployeeAttendanceQuery } from '@/services/AspNetUserService' // API mới để lấy dữ liệu tham gia
 
 const responseData = {
@@ -19,7 +18,6 @@ const responseData = {
 const Chart = () => {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
-    const currentDate = new Date()
 
     // const { data: dataResponse, isLoading } = useGetTodayAttendanceSummaryQuery(currentDate.toISOString().split('T')[0])
 

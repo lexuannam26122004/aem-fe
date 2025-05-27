@@ -23,7 +23,6 @@ export default function AlertDialog({
     title,
     isLoading,
     content,
-    type,
     buttonCancel,
     buttonConfirm,
     open,

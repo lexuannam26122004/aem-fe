@@ -12,11 +12,11 @@ import {
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronDown, CalendarClock, ChevronUp, User, BriefcaseBusiness, ScanBarcode } from 'lucide-react'
+import { ChevronDown, CalendarClock, ChevronUp } from 'lucide-react'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import { PencilLine } from 'lucide-react'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { keyframes } from '@emotion/react'
 // import { useGetAuthMeQuery } from '@/services/AuthService'
 
@@ -92,21 +92,6 @@ const AvatarMenu = () => {
     const handleCreateNotification = () => {
         setOpen(false)
         router.push('/admin/notification/create')
-    }
-
-    const handleCreateTasks = () => {
-        setOpen(false)
-        router.push('/admin/tasks/create')
-    }
-
-    const handlePersonal = () => {
-        setOpen(false)
-        router.push('/user')
-    }
-
-    const handleAdmin = () => {
-        setOpen(false)
-        router.push('/admin')
     }
 
     const handleChangePassword = () => {

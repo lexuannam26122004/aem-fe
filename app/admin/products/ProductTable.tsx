@@ -13,15 +13,14 @@ import {
     TableSortLabel,
     Avatar
 } from '@mui/material'
-import { Badge } from '@/components/ui/badge'
 import { Edit, EyeIcon, StarIcon, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
 import AlertDialog from '@/components/AlertDialog'
 import { useDeleteProductMutation } from '@/services/ProductService'
 import { useToast } from '@/hooks/useToast'
-import { IProduct, IProductCreate, IProductFilter } from '@/models/Product'
+import { IProduct, IProductFilter } from '@/models/Product'
 import ProductDetailDialog from './DialogDetail'
 
 function getStatusBgColor(row: IProduct): string {
@@ -72,11 +71,13 @@ function DataTable({ data, setFilter, refetch }: IProps) {
     const [orderBy, setOrderBy] = useState<string>('')
     const [openDialog, setOpenDialog] = useState(false)
     const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null)
-    const [selectedChangeId, setSelectedChangeId] = useState<number | null>(null)
+    const [selectedChangeId] = useState<number | null>(null)
     const [typeAlert, setTypeAlert] = useState<number | null>(null)
     const [product, setProduct] = useState<IProduct | null>(null)
 
     const [changeStatusProduct, { isLoading: isLoadingDelete }] = useDeleteProductMutation()
+
+    useEffect(() => {}, [selectedChangeId, changeStatusProduct])
 
     const handleButtonUpdateClick = (id: number) => {
         router.push(`/admin/suppliers/update?id=${id}`)
@@ -102,23 +103,13 @@ function DataTable({ data, setFilter, refetch }: IProps) {
         setOpenDialog(true)
     }
 
-    const handlePartnerClick = (id: number) => {
-        setTypeAlert(1)
-        setSelectedChangeId(id)
-        setOpenDialog(true)
-    }
-
-    const handleClickDetail = (row: IProduct) => {
-        setProduct(row)
-    }
-
     const handleDeleteSupplier = async () => {
         if (selectedDeleteId) {
             try {
                 // await changeS(selectedDeleteId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
-            } catch (error) {
+            } catch {
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_FAIL'), 'error')
             }
         }

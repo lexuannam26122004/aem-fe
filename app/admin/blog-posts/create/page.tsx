@@ -8,12 +8,11 @@ import { useToast } from '@/hooks/useToast'
 import ClearIcon from '@mui/icons-material/Clear'
 import { styled } from '@mui/material/styles'
 import { SwitchProps } from '@mui/material/Switch'
-import { SaveIcon, Trash2, XIcon } from 'lucide-react'
+import { SaveIcon, XIcon } from 'lucide-react'
 import dayjs from 'dayjs'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
-import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers'
 import { convertToVietnamTime } from '@/common/format'
 import { CircleAlert } from 'lucide-react'
 import LoadingButton from '@mui/lab/LoadingButton'
@@ -87,17 +86,15 @@ export default function CreatePage() {
     const [content, setContent] = useState('<p>Nội dung ban đầu của editor</p>')
     const [postTitle, setPostTitle] = useState('')
     const [featuredImage, setFeaturedImage] = useState('')
-    const [viewCount, setViewCount] = useState(0)
-    const [slug, setSlug] = useState('')
-    const [savedContent, setSavedContent] = useState('')
     const [description, setDescription] = useState('')
     const [isSubmit, setIsSubmit] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading] = useState(false)
     const [isPublished, setIsPublished] = useState(true)
     const [publishDate, setPublishDate] = useState(new Date().toDateString())
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [fileImage, setFileImage] = useState<File | null>(null)
     const [isHovered, setIsHovered] = useState(false)
+    useEffect(() => {}, [fileImage])
 
     const toast = useToast()
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { Avatar, Box, Tooltip, Typography } from '@mui/material'
-import { BadgePercent, Barcode, Flame, ScanBarcode, ShieldCheck, ShieldPlus, ShoppingBag, StarIcon } from 'lucide-react'
+import { BadgePercent, Flame, ScanBarcode, ShieldPlus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { keyframes } from '@emotion/react'
 import { IWarrantyTopProducts } from '@/models/WarrantyReports'

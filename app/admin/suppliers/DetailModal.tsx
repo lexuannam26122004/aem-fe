@@ -18,27 +18,13 @@ import {
     Tabs,
     Chip
 } from '@mui/material'
-import {
-    CalendarIcon,
-    ChartBarIcon,
-    CheckCircleIcon,
-    FileUser,
-    Link,
-    MailIcon,
-    ShoppingCartIcon,
-    Trash2,
-    TrendingUpIcon,
-    UserCircleIcon,
-    XCircleIcon
-} from 'lucide-react'
+import { CheckCircleIcon, FileUser, Link, MailIcon, TrendingUpIcon, XCircleIcon } from 'lucide-react'
 import { ISupplier } from '@/models/Supplier'
 import { useTranslation } from 'react-i18next'
 import CallRoundedIcon from '@mui/icons-material/CallRounded'
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded'
 import BusinessIcon from '@mui/icons-material/Business'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { formatDate } from '@/common/format'
 
 interface Props {
     open: boolean
@@ -47,15 +33,10 @@ interface Props {
     supplier: ISupplier
 }
 
-function DetailModal({ open, handleToggle, supplier, handleDelete }: Props) {
+function DetailModal({ open, handleToggle, supplier }: Props) {
     const { t } = useTranslation('common')
-    const router = useRouter()
     const [tooltip, setTooltip] = useState(t('COMMON.SUPPLIERS.COPY_LINK'))
     const [tab, setTab] = useState('info')
-
-    const handleButtonUpdateClick = (id: number) => {
-        router.push(`/admin/suppliers/update?id=${id}`)
-    }
 
     const copyToClipboard = () => {
         const textToCopy = supplier.url?.toString()

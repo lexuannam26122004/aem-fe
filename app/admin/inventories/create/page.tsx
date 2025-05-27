@@ -1,16 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NumericFormat } from 'react-number-format'
-import dynamic from 'next/dynamic'
 import {
     Avatar,
     Box,
     Paper,
     TextField,
     Typography,
-    FormControlLabel,
-    Switch,
     Button,
     TableContainer,
     TableHead,
@@ -18,14 +15,12 @@ import {
     TableCell,
     TableBody,
     Table,
-    Tooltip,
-    InputAdornment
+    Tooltip
 } from '@mui/material'
 import { AsyncPaginate } from 'react-select-async-paginate'
 
 import { useTranslation } from 'react-i18next'
-import { useToast } from '@/hooks/useToast'
-import { SaveIcon, SearchIcon, Trash2, XIcon } from 'lucide-react'
+import { SaveIcon, Trash2, XIcon } from 'lucide-react'
 import dayjs from 'dayjs'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
@@ -34,7 +29,6 @@ import { convertToVietnamTime } from '@/common/format'
 import LoadingButton from '@mui/lab/LoadingButton'
 import { useRouter } from 'next/navigation'
 import { IInventoryItemList } from '@/models/Inventory'
-import CustomMenuList from './CustomMenuList'
 import NoteInput from './NoteInput'
 
 const customSelectStyles = {
@@ -159,14 +153,13 @@ export default function CreatePage() {
     const router = useRouter()
     const [isSubmit, setIsSubmit] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
-    const [keyword, setKeyword] = useState('')
     const [publishDate, setPublishDate] = useState(new Date().toDateString())
     const [notes, setNotes] = useState('')
     const [products, setProducts] = useState<IInventoryItemList[]>([])
 
     const [inputValue, setInputValue] = useState('')
-    const [page, setPage] = useState(1)
-    const [hasMore, setHasMore] = useState(true)
+
+    useEffect(() => {}, [inputValue, setIsLoading])
 
     const [localNotes, setLocalNotes] = useState<{ [id: number]: string | undefined }>({})
 

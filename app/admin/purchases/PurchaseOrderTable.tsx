@@ -13,11 +13,10 @@ import {
     TableSortLabel,
     Avatar
 } from '@mui/material'
-import { BadgeCheckIcon, CheckCircleIcon, Edit, EyeIcon, StarIcon, Trash2, XCircleIcon } from 'lucide-react'
-import { useState } from 'react'
+import { Edit, EyeIcon, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
-import AlertDialog from '@/components/AlertDialog'
 import { useToast } from '@/hooks/useToast'
 import { IPurchaseOrder, IPurchaseOrderFilter } from '@/models/PurchaseOrder'
 import { formatCurrency } from '@/common/format'
@@ -115,7 +114,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                 // await changeStatusSupplierMutation(selectedDeleteId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
-            } catch (error) {
+            } catch {
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_FAIL'), 'error')
             }
         }
@@ -123,6 +122,8 @@ function DataTable({ data, setFilter, refetch }: IProps) {
         setSelectedDeleteId(null)
         setTypeAlert(null)
     }
+
+    useEffect(() => {}, [openDialog, typeAlert, handleDeleteSupplier])
 
     return (
         <>
@@ -459,12 +460,13 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                             sx={{
                                                 borderRadius: '9999px',
                                                 padding: '7px 15px',
-                                                border: getBorderColor(row.paymentStatus),
                                                 display: 'flex',
                                                 margin: '0 auto',
+                                                maxWidth: '140px',
                                                 alignItems: 'center',
                                                 gap: '10px',
                                                 justifyContent: 'center',
+                                                border: getBorderColor(row.paymentStatus),
                                                 backgroundColor: getStatusBgColor(row.paymentStatus)
                                             }}
                                         >

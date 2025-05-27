@@ -1,7 +1,6 @@
-import { MenuItem, FormControl, Select, Box, Paper, Typography, SelectChangeEvent } from '@mui/material'
+import { Paper, Typography } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const responseData = {
@@ -34,7 +33,7 @@ const responseData = {
 export default function FinancialOverviewChart() {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
-    const currentYear = new Date().getFullYear()
+    // const currentYear = new Date().getFullYear()
 
     // const { data: responseData } = useStatsChartQuery(selectedYear)
 

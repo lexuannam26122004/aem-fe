@@ -21,8 +21,6 @@ const getLastWeekDays = (daysOfWeek: string[]) => {
     return weekDays
 }
 
-const colors = ['#00a76f', '#3675ff', '#ff5630', '#f83696', '#ffab00', '#b863f0']
-
 const responseData = {
     data: {
         statsByDay: [
@@ -58,7 +56,7 @@ const dataSet = {
 export default function DisplayInfo() {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
-    const currentDate = new Date()
+
     const daysOfWeek = [
         t('COMMON.WEEK.SUNDAY'),
         t('COMMON.WEEK.MONDAY'),

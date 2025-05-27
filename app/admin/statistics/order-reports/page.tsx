@@ -33,10 +33,7 @@ export default function WarrantyReportsPage() {
             >
                 <Box
                     sx={{
-                        width: 'calc(100% / 3 * 2 + 24px)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '24px'
+                        width: 'calc(100% / 3 * 2 + 24px)'
                     }}
                 >
                     <OrderStatusChart />

@@ -13,11 +13,9 @@ import {
     TableSortLabel,
     Avatar
 } from '@mui/material'
-import { CheckCircleIcon, Edit, EyeIcon, ShieldPlus, ShieldPlusIcon, Trash2, XCircleIcon } from 'lucide-react'
+import { CheckCircleIcon, Edit, EyeIcon, ShieldPlus, Trash2, XCircleIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRouter } from 'next/navigation'
-import { useToast } from '@/hooks/useToast'
 import { IWarranty, IWarrantyFilter } from '@/models/Warranty'
 import DialogDetail from './DialogDetail'
 
@@ -73,10 +71,8 @@ interface IProps {
     setFilter: React.Dispatch<React.SetStateAction<IWarrantyFilter>>
 }
 
-function DataTable({ data, setFilter, refetch }: IProps) {
+function DataTable({ data, setFilter }: IProps) {
     const { t } = useTranslation('common')
-    const router = useRouter()
-    const toast = useToast()
     const [order, setOrder] = useState<'asc' | 'desc'>('asc')
     const [orderBy, setOrderBy] = useState<string>('')
     const [warranty, setWarranty] = useState<IWarranty | null>(null)
@@ -398,7 +394,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                             <Box
                                                 sx={{
                                                     borderRadius: '9999px',
-                                                    maxWidth: '165px',
+                                                    maxWidth: '160px',
                                                     margin: 'auto',
                                                     padding: '7px 15px',
                                                     border: getBorderColor(status),

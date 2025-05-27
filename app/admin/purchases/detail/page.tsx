@@ -1,8 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Printer, SquareCheckBig } from 'lucide-react'
-import NoteIcon from '@mui/icons-material/Note'
+import { Printer } from 'lucide-react'
 import {
     Avatar,
     Box,
@@ -20,7 +19,6 @@ import { useTranslation } from 'react-i18next'
 import EditRoundedIcon from '@mui/icons-material/EditRounded'
 import { formatCurrency } from '@/common/format'
 import { IPurchaseOrderDetail } from '@/models/PurchaseOrder'
-import EmptyState from '@/components/EmptyState'
 
 function getStatusBgColor(status: string): string {
     if (status === 'unpaid') {

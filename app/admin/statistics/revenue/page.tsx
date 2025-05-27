@@ -1,17 +1,12 @@
 'use client'
 
 import { Box } from '@mui/material'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import CouponUsageChart from './CouponUsageChart'
 import DisplayInfo from './DisplayInfo'
 import SalesHeatmapByTime from './SalesHeatmapByTime'
 import ReportTable from './ReportTable'
 
 export default function RevenuePage() {
-    const { t } = useTranslation('common')
-    const [open, setOpen] = useState(false)
-
     return (
         <Box
             sx={{

@@ -3,7 +3,6 @@
 import {
     Box,
     Typography,
-    Tooltip,
     TableRow,
     TableBody,
     Table,
@@ -15,16 +14,16 @@ import {
     Select,
     MenuItem,
     Pagination,
-    SelectChangeEvent
+    SelectChangeEvent,
+    InputAdornment,
+    TextField
 } from '@mui/material'
-import { Badge } from '@/components/ui/badge'
-import { Edit, EyeIcon, StarIcon, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { SearchIcon } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRouter } from 'next/navigation'
-import { Button, Divider, Paper, Tab, Tabs } from '@mui/material'
-import { useToast } from '@/hooks/useToast'
-import { IProduct, IProductCreate, IProductFilter } from '@/models/Product'
+import { Divider, Paper, Tab, Tabs } from '@mui/material'
+import { IProduct, IProductFilter } from '@/models/Product'
+import { debounce } from 'lodash'
 
 const badgeStyle: React.CSSProperties = {
     fontSize: '12px',
@@ -278,7 +277,7 @@ const data: IProduct[] = [
     }
 ]
 
-function DataTable() {
+function OutOfStockTable() {
     const { t } = useTranslation('common')
     const [order, setOrder] = useState<'asc' | 'desc'>('asc')
     const [orderBy, setOrderBy] = useState<string>('')
@@ -287,6 +286,7 @@ function DataTable() {
     const [rowsPerPage, setRowsPerPage] = useState('10')
     const [from, setFrom] = useState(1)
     const [to, setTo] = useState(10)
+    const [keyword, setKeyword] = useState('')
     const [filter, setFilter] = useState<IProductFilter>({
         pageSize: 10,
         pageNumber: 1
@@ -310,6 +310,33 @@ function DataTable() {
             }))
         }
     }
+
+    const debouncedSetFilter = useCallback(
+        debounce(value => {
+            setFilter(prev => ({
+                ...prev,
+                keyword: value,
+                pageNumber: 1
+            }))
+        }, 100),
+        []
+    )
+
+    const handleSearchKeyword = (value: string) => {
+        setPage(1)
+        setKeyword(value)
+        debouncedSetFilter(value)
+    }
+
+    // useEffect(() => {
+    //     if (!isFetching && productData) {
+    //         const from = (page - 1) * Number(rowsPerPage) + Math.min(1, productData?.length)
+    //         setFrom(from)
+
+    //         const to = Math.min(productData?.length + (page - 1) * Number(rowsPerPage), totalRecords)
+    //         setTo(to)
+    //     }
+    // }, [isFetching, productData, page, rowsPerPage])
 
     const handleSort = (property: string) => {
         setFilter(prev => ({
@@ -347,6 +374,8 @@ function DataTable() {
         })
     }
 
+    useEffect(() => {}, [setFrom, setTo, filter])
+
     return (
         <Paper
             elevation={0}
@@ -368,7 +397,7 @@ function DataTable() {
                     padding: '20px 24px'
                 }}
             >
-                {t('COMMON.PURCHASE_ORDER.PURCHASE_ORDER_LIST')}
+                {t('COMMON.INVENTORY_PRODUCTS_REPORTS.LOW_STOCK_PRODUCT_TABLE_TITLE')}
             </Typography>
 
             <Divider
@@ -520,6 +549,66 @@ function DataTable() {
                 </Tabs>
             </Box>
 
+            <TextField
+                id='location-search'
+                type='search'
+                placeholder={t('COMMON.PRODUCT.SEARCH')}
+                variant='outlined'
+                required
+                value={keyword}
+                onChange={e => handleSearchKeyword(e.target.value)}
+                sx={{
+                    color: 'var(--text-color)',
+                    padding: '0px',
+                    margin: '24px 24px 0',
+                    width: '500px',
+                    '& fieldset': {
+                        borderRadius: '10px',
+                        borderColor: 'var(--border-color)'
+                    },
+                    '& .MuiInputBase-root': { paddingLeft: '0px', paddingRight: '12px' },
+                    '& .MuiInputBase-input': {
+                        padding: '14.7px 0px',
+                        color: 'var(--text-color)',
+                        fontSize: '15px',
+                        '&::placeholder': {
+                            color: 'var(--placeholder-color)',
+                            opacity: 1
+                        }
+                    },
+                    '& .MuiOutlinedInput-root:hover fieldset': {
+                        borderColor: 'var(--field-color-hover)'
+                    },
+                    '& .MuiOutlinedInput-root.Mui-focused fieldset': {
+                        borderColor: 'var(--field-color-selected)',
+                        borderWidth: '2px'
+                    }
+                }}
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment
+                                position='start'
+                                sx={{
+                                    mr: 0
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        height: '100%',
+                                        color: '#a5bed4',
+                                        padding: '10.5px',
+                                        zIndex: 1
+                                    }}
+                                >
+                                    <SearchIcon />
+                                </Box>
+                            </InputAdornment>
+                        )
+                    }
+                }}
+            />
+
             <TableContainer
                 sx={{
                     mt: '24px',
@@ -612,20 +701,29 @@ function DataTable() {
                                     borderColor: 'var(--border-color)'
                                 }}
                             >
-                                <Typography
+                                <TableSortLabel
+                                    active={'Count' === orderBy}
+                                    direction={orderBy === 'Count' ? order : 'asc'}
+                                    onClick={() => handleSort('Count')}
                                     sx={{
-                                        fontWeight: 'bold',
-                                        color: 'var(--text-color)',
-                                        fontSize: '15px',
-                                        textAlign: 'center',
-                                        maxWidth: '280px',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
+                                        '& .MuiTableSortLabel-icon': {
+                                            color: 'var(--text-color) !important'
+                                        }
                                     }}
                                 >
-                                    {t('COMMON.PRODUCT.COUNT')}
-                                </Typography>
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: 'var(--text-color)',
+                                            fontSize: '15px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {t('COMMON.PRODUCT.QUANTITY')}
+                                    </Typography>
+                                </TableSortLabel>
                             </TableCell>
 
                             <TableCell
@@ -749,60 +847,18 @@ function DataTable() {
                                     <TableCell
                                         sx={{
                                             borderColor: 'var(--border-color)',
-                                            borderStyle: 'dashed',
-                                            padding: '16px 30px'
+                                            borderStyle: 'dashed'
                                         }}
                                     >
-                                        <Box
+                                        <Typography
                                             sx={{
-                                                color: 'var(--label-title-color)',
-                                                fontSize: '13px',
-                                                maxWidth: '200px',
-                                                overflow: 'hidden',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '10px',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap'
+                                                fontWeight: 'bold',
+                                                color: 'var(--report-text-color)',
+                                                fontSize: '15px'
                                             }}
                                         >
-                                            {t('COMMON.PRODUCT.STOCK') + ': '}
-                                            <Typography
-                                                sx={{
-                                                    fontWeight: 'bold',
-                                                    color: 'var(--text-color)',
-                                                    fontSize: '15px'
-                                                }}
-                                            >
-                                                {row.stockQuantity}
-                                            </Typography>
-                                        </Box>
-
-                                        <Box
-                                            sx={{
-                                                mt: '3px',
-                                                color: 'var(--label-title-color)',
-                                                fontSize: '13px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                maxWidth: '200px',
-                                                gap: '10px',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap'
-                                            }}
-                                        >
-                                            {t('COMMON.PRODUCT.SOLD') + ': '}
-                                            <Typography
-                                                sx={{
-                                                    fontWeight: 'bold',
-                                                    color: 'var(--text-color)',
-                                                    fontSize: '15px'
-                                                }}
-                                            >
-                                                {row.soldCount}
-                                            </Typography>
-                                        </Box>
+                                            {row.stockQuantity}
+                                        </Typography>
                                     </TableCell>
 
                                     <TableCell
@@ -815,6 +871,7 @@ function DataTable() {
                                             sx={{
                                                 borderRadius: '9999px',
                                                 padding: '7px 15px',
+                                                margin: '0 auto',
                                                 border: getBorderColor(row),
                                                 display: 'flex',
                                                 maxWidth: '130px',
@@ -962,4 +1019,4 @@ function DataTable() {
     )
 }
 
-export default DataTable
+export default OutOfStockTable

@@ -6,16 +6,12 @@ import {
     Edit,
     ChevronRight,
     Star,
-    BarChart3,
     Package,
     DollarSign,
-    Tag,
-    Clock,
     ShoppingCart,
     Trash2,
     AlertTriangle
 } from 'lucide-react'
-import Image from 'next/image'
 
 export interface IProduct {
     id: number
@@ -47,7 +43,7 @@ interface Props {
     isOpen: boolean
 }
 
-const ProductDetail = ({ product: productX, onClose, isOpen }: Props) => {
+const ProductDetail = ({ product: productX }: Props) => {
     // Dữ liệu mẫu để hiển thị
     const product: IProduct = {
         id: 12345,

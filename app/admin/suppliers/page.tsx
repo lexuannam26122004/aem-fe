@@ -7,14 +7,12 @@ import {
     MenuItem,
     SelectChangeEvent,
     Paper,
-    InputLabel,
-    FormControl,
     TextField,
     InputAdornment,
     Button,
     Divider
 } from '@mui/material'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import SearchIcon from '@mui/icons-material/Search'
 import { useRouter } from 'next/navigation'

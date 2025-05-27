@@ -13,7 +13,7 @@ import {
     TableSortLabel,
     Avatar
 } from '@mui/material'
-import { CheckCircleIcon, ClipboardCheck, ClipboardX, Edit, EyeIcon, Pencil, Trash2, XCircleIcon } from 'lucide-react'
+import { CheckCircleIcon, ClipboardCheck, ClipboardX, Edit, EyeIcon, Trash2, XCircleIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
@@ -22,7 +22,6 @@ import { useChangeIsPartnerSupplierMutation, useChangeStatusSupplierMutation } f
 import { useToast } from '@/hooks/useToast'
 import { ISupplier, ISupplierFilter } from '@/models/Supplier'
 import DetailModal from './DetailModal'
-import { IFilter } from '@/models/Common'
 
 function getStatusBgColor(status: boolean): string {
     if (status === false) {
@@ -108,7 +107,7 @@ function DataTable({ supplierData, setFilter, refetch }: IProps) {
                 await changePartner(selectedChangeId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.UPDATE_PARTNER_SUCCESS'), 'success')
-            } catch (error) {
+            } catch {
                 toast(t('COMMON.SUPPLIERS.UPDATE_PARTNER_FAIL'), 'error')
             }
         }
@@ -123,7 +122,7 @@ function DataTable({ supplierData, setFilter, refetch }: IProps) {
                 await changeStatusSupplierMutation(selectedDeleteId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
-            } catch (error) {
+            } catch {
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_FAIL'), 'error')
             }
         }

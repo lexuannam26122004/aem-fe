@@ -12,6 +12,14 @@ export const formatDate = (date: string) => {
     })
 }
 
+export const formatTime = (date: string) => {
+    return new Date(date).toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: 'numeric'
+    })
+}
+
 export function formatDivision(a: number, b: number) {
     if (b === 0) return 'Cannot divide by zero'
     return ((a / b) * 100).toFixed(0)

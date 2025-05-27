@@ -2,8 +2,6 @@
 
 import { Avatar, Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import ReactECharts from 'echarts-for-react'
-import { useTheme } from 'next-themes'
 import { ExternalLink } from 'lucide-react'
 
 const responseData = {
@@ -16,14 +14,12 @@ const responseData = {
 
 function ComponentButtons() {
     const { t } = useTranslation('common')
-    const currentDate = new Date()
 
     // const { data: responseData, isLoading } = useStatsDisplayQuery(currentDate.toISOString().split('T')[0])
 
     const pendingQuotations = responseData?.data?.pendingQuotations || 0
     const pendingOrders = responseData?.data?.pendingOrders || 0
     const unpaidPurchases = responseData?.data?.unpaidPurchases || 0
-    const { theme } = useTheme()
 
     // if (isLoading) {
     //     return <Loading />

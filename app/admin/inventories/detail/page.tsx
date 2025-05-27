@@ -8,7 +8,6 @@ import {
     Avatar,
     Box,
     Button,
-    Divider,
     Paper,
     Table,
     SelectChangeEvent,
@@ -33,7 +32,6 @@ import Tab from '@mui/material/Tab'
 import dayjs from 'dayjs'
 import { useGetCountTypeQuery } from '@/services/InventoryService'
 import { debounce } from 'lodash'
-import Loading from '@/components/Loading'
 
 function getStatusBgColor(status: string): string {
     if (status === 'outOfStock') {
@@ -65,10 +63,10 @@ function getStatusTextColor(status: string): string {
     }
 }
 
-export default function inventoryDetailPage() {
+export default function InventoryDetailPage() {
     const { t } = useTranslation('common')
 
-    const { data: countResponse, isLoading: isCountLoading, refetch: countRefetch } = useGetCountTypeQuery()
+    const { data: countResponse } = useGetCountTypeQuery()
     const countInStock = countResponse?.data.countInStock || 0
     const countOutOfStock = countResponse?.data.countOutOfStock || 0
     const countLowStock = countResponse?.data.countLowStock || 0
@@ -139,7 +137,8 @@ export default function inventoryDetailPage() {
         toDate: dayjs().format('YYYY-MM-DD')
     })
     const [keyword, setKeyword] = useState('')
-    const [open, setOpen] = useState(false)
+
+    useEffect(() => {}, [setFrom, setTo])
 
     const totalRecords = (inventoryDetail.itemCount as number) || 0
     const inventoryData = inventoryDetail.itemList
@@ -164,11 +163,6 @@ export default function inventoryDetailPage() {
                 pageNumber: 1
             }
         })
-    }
-
-    const refetchPage = () => {
-        // refetch()
-        countRefetch()
     }
 
     const debouncedSetFilter = useCallback(

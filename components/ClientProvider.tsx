@@ -6,10 +6,12 @@ import store from '@/redux/store'
 import LayoutAdmin from '@/components/LayoutAdmin'
 import ToastContainer from '@/components/ToastContainer'
 import { ThemeProvider } from './theme-provider'
+import LayoutUser from './LayoutUser'
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
     const isAdmin = pathname.startsWith('/admin')
+    const isUser = pathname.startsWith('/user')
 
     return (
         <Provider store={store}>
@@ -19,8 +21,10 @@ export default function ClientProviders({ children }: { children: React.ReactNod
                     <LayoutAdmin>
                         <main>{children}</main>
                     </LayoutAdmin>
-                ) : (
+                ) : isUser ? (
                     // </ProtectedLayout>
+                    <LayoutUser>{children}</LayoutUser>
+                ) : (
                     <main>{children}</main>
                 )}
                 <ToastContainer />

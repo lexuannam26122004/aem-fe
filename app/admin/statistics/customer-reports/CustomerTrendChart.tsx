@@ -1,4 +1,4 @@
-import { MenuItem, FormControl, Select, Box, Paper, Typography, SelectChangeEvent, InputLabel } from '@mui/material'
+import { MenuItem, FormControl, Select, Box, Typography, SelectChangeEvent, InputLabel } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
 import { useMemo, useState } from 'react'

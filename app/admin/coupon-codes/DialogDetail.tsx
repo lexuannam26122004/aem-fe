@@ -1,15 +1,6 @@
 import React, { useState } from 'react'
 
-import {
-    TicketIcon,
-    UsersIcon,
-    CalendarIcon,
-    TrendingUpIcon,
-    TagIcon,
-    Circle,
-    DiamondMinus,
-    DiamondPlus
-} from 'lucide-react'
+import { TicketIcon, UsersIcon, CalendarIcon, TrendingUpIcon, TagIcon, DiamondMinus, DiamondPlus } from 'lucide-react'
 import { ICoupon } from '@/models/Coupon'
 import {
     Box,
@@ -40,7 +31,7 @@ interface CouponDetailDialogProps {
     coupon: ICoupon | null
 }
 
-const getCouponOrders = (couponCode: string) => {
+const getCouponOrders = () => {
     const mockOrders = [
         {
             id: 'order1',
@@ -137,11 +128,11 @@ const CouponDetailDialog: React.FC<CouponDetailDialogProps> = ({ isOpen, onClose
 
     const isLimited = coupon.usageLimit && coupon.usageLimit === coupon.usageCount
 
-    const couponOrders = getCouponOrders(coupon.couponCode)
+    const couponOrders = getCouponOrders()
 
     const average = 12312313
 
-    const InfoCard: React.FC<InfoCardProps> = ({ label, value, icon, highlight = false, warning = false }) => {
+    const InfoCard: React.FC<InfoCardProps> = ({ label, value, icon, highlight = false }) => {
         return (
             <Paper
                 sx={{

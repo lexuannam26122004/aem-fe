@@ -4,7 +4,6 @@ import { Box, Paper } from '@mui/material'
 import { Typography } from '@mui/material'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
-import Loading from '@/components/Loading'
 
 const responseData = {
     data: {

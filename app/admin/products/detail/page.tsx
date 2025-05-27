@@ -1,5 +1,6 @@
 'use client'
 
+import '@/app/styles/tinymce-content.css'
 import ImageGalleryThumbnail from '@/components/ImageGalleryThumbnail'
 import ImageGallery from '@/components/ImageGallery'
 import {
@@ -22,58 +23,57 @@ import { useTranslation } from 'react-i18next'
 import { IFilter } from '@/models/Common'
 import { useSearchReviewQuery } from '@/services/ReviewService'
 import { IReview } from '@/models/Review'
-import DOMPurify from 'dompurify'
 
 // Sample data that matches your shoes images
 const productImages = [
     {
         id: 1,
-        src: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-1.webp', // Xanh lá chính diện
+        url: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-1.webp', // Xanh lá chính diện
         alt: 'Green shoes front view'
     },
     {
         id: 2,
-        src: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-2.webp', // Góc khác của giày xanh lá
+        url: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-2.webp', // Góc khác của giày xanh lá
         alt: 'Green shoes side view'
     },
     {
         id: 3,
-        src: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-3.webp', // Giày trắng
+        url: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-3.webp', // Giày trắng
         alt: 'White shoes'
     },
     {
         id: 4,
-        src: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-4.webp', // Giày trắng hồng
+        url: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-4.webp', // Giày trắng hồng
         alt: 'White and pink shoes'
     },
     {
         id: 5,
-        src: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-5.webp', // Giày xám
+        url: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-5.webp', // Giày xám
         alt: 'Grey shoes'
     },
     {
         id: 6,
-        src: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-6.webp', // Giày nâu
+        url: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-6.webp', // Giày nâu
         alt: 'Brown shoes'
     },
     {
         id: 7,
-        src: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-7.webp', // Giày nâu
+        url: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-7.webp', // Giày nâu
         alt: 'Brown shoes'
     },
     {
         id: 8,
-        src: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-8.webp', // Giày nâu
+        url: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-8.webp', // Giày nâu
         alt: 'Brown shoes'
     },
     {
         id: 9,
-        src: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-9.webp', // Giày nâu
+        url: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-9.webp', // Giày nâu
         alt: 'Brown shoes'
     },
     {
         id: 10,
-        src: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-10.webp', // Giày nâu
+        url: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-10.webp', // Giày nâu
         alt: 'Brown shoes'
     }
     // Thêm các ảnh khác nếu cần
@@ -169,8 +169,6 @@ const types = [
 
 const ProductPage = () => {
     const { t } = useTranslation('common')
-    const [color, setColor] = useState('Red Coral')
-    const [size, setSize] = useState(40)
     const [activeTab, setActiveTab] = useState('info')
     const [page, setPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState('10')
@@ -180,84 +178,16 @@ const ProductPage = () => {
         pageSize: 10,
         pageNumber: 1
     })
-    const { data: dataResponse, isLoading, isFetching, refetch } = useSearchReviewQuery(filter)
+    const { data: dataResponse, isFetching, refetch } = useSearchReviewQuery(filter)
 
-    const htmlContent = `
-    <h2>Specifications</h2>
-<table>
-<tbody>
-<tr>
-<td>Category</td>
-<td>Mobile</td>
-</tr>
-<tr>
-<td>Manufacturer</td>
-<td>Apple</td>
-</tr>
-<tr>
-<td>Warranty</td>
-<td>12 Months</td>
-</tr>
-<tr>
-<td>Serial number</td>
-<td>358607726380311</td>
-</tr>
-<tr>
-<td>Ships from</td>
-<td>United States</td>
-</tr>
-</tbody>
-</table>
-<h2>Product details</h2>
-<ul>
-<li>
-<p>The foam sockliner feels soft and comfortable</p>
-</li>
-<li>
-<p>Pull tab</p>
-</li>
-<li>
-<p>Not intended for use as Personal Protective Equipment</p>
-</li>
-<li>
-<p>Colour Shown: White/Black/Oxygen Purple/Action Grape</p>
-</li>
-<li>
-<p>Style: 921826-109</p>
-</li>
-<li>
-<p>Country/Region of Origin: China</p>
-</li>
-</ul>
-<h2>Benefits</h2>
-<ul>
-<li>
-<p>Mesh and synthetic materials on the upper keep the fluid look of the OG while adding comfort</p>
-and durability.</li>
-<li>
-<p>Originally designed for performance running, the full-length Max Air unit adds soft, comfortable cushio</p>
-ning underfoot.</li>
-<li>
-<p>The foam midsole feels springy and soft.</p>
-</li>
-<li>
-<p>The rubber outsole adds traction and durability.</p>
-</li>
-</ul>
-<h2>Delivery and returns</h2>
-<p>Your order of $200 or more gets free standard delivery.</p>
-<ul>
-<li>
-<p>Standard delivered 4-5 Business Days</p>
-</li>
-<li>
-<p>Express delivered 2-4 Business Days</p>
-</li>
-</ul>
-<p>Orders are processed and delivered Monday-Friday (excluding public holidays)</p>
-  `
-
-    const cleanHtml = DOMPurify.sanitize(htmlContent)
+    const htmlContent = `<ul>
+<li><span style="color: #2dc26b;">asdasdasdasdas &aacute; đ&aacute; asd asd </span>Nội dung ban đầu của editor</li>
+<li>xczvzxcv sadfg sadf &aacute;</li>
+<li>xzcvz</li>
+<li>xvc z</li>
+<li>xc&nbsp;</li>
+<li>zxcv</li>
+</ul>`
 
     // const { data: countResponse, isLoading: countLoading, refetch: countRefetch } = useGetCountTypeQuery()
 
@@ -873,6 +803,7 @@ ning underfoot.</li>
                             margin: '24px'
                         }}
                     >
+                        {/* <>{htmlContent}</> */}
                         <div
                             className='mce-content-body tinymce-content'
                             dangerouslySetInnerHTML={{ __html: htmlContent }}

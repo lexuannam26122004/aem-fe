@@ -1,24 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
-import {
-    Calendar,
-    Mail,
-    Phone,
-    MapPin,
-    ShieldCheck,
-    UserCircle,
-    CheckCircleIcon,
-    XCircleIcon,
-    UserCircleIcon,
-    MailIcon,
-    BellIcon,
-    PackageIcon,
-    CalendarIcon,
-    BriefcaseBusinessIcon,
-    MailMinus
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { IEmployee } from '@/models/Employee'
+import { Mail, CheckCircleIcon, XCircleIcon, UserCircleIcon, CalendarIcon } from 'lucide-react'
 import {
     Avatar,
     Box,
@@ -28,8 +9,6 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    Grid2,
-    Paper,
     Table,
     TableBody,
     TableCell,
@@ -38,7 +17,6 @@ import {
     Typography
 } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { formatDate } from '@/common/format'
 import { IActivityLog } from '@/models/ActivityLog'
 
 interface Props {

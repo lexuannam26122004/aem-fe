@@ -14,13 +14,11 @@ import {
     Select,
     MenuItem,
     Pagination,
-    SelectChangeEvent,
-    FormControl,
-    InputLabel
+    SelectChangeEvent
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Divider, Paper, Tab, Tabs } from '@mui/material'
+import { Button, Divider, Paper } from '@mui/material'
 import dayjs from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'

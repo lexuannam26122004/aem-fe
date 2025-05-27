@@ -13,11 +13,9 @@ import {
     TableSortLabel,
     Avatar
 } from '@mui/material'
-import { CheckCircleIcon, Edit, EyeIcon, Trash2, XCircleIcon } from 'lucide-react'
+import { CheckCircleIcon, EyeIcon, XCircleIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRouter } from 'next/navigation'
-import { useToast } from '@/hooks/useToast'
 import { IActivityLog, IActivityLogFilter } from '@/models/ActivityLog'
 import DialogDetail from './DialogDetail'
 
@@ -73,10 +71,8 @@ interface IProps {
     setFilter: React.Dispatch<React.SetStateAction<IActivityLogFilter>>
 }
 
-function DataTable({ data, setFilter, refetch }: IProps) {
+function DataTable({ data, setFilter }: IProps) {
     const { t } = useTranslation('common')
-    const router = useRouter()
-    const toast = useToast()
     const [order, setOrder] = useState<'asc' | 'desc'>('asc')
     const [orderBy, setOrderBy] = useState<string>('')
     const [activity, setActivity] = useState<IActivityLog | null>(null)

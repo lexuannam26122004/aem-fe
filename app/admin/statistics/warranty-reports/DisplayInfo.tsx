@@ -23,7 +23,6 @@ const responseData = {
 
 function Page() {
     const { t } = useTranslation('common')
-    const currentDate = new Date()
 
     // const { data: responseData, isLoading } = useStatsDisplayQuery(currentDate.toISOString().split('T')[0])
 

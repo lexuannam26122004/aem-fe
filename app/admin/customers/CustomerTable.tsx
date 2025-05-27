@@ -11,51 +11,16 @@ import {
     TableHead,
     TableContainer,
     TableSortLabel,
-    Avatar,
-    TextField,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    DialogActions,
-    Button
+    Avatar
 } from '@mui/material'
-import { Badge } from '@/components/ui/badge'
-import {
-    BadgeCheckIcon,
-    CheckCircleIcon,
-    ClipboardCheck,
-    ClipboardX,
-    Edit,
-    EyeIcon,
-    Pencil,
-    StarIcon,
-    Trash2,
-    XCircleIcon
-} from 'lucide-react'
-import { Button as ButtonX } from '@/components/ui/button'
-import { useState } from 'react'
+import { BadgeCheckIcon, CheckCircleIcon, Edit, EyeIcon, StarIcon, Trash2, XCircleIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
 import AlertDialog from '@/components/AlertDialog'
 import { useChangeIsPartnerSupplierMutation, useChangeStatusSupplierMutation } from '@/services/SupplierService'
 import { useToast } from '@/hooks/useToast'
-import { ICoupon, ICouponCreate, ICouponFilter } from '@/models/Coupon'
-import { Select as SelectX, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from '@/components/ui/dialog'
-
-import { CalendarIcon, UserIcon, PrinterIcon } from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { TableHeader } from '@/components/ui/table'
+import { ICoupon } from '@/models/Coupon'
 import { ICustomer, ICustomerFilter } from '@/models/Customer'
 import { formatCurrency } from '@/common/format'
 
@@ -124,6 +89,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
     const [changeStatusSupplierMutation, { isLoading: isLoadingDelete }] = useChangeStatusSupplierMutation()
     const [changePartner, { isLoading: isLoadingChange }] = useChangeIsPartnerSupplierMutation()
     const [coupon, setCoupon] = useState<ICoupon | null>(null)
+    useEffect(() => {}, [coupon])
 
     const handleButtonUpdateClick = (id: number) => {
         router.push(`/admin/suppliers/update?id=${id}`)
@@ -149,23 +115,13 @@ function DataTable({ data, setFilter, refetch }: IProps) {
         setOpenDialog(true)
     }
 
-    const handlePartnerClick = (id: number) => {
-        setTypeAlert(1)
-        setSelectedChangeId(id)
-        setOpenDialog(true)
-    }
-
-    const handleClickDetail = (row: ICoupon) => {
-        setCoupon(row)
-    }
-
     const handleChangePartner = async () => {
         if (selectedChangeId) {
             try {
                 await changePartner(selectedChangeId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.UPDATE_PARTNER_SUCCESS'), 'success')
-            } catch (error) {
+            } catch {
                 toast(t('COMMON.SUPPLIERS.UPDATE_PARTNER_FAIL'), 'error')
             }
         }
@@ -180,7 +136,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                 await changeStatusSupplierMutation(selectedDeleteId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
-            } catch (error) {
+            } catch {
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_FAIL'), 'error')
             }
         }
@@ -708,12 +664,13 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                             sx={{
                                                 borderRadius: '9999px',
                                                 padding: '7px 15px',
-                                                border: getBorderColor(row.isActive),
                                                 display: 'flex',
-                                                maxWidth: '200px',
+                                                margin: '0 auto',
+                                                maxWidth: '170px',
                                                 alignItems: 'center',
                                                 gap: '10px',
-                                                justifyContent: 'left',
+                                                justifyContent: 'center',
+                                                border: getBorderColor(row.isActive),
                                                 backgroundColor: getStatusBgColor(row.isActive)
                                             }}
                                         >

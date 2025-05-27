@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Truck, Package, NotepadText, Banknote, Star, Printer, BadgeCheck, Check, SquareCheckBig } from 'lucide-react'
+import { Truck, Package, NotepadText, Banknote, Star, Printer, SquareCheckBig } from 'lucide-react'
 import { IOrderDetail } from '@/models/Order'
 import {
     Avatar,
@@ -100,6 +100,7 @@ export default function OrderDetailPage() {
                 productName: 'Màn hình Dell UltraSharp 27 inch 4K',
                 productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-15.webp',
                 quantity: 1,
+                productVariant: 'NO-COLOR',
                 price: 2800000,
                 subtotal: 2800000,
                 sku: 'SCR-DEL-U27'
@@ -111,6 +112,7 @@ export default function OrderDetailPage() {
                 productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-17.webp',
                 quantity: 1,
                 price: 1200000,
+                productVariant: 'NO-COLOR',
                 subtotal: 1200000,
                 sku: 'KB-LOG-MX'
             },
@@ -121,6 +123,7 @@ export default function OrderDetailPage() {
                 productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-12.webp',
                 quantity: 1,
                 price: 500000,
+                productVariant: 'NO-COLOR',
                 subtotal: 500000,
                 sku: 'MS-LOG-MX3'
             }
@@ -567,8 +570,9 @@ export default function OrderDetailPage() {
                                                     }}
                                                 >
                                                     {orderDetail.discountShippingFee &&
-                                                        orderDetail.discountShippingFee >= 0 &&
-                                                        '- '}
+                                                    orderDetail.discountShippingFee >= 0
+                                                        ? '- '
+                                                        : ''}
                                                     {formatCurrency(orderDetail.discountShippingFee || 0)}
                                                 </Typography>
                                             </TableCell>
@@ -1518,11 +1522,10 @@ export default function OrderDetailPage() {
                                             <Typography
                                                 sx={{
                                                     fontSize: '15px',
-                                                    mb: 'auto',
                                                     color: 'var(--label-title-color)'
                                                 }}
                                             >
-                                                {t('COMMON.ORDER.ADDRESS')}
+                                                {t('COMMON.USER.RECIPIENT')}
                                             </Typography>
                                         </TableCell>
 
@@ -1539,7 +1542,7 @@ export default function OrderDetailPage() {
                                                     textAlign: 'left'
                                                 }}
                                             >
-                                                {orderDetail.shippingAddress}
+                                                {orderDetail.customerName}
                                             </Typography>
                                         </TableCell>
                                     </TableRow>
@@ -1577,6 +1580,44 @@ export default function OrderDetailPage() {
                                                 }}
                                             >
                                                 {orderDetail.customerPhone}
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+
+                                    <TableRow>
+                                        <TableCell
+                                            sx={{
+                                                width: '120px',
+                                                border: 'none',
+                                                verticalAlign: 'top',
+                                                padding: '10px 0'
+                                            }}
+                                        >
+                                            <Typography
+                                                sx={{
+                                                    fontSize: '15px',
+                                                    mb: 'auto',
+                                                    color: 'var(--label-title-color)'
+                                                }}
+                                            >
+                                                {t('COMMON.ORDER.ADDRESS')}
+                                            </Typography>
+                                        </TableCell>
+
+                                        <TableCell
+                                            sx={{
+                                                border: 'none',
+                                                padding: '10px 0'
+                                            }}
+                                        >
+                                            <Typography
+                                                sx={{
+                                                    fontSize: '15px',
+                                                    color: 'var(--text-color)',
+                                                    textAlign: 'left'
+                                                }}
+                                            >
+                                                {orderDetail.shippingAddress}
                                             </Typography>
                                         </TableCell>
                                     </TableRow>

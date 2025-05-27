@@ -11,8 +11,6 @@ import {
     TextField,
     InputAdornment,
     Divider,
-    FormControl,
-    InputLabel,
     Button
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -28,13 +26,11 @@ import Loading from '@/components/Loading'
 import { CirclePlus } from 'lucide-react'
 import { useSearchCouponQuery, useGetCountTypeQuery } from '@/services/CouponService'
 import { IWarranty, IWarrantyFilter } from '@/models/Warranty'
-import { toZonedTime, format } from 'date-fns-tz'
 import dayjs from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime } from '@/common/format'
-import DialogDetail from './DialogDetail'
 
 const warranties: IWarranty[] = [
     {
@@ -193,7 +189,6 @@ function Page() {
         toDate: dayjs().format('YYYY-MM-DD')
     })
     const [keyword, setKeyword] = useState('')
-    const [open, setOpen] = useState(false)
 
     const { data: dataResponse, isLoading, isFetching, refetch } = useSearchCouponQuery(filter)
 
@@ -243,8 +238,6 @@ function Page() {
         }, 100),
         []
     )
-
-    const handleAddCoupon = () => {}
 
     const handleSearchKeyword = (value: string) => {
         setPage(1)

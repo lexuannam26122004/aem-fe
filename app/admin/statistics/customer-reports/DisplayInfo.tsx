@@ -2,7 +2,7 @@
 
 import { Avatar, Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { formatCurrency, formatWorkingTime } from '@/common/format'
+import { formatCurrency } from '@/common/format'
 
 const responseData = {
     data: {

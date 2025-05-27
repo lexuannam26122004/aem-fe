@@ -2,7 +2,7 @@
 
 import { ICustomer } from '@/models/Customer'
 import { Avatar, Box, Typography } from '@mui/material'
-import { BadgeCheckIcon, Barcode, PhoneCall, ScanBarcode, ShoppingBag, StarIcon } from 'lucide-react'
+import { BadgeCheckIcon, PhoneCall, ShoppingBag, StarIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { keyframes } from '@emotion/react'
 

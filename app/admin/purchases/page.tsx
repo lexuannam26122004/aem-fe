@@ -11,14 +11,11 @@ import {
     TextField,
     InputAdornment,
     Divider,
-    FormControl,
-    InputLabel,
     Button
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import SearchIcon from '@mui/icons-material/Search'
-import { useRouter } from 'next/navigation'
 import PurchaseOrderTable from './PurchaseOrderTable'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
@@ -196,7 +193,6 @@ const purchaseOrders: IPurchaseOrder[] = [
 ]
 
 function Page() {
-    const router = useRouter()
     const { t } = useTranslation('common')
     const [page, setPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState('10')
@@ -210,6 +206,7 @@ function Page() {
     })
     const [keyword, setKeyword] = useState('')
     const [open, setOpen] = useState(false)
+    useEffect(() => {}, [open])
 
     const { data: dataResponse, isLoading, isFetching, refetch } = useSearchPurchaseOrderQuery(filter)
 

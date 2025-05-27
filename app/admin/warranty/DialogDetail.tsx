@@ -1,23 +1,13 @@
 'use client'
 
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
 import {
-    Calendar,
-    Mail,
-    Phone,
-    MapPin,
     ShieldCheck,
-    UserCircle,
     CheckCircleIcon,
     XCircleIcon,
     UserCircleIcon,
-    MailIcon,
-    BellIcon,
     PackageIcon,
     CalendarIcon,
-    BriefcaseBusinessIcon,
-    MailMinus,
     PhoneIcon,
     FileUser,
     History,
@@ -25,21 +15,17 @@ import {
     SquareChartGantt,
     Edit
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { IEmployee } from '@/models/Employee'
+
 import {
     Avatar,
     Box,
     Button,
-    Checkbox,
     Chip,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
     Divider,
-    Grid2,
-    Paper,
     Tab,
     Table,
     TableBody,
@@ -51,9 +37,8 @@ import {
     Typography
 } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { formatDate } from '@/common/format'
 import { IWarranty } from '@/models/Warranty'
-import { Clock, Settings, ArrowRight, FileText, RefreshCw, Shield, Tag, Wrench } from 'lucide-react'
+import { Clock, Settings, ArrowRight, RefreshCw, Shield, Tag, Wrench } from 'lucide-react'
 import EmptyState from '@/components/EmptyState'
 import { IHistoryWarranty } from '@/models/HistoryWarranty'
 
@@ -652,7 +637,7 @@ const DialogDetail: React.FC<Props> = ({ warranty, isOpen, onClose }) => {
                     >
                         {repairs.length > 0 ? (
                             repairs.map((repair, index) => {
-                                const { icon, bg, border, text, gradient } = getTypeColors(repair.type)
+                                const { icon, bg, border, text } = getTypeColors(repair.type)
                                 return (
                                     <Box
                                         key={index}

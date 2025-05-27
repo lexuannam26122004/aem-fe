@@ -5,7 +5,6 @@ import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails'
 import Counter from 'yet-another-react-lightbox/plugins/counter'
-import type { Swiper as SwiperType } from 'swiper'
 
 // Import styles
 import 'swiper/css'

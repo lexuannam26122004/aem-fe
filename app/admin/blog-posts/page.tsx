@@ -7,14 +7,12 @@ import {
     MenuItem,
     SelectChangeEvent,
     Paper,
-    InputLabel,
-    FormControl,
     TextField,
     InputAdornment,
     Button,
     Divider
 } from '@mui/material'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import SearchIcon from '@mui/icons-material/Search'
 import { useRouter } from 'next/navigation'
@@ -23,7 +21,6 @@ import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { debounce } from 'lodash'
 import { useCallback } from 'react'
-import Loading from '@/components/Loading'
 import { CirclePlus } from 'lucide-react'
 import { IBlogPost, IBlogPostFilter } from '@/models/BlogPost'
 // import { useSearchSupplierQuery } from '@/services/SupplierService'
@@ -174,6 +171,7 @@ function Page() {
         pageSize: 10,
         pageNumber: 1
     })
+    useEffect(() => {}, [setFrom, setTo, filter])
     const [keyword, setKeyword] = useState('')
 
     // const { data: dataResponse, isLoading, isFetching, refetch } = useSearchSupplierQuery(filter)

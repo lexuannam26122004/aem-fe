@@ -1,6 +1,6 @@
 'use client'
 
-import { Avatar, Box, Button, InputLabel, Paper, TextField, Typography } from '@mui/material'
+import { Avatar, Box, Button, Paper, TextField, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { SaveIcon, Trash2, XIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -125,7 +125,7 @@ function Page() {
             toast(t('COMMON.SUPPLIERS.CREATE_SUPPLIER_SUCCESS'), 'success')
             countRefetch()
             return true
-        } catch (error) {
+        } catch {
             toast(t('COMMON.SUPPLIERS.CREATE_SUPPLIER_FAIL'), 'error')
             return false
         } finally {

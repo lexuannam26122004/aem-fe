@@ -13,14 +13,11 @@ import {
     TableSortLabel,
     Avatar
 } from '@mui/material'
-import { BadgeCheckIcon, CheckCircleIcon, Edit, EyeIcon, StarIcon, Trash2, XCircleIcon } from 'lucide-react'
+import { Edit, EyeIcon, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
-import AlertDialog from '@/components/AlertDialog'
-import { useToast } from '@/hooks/useToast'
 import { IQuotation, IQuotationFilter } from '@/models/Quotation'
-import { formatCurrency } from '@/common/format'
 
 function getStatusBgColor(status: string): string {
     if (status === 'cancelled') {
@@ -86,20 +83,11 @@ interface IProps {
     setFilter: React.Dispatch<React.SetStateAction<IQuotationFilter>>
 }
 
-function DataTable({ data, setFilter, refetch }: IProps) {
+function DataTable({ data, setFilter }: IProps) {
     const { t } = useTranslation('common')
     const router = useRouter()
-    const toast = useToast()
     const [order, setOrder] = useState<'asc' | 'desc'>('asc')
     const [orderBy, setOrderBy] = useState<string>('')
-    const [openDialog, setOpenDialog] = useState(false)
-    const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null)
-    const [selectedChangeId, setSelectedChangeId] = useState<number | null>(null)
-    const [typeAlert, setTypeAlert] = useState<number | null>(null)
-
-    const handleButtonUpdateClick = (id: number) => {
-        router.push(`/admin/suppliers/update?id=${id}`)
-    }
 
     const handleSort = (property: string) => {
         setFilter(prev => ({
@@ -113,27 +101,6 @@ function DataTable({ data, setFilter, refetch }: IProps) {
             setOrder('asc')
         }
         setOrderBy(property)
-    }
-
-    const handleDeleteClick = async (id: number) => {
-        setTypeAlert(0)
-        setSelectedDeleteId(id)
-        setOpenDialog(true)
-    }
-
-    const handleDeleteSupplier = async () => {
-        if (selectedDeleteId) {
-            try {
-                // await changeStatusSupplierMutation(selectedDeleteId).unwrap()
-                refetch()
-                toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
-            } catch (error) {
-                toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_FAIL'), 'error')
-            }
-        }
-        setOpenDialog(false)
-        setSelectedDeleteId(null)
-        setTypeAlert(null)
     }
 
     return (

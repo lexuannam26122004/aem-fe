@@ -82,6 +82,7 @@ function Page({ blogPosts, refetch }: Props) {
     const { t } = useTranslation('common')
     const [postId, setPostId] = useState<number | null>(null)
     const [tempPostId, setTempPostId] = useState<number | null>(null)
+    useEffect(() => {}, [postId])
 
     const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
 

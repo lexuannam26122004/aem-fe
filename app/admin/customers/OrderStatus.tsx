@@ -100,7 +100,7 @@ export default function OrderStatusChart() {
                 ],
                 animationType: 'scale',
                 animationEasing: 'elasticOut',
-                animationDelay: function (idx: number) {
+                animationDelay: function () {
                     return Math.random() * 200
                 }
             }

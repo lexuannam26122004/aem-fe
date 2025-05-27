@@ -2,7 +2,7 @@
 
 import { IProduct } from '@/models/Product'
 import { Avatar, Box, Typography } from '@mui/material'
-import { Barcode, Flame, ScanBarcode, ShoppingBag, StarIcon } from 'lucide-react'
+import { Flame, ScanBarcode, StarIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { keyframes } from '@emotion/react'
 

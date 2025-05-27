@@ -12,13 +12,11 @@ import {
     Divider,
     FormControl,
     InputLabel,
-    DialogActions,
     Button
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import SearchIcon from '@mui/icons-material/Search'
-import { useRouter } from 'next/navigation'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { debounce } from 'lodash'
@@ -240,7 +238,6 @@ const products: IProduct[] = [
 ]
 
 function Page() {
-    const router = useRouter()
     const { t } = useTranslation('common')
     const [page, setPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState('10')
@@ -252,6 +249,7 @@ function Page() {
     })
     const [keyword, setKeyword] = useState('')
     const [open, setOpen] = useState(false)
+    useEffect(() => {}, [open])
 
     const { data: dataResponse, isLoading, isFetching, refetch } = useSearchProductQuery(filter)
 
@@ -302,8 +300,6 @@ function Page() {
         }, 100),
         []
     )
-
-    const handleAddCoupon = () => {}
 
     const handleSearchKeyword = (value: string) => {
         setPage(1)

@@ -12,31 +12,20 @@ import {
     Divider,
     FormControl,
     InputLabel,
-    DialogActions,
     Button
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import SearchIcon from '@mui/icons-material/Search'
-import { useRouter } from 'next/navigation'
 import CouponTable from './CouponTable'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { debounce } from 'lodash'
 import { useCallback } from 'react'
-import { Select as SelectX, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Button as ButtonX } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import Loading from '@/components/Loading'
 import { CirclePlus } from 'lucide-react'
 import { useSearchCouponQuery, useGetCountTypeQuery } from '@/services/CouponService'
-import { IFilter } from '@/models/Common'
-import { ISupplier } from '@/models/Supplier'
-
 import { ICoupon, ICouponFilter } from '@/models/Coupon'
-
-import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import DialogCreate from './DialogCreate'
 
 function a11yProps(index: number) {
@@ -162,7 +151,6 @@ const coupons: ICoupon[] = [
 ]
 
 function Page() {
-    const router = useRouter()
     const { t } = useTranslation('common')
     const [page, setPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState('10')
@@ -224,8 +212,6 @@ function Page() {
         }, 100),
         []
     )
-
-    const handleAddCoupon = () => {}
 
     const handleSearchKeyword = (value: string) => {
         setPage(1)

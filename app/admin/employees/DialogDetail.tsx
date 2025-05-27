@@ -1,5 +1,4 @@
 import React from 'react'
-import { motion } from 'framer-motion'
 import {
     Calendar,
     Mail,
@@ -9,13 +8,9 @@ import {
     UserCircle,
     CheckCircleIcon,
     XCircleIcon,
-    UserCircleIcon,
     MailIcon,
-    BellIcon,
-    PackageIcon,
     CalendarIcon
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { IEmployee } from '@/models/Employee'
 import {
     Avatar,

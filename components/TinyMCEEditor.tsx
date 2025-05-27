@@ -5,6 +5,7 @@
 // pages/components/TinyMCEEditor.js
 import { useRef } from 'react'
 import { Editor } from '@tinymce/tinymce-react'
+import type { Editor as TinyMCEEditorType } from 'tinymce'
 import { useTheme } from 'next-themes'
 
 interface TinyMCEEditorProps {
@@ -12,9 +13,8 @@ interface TinyMCEEditorProps {
     onChange: (content: string) => void
     apiKey: string
 }
-
-export default function TinyMCEEditor({ initialValue, onChange, apiKey }: TinyMCEEditorProps) {
-    const editorRef = useRef(null)
+export default function TinyMCEEditor({ initialValue, apiKey }: TinyMCEEditorProps) {
+    const editorRef = useRef<TinyMCEEditorType | null>(null)
     const { theme, systemTheme } = useTheme()
 
     const currentTheme = theme === 'system' ? systemTheme : theme
@@ -92,7 +92,7 @@ export default function TinyMCEEditor({ initialValue, onChange, apiKey }: TinyMC
                 // Tích hợp tải ảnh lên
                 automatic_uploads: true,
                 file_picker_types: 'image',
-                images_upload_handler: async function (blobInfo: any, progress: any) {
+                images_upload_handler: async function (blobInfo: any) {
                     // Thay thế bằng API upload ảnh của bạn
                     const formData = new FormData()
                     formData.append('file', blobInfo.blob(), blobInfo.filename())

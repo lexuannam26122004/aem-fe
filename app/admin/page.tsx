@@ -1,24 +1,15 @@
 'use client'
 
-import { Box, Button, Divider, Paper, Tab, Tabs, Typography } from '@mui/material'
-import Image from 'next/image'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { Box } from '@mui/material'
 import DisplayInfo from './DisplayInfo'
 import OrdersStatusChart from './OrdersStatusChart'
 import FinancialOverviewChart from './FinancialOverviewChart'
-import { useTranslation } from 'react-i18next'
-import ProductTable from './ProductTable'
 import { TopProducts } from './TopProducts'
 import { TopCustomers } from './TopCustomers'
 import ComponentButtons from './ComponentButtons'
 import ChartOrderRevenue from './ChartOrderRevenue'
 
 export default function HomePage() {
-    const { t } = useTranslation('common')
-    const path = usePathname()
-    const [open, setOpen] = useState(false)
-
     return (
         <Box
             sx={{

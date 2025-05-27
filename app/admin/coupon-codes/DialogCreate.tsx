@@ -5,8 +5,6 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    InputAdornment,
-    InputLabel,
     TextField,
     Tooltip,
     Typography
@@ -15,7 +13,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import LoadingButton from '@mui/lab/LoadingButton'
 import { MenuItem, FormControl, Select } from '@mui/material'
-import { CircleAlert, SaveIcon, Trash2, XIcon } from 'lucide-react'
+import { CircleAlert, SaveIcon, XIcon } from 'lucide-react'
 import dayjs from 'dayjs'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
@@ -44,7 +42,7 @@ function DialogCreate({ open, handleClose }: Props) {
     const [customerType, setCustomerType] = useState<string>('all_customer')
     const [isLoading, setIsLoading] = useState(false)
     const [isSubmit, setIsSubmit] = useState(false)
-    const [createCoupon, { isLoading: isCreating }] = useCreateCouponMutation()
+    const [createCoupon] = useCreateCouponMutation()
     const toast = useToast()
 
     useEffect(() => {
@@ -82,7 +80,7 @@ function DialogCreate({ open, handleClose }: Props) {
             setIsSubmit(false)
             toast(t('COMMON.COUPON.CREATE_SUCCESS'), 'success')
             return true
-        } catch (error) {
+        } catch {
             toast(t('COMMON.COUPON.CREATE_ERROR'), 'error')
             return false
         } finally {

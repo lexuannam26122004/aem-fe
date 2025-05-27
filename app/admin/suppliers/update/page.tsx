@@ -132,7 +132,7 @@ function Page() {
             toast(t('COMMON.SUPPLIERS.CREATE_SUPPLIER_SUCCESS'), 'success')
             refetch()
             return true
-        } catch (error) {
+        } catch {
             toast(t('COMMON.SUPPLIERS.CREATE_SUPPLIER_FAIL'), 'error')
             return false
         } finally {

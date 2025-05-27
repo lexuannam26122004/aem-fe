@@ -1,4 +1,4 @@
-import { Box, Divider } from '@mui/material'
+import { Box } from '@mui/material'
 import Sidebar, { SidebarItem, TypographyItem } from './sidebar'
 import { usePathname } from 'next/navigation'
 import {
@@ -9,7 +9,6 @@ import {
     Lock,
     ShieldCheck,
     History,
-    File,
     Newspaper,
     FileText,
     Tags,
@@ -57,16 +56,16 @@ const LayoutAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     link='/admin/statistics/revenue'
                 />
                 <SidebarItem
-                    icon={<Boxes size={24} className='transition-all duration-40' />}
-                    text={t('COMMON.SIDEBAR.INVENTORY_&_PRODUCTS')}
-                    active={path === '/admin/statistics/inventory-products'}
-                    link='/admin/statistics/inventory-products'
-                />
-                <SidebarItem
                     icon={<BarChart2 size={24} className='transition-all duration-40' />}
                     text={t('COMMON.SIDEBAR.ORDER_REPORTS')}
                     active={path === '/admin/statistics/order-reports'}
                     link='/admin/statistics/order-reports'
+                />
+                <SidebarItem
+                    icon={<Boxes size={24} className='transition-all duration-40' />}
+                    text={t('COMMON.SIDEBAR.INVENTORY_&_PRODUCTS')}
+                    active={path === '/admin/statistics/inventory-products'}
+                    link='/admin/statistics/inventory-products'
                 />
                 <SidebarItem
                     icon={<BarChart2 size={24} className='transition-all duration-40' />}

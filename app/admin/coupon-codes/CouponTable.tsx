@@ -13,14 +13,14 @@ import {
     TableSortLabel
 } from '@mui/material'
 import { Badge } from '@/components/ui/badge'
-import { ClipboardCheck, ClipboardX, Edit, EyeIcon, Pencil, Trash2 } from 'lucide-react'
+import { Edit, EyeIcon, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
 import AlertDialog from '@/components/AlertDialog'
 import { useChangeIsPartnerSupplierMutation, useChangeStatusSupplierMutation } from '@/services/SupplierService'
 import { useToast } from '@/hooks/useToast'
-import { ICoupon, ICouponCreate, ICouponFilter } from '@/models/Coupon'
+import { ICoupon, ICouponFilter } from '@/models/Coupon'
 import CouponDetailDialog from './DialogDetail'
 
 function getStatusBgColor(row: ICoupon): string {
@@ -79,47 +79,6 @@ interface IProps {
     setFilter: React.Dispatch<React.SetStateAction<ICouponFilter>>
 }
 
-interface Order {
-    id: number
-    orderCode: string
-    customerName: string
-    orderDate: string
-    totalAmount: number
-    discountAmount: number
-    couponCode: string
-}
-
-// Dữ liệu mẫu
-const dummyOrders: Order[] = [
-    {
-        id: 1,
-        orderCode: 'ORD12345',
-        customerName: 'Nguyễn Văn A',
-        orderDate: '2025-03-10',
-        totalAmount: 450000,
-        discountAmount: 67500,
-        couponCode: 'SUMMER2025'
-    },
-    {
-        id: 2,
-        orderCode: 'ORD12346',
-        customerName: 'Trần Thị B',
-        orderDate: '2025-03-08',
-        totalAmount: 550000,
-        discountAmount: 50000,
-        couponCode: 'WELCOME50K'
-    },
-    {
-        id: 3,
-        orderCode: 'ORD12347',
-        customerName: 'Lê Văn C',
-        orderDate: '2025-03-07',
-        totalAmount: 320000,
-        discountAmount: 80000,
-        couponCode: 'NEWYEAR25'
-    }
-]
-
 function DataTable({ data, setFilter, refetch }: IProps) {
     const { t } = useTranslation('common')
     const router = useRouter()
@@ -133,7 +92,6 @@ function DataTable({ data, setFilter, refetch }: IProps) {
     const [changeStatusSupplierMutation, { isLoading: isLoadingDelete }] = useChangeStatusSupplierMutation()
     const [changePartner, { isLoading: isLoadingChange }] = useChangeIsPartnerSupplierMutation()
     const [coupon, setCoupon] = useState<ICoupon | null>(null)
-    const [orders, setOrders] = useState<Order[]>(dummyOrders)
 
     const handleButtonUpdateClick = (id: number) => {
         router.push(`/admin/suppliers/update?id=${id}`)
@@ -153,20 +111,9 @@ function DataTable({ data, setFilter, refetch }: IProps) {
         setOrderBy(property)
     }
 
-    // Tìm đơn hàng liên quan đến mã giảm giá
-    const getCouponOrders = (couponCode: string) => {
-        return orders.filter(order => order.couponCode === couponCode)
-    }
-
     const handleDeleteClick = async (id: number) => {
         setTypeAlert(0)
         setSelectedDeleteId(id)
-        setOpenDialog(true)
-    }
-
-    const handlePartnerClick = (id: number) => {
-        setTypeAlert(1)
-        setSelectedChangeId(id)
         setOpenDialog(true)
     }
 
@@ -180,7 +127,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                 await changePartner(selectedChangeId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.UPDATE_PARTNER_SUCCESS'), 'success')
-            } catch (error) {
+            } catch {
                 toast(t('COMMON.SUPPLIERS.UPDATE_PARTNER_FAIL'), 'error')
             }
         }
@@ -195,7 +142,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                 await changeStatusSupplierMutation(selectedDeleteId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
-            } catch (error) {
+            } catch {
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_FAIL'), 'error')
             }
         }

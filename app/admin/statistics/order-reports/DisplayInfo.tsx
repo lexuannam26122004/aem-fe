@@ -2,21 +2,21 @@
 
 import { Avatar, Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { formatCurrency, formatWorkingTime } from '@/common/format'
+import { formatCurrency } from '@/common/format'
 
 const responseData = {
     data: {
         statsByDay: [
             {
-                totalCustomers: 280,
-                totalSpending: 12850000,
-                activeCustomers: 42
+                totalOrders: 280,
+                totalRevenue: 12850000,
+                successRate: 42
             }
         ],
         rate: {
-            totalCustomers: 5.2,
-            totalSpending: 12.8,
-            activeCustomers: -8.4
+            totalOrders: 5.2,
+            totalRevenue: 12.8,
+            successRate: -8.4
         }
     }
 }
@@ -26,12 +26,12 @@ function Page() {
 
     // const { data: responseData, isLoading } = useStatsDisplayQuery(currentDate.toISOString().split('T')[0])
 
-    const totalCustomers = responseData?.data?.statsByDay[0]?.totalCustomers || 0
-    const totalSpending = responseData?.data?.statsByDay[0]?.totalSpending || 0
-    const activeCustomers = responseData?.data?.statsByDay[0]?.activeCustomers || 0
-    const totalCustomersRate = responseData?.data?.rate.totalCustomers
-    const totalSpendingRate = responseData?.data?.rate.totalSpending
-    const activeCustomersRate = responseData?.data?.rate.activeCustomers
+    const totalOrders = responseData?.data?.statsByDay[0]?.totalOrders || 0
+    const totalRevenue = responseData?.data?.statsByDay[0]?.totalRevenue || 0
+    const successRate = responseData?.data?.statsByDay[0]?.successRate || 0
+    const totalOrdersRate = responseData?.data?.rate.totalOrders
+    const totalRevenueRate = responseData?.data?.rate.totalRevenue
+    const successRateRate = responseData?.data?.rate.successRate
 
     return (
         <Box
@@ -90,7 +90,7 @@ function Page() {
                                 color: 'var(--label-title-color)'
                             }}
                         >
-                            {t('COMMON.CUSTOMER_REPORTS.TOTAL_CUSTOMERS')}
+                            {t('COMMON.ORDER_REPORTS.TOTAL_ORDERS')}
                         </Typography>
                         <Typography
                             sx={{
@@ -100,7 +100,7 @@ function Page() {
                                 fontWeight: 'bold'
                             }}
                         >
-                            {totalCustomers}
+                            {totalOrders}
                         </Typography>
                         <Box
                             sx={{
@@ -112,8 +112,8 @@ function Page() {
                                 alignItems: 'center'
                             }}
                         >
-                            {totalCustomersRate !== null &&
-                                (!(!totalCustomersRate || totalCustomersRate >= 0) ? (
+                            {totalOrdersRate !== null &&
+                                (!(!totalOrdersRate || totalOrdersRate >= 0) ? (
                                     <img
                                         src='/images/down.svg'
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
@@ -124,7 +124,7 @@ function Page() {
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
                                     />
                                 ))}
-                            {totalCustomersRate !== null ? totalCustomersRate + '%' : t('COMMON.HOME.NO_CHANGE')}
+                            {totalOrdersRate !== null ? totalOrdersRate + '%' : t('COMMON.HOME.NO_CHANGE')}
                             <Typography
                                 sx={{
                                     textTransform: 'lowercase',
@@ -140,7 +140,7 @@ function Page() {
 
                     <Box sx={{ width: '53px', height: '53px', position: 'absolute', right: '24px' }}>
                         <Avatar
-                            src='/images/client_icon.png'
+                            src='/images/order.png'
                             sx={{
                                 width: '100%',
                                 height: '100%',
@@ -188,7 +188,7 @@ function Page() {
                                 color: 'var(--label-title-color)'
                             }}
                         >
-                            {t('COMMON.CUSTOMER_REPORTS.TOTAL_SPENDING')}
+                            {t('COMMON.ORDER_REPORTS.TOTAL_REVENUE')}
                         </Typography>
                         <Typography
                             sx={{
@@ -199,7 +199,7 @@ function Page() {
                                 fontWeight: 'bold'
                             }}
                         >
-                            {formatCurrency(totalSpending).replace('VNĐ', '')}
+                            {formatCurrency(totalRevenue).replace('VNĐ', '')}
                         </Typography>
                         <Box
                             sx={{
@@ -211,8 +211,8 @@ function Page() {
                                 alignItems: 'center'
                             }}
                         >
-                            {totalSpendingRate !== null &&
-                                (!(!totalSpendingRate || totalSpendingRate >= 0) ? (
+                            {totalRevenueRate !== null &&
+                                (!(!totalRevenueRate || totalRevenueRate >= 0) ? (
                                     <img
                                         src='/images/down.svg'
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
@@ -223,7 +223,7 @@ function Page() {
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
                                     />
                                 ))}
-                            {totalSpendingRate !== null ? totalSpendingRate + '%' : t('COMMON.HOME.NO_CHANGE')}
+                            {totalRevenueRate !== null ? totalRevenueRate + '%' : t('COMMON.HOME.NO_CHANGE')}
                             <Typography
                                 sx={{
                                     textTransform: 'lowercase',
@@ -287,7 +287,7 @@ function Page() {
                                 color: 'var(--label-title-color)'
                             }}
                         >
-                            {t('COMMON.CUSTOMER_REPORTS.ACTIVE_CUSTOMERS')}
+                            {t('COMMON.ORDER_REPORTS.SUCCESS_RATE')}
                         </Typography>
                         <Typography
                             sx={{
@@ -297,7 +297,7 @@ function Page() {
                                 fontWeight: 'bold'
                             }}
                         >
-                            {activeCustomers}
+                            {successRate}%
                         </Typography>
                         <Box
                             sx={{
@@ -309,8 +309,8 @@ function Page() {
                                 alignItems: 'center'
                             }}
                         >
-                            {activeCustomersRate !== null &&
-                                (!(!activeCustomersRate || activeCustomersRate >= 0) ? (
+                            {successRateRate !== null &&
+                                (!(!successRateRate || successRateRate >= 0) ? (
                                     <img
                                         src='/images/down.svg'
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
@@ -321,7 +321,7 @@ function Page() {
                                         style={{ marginRight: '6px', width: '26px', height: '26px' }}
                                     />
                                 ))}
-                            {activeCustomersRate !== null ? activeCustomersRate + '%' : t('COMMON.HOME.NO_CHANGE')}
+                            {successRateRate !== null ? successRateRate + '%' : t('COMMON.HOME.NO_CHANGE')}
                             <Typography
                                 sx={{
                                     textTransform: 'lowercase',
@@ -337,7 +337,7 @@ function Page() {
 
                     <Box sx={{ width: '53px', height: '53px', position: 'absolute', right: '24px' }}>
                         <Avatar
-                            src='/images/active_customer.png'
+                            src='/images/success_rate.png'
                             sx={{
                                 width: '100%',
                                 height: '100%',

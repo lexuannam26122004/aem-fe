@@ -10,26 +10,19 @@ import {
     Paper,
     TextField,
     InputAdornment,
-    Divider,
-    FormControl,
-    InputLabel,
-    Button
+    Divider
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import SearchIcon from '@mui/icons-material/Search'
-import { useRouter } from 'next/navigation'
 import ActivityTable from './ActivityLogTable'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { debounce } from 'lodash'
 import { useCallback } from 'react'
 import Loading from '@/components/Loading'
-import { CirclePlus } from 'lucide-react'
 import { useSearchCouponQuery, useGetCountTypeQuery } from '@/services/CouponService'
-import { IEmployee, IEmployeeFilter } from '@/models/Employee'
 import { IActivityLog, IActivityLogFilter } from '@/models/ActivityLog'
-import { toZonedTime, format } from 'date-fns-tz'
 import dayjs from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
@@ -161,7 +154,6 @@ const activities: IActivityLog[] = [
 ]
 
 function Page() {
-    const router = useRouter()
     const { t } = useTranslation('common')
     const [page, setPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState('10')
@@ -174,7 +166,6 @@ function Page() {
         toDate: dayjs().format('YYYY-MM-DD')
     })
     const [keyword, setKeyword] = useState('')
-    const [open, setOpen] = useState(false)
 
     const { data: dataResponse, isLoading, isFetching, refetch } = useSearchCouponQuery(filter)
 
@@ -224,8 +215,6 @@ function Page() {
         }, 100),
         []
     )
-
-    const handleAddCoupon = () => {}
 
     const handleSearchKeyword = (value: string) => {
         setPage(1)

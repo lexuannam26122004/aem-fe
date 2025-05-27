@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Truck, Package, NotepadText, Banknote, Star, Printer, BadgeCheck, Check, SquareCheckBig } from 'lucide-react'
+import { Printer } from 'lucide-react'
 import { IQuotationDetail } from '@/models/Quotation'
 import {
     Avatar,
@@ -17,8 +17,6 @@ import {
     Typography
 } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import EditRoundedIcon from '@mui/icons-material/EditRounded'
-import { formatCurrency } from '@/common/format'
 
 function getStatusBgColor(status: string): string {
     if (status === 'cancelled') {
@@ -56,7 +54,7 @@ function getStatusTextColor(status: string): string {
     }
 }
 
-export default function quotationDetailPage() {
+export default function QuotationDetailPage() {
     const { t } = useTranslation('common')
 
     const quotationDetail: IQuotationDetail = {

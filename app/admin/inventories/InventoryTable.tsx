@@ -13,11 +13,10 @@ import {
     TableSortLabel,
     Avatar
 } from '@mui/material'
-import { BadgeCheckIcon, CheckCircleIcon, Edit, EyeIcon, StarIcon, Trash2, XCircleIcon } from 'lucide-react'
-import { useState } from 'react'
+import { Edit, EyeIcon, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
-import AlertDialog from '@/components/AlertDialog'
 import { useToast } from '@/hooks/useToast'
 import { IInventory, IInventoryFilter } from '@/models/Inventory'
 
@@ -59,10 +58,6 @@ function DataTable({ data, setFilter, refetch }: IProps) {
     const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null)
     const [typeAlert, setTypeAlert] = useState<number | null>(null)
 
-    const handleButtonUpdateClick = (id: number) => {
-        router.push(`/admin/suppliers/update?id=${id}`)
-    }
-
     const handleSort = (property: string) => {
         setFilter(prev => ({
             ...prev,
@@ -89,7 +84,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                 // await changeStatusSupplierMutation(selectedDeleteId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
-            } catch (error) {
+            } catch {
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_FAIL'), 'error')
             }
         }
@@ -97,6 +92,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
         setSelectedDeleteId(null)
         setTypeAlert(null)
     }
+    useEffect(() => {}, [openDialog, typeAlert, handleDeleteSupplier, handleDeleteClick])
 
     return (
         <>

@@ -46,6 +46,11 @@ const CustomerRateChart = () => {
                 center: ['50%', '40%'], // Điều chỉnh vị trí của biểu đồ tròn
                 data: chartData,
                 emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    },
                     itemStyle: {
                         shadowBlur: 10,
                         shadowOffsetX: 0,

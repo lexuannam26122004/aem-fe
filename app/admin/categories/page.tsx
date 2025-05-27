@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
     DndContext,
     closestCenter,
@@ -160,7 +160,7 @@ const CategoryForm = ({
                 newLevel = (parent.level + 1) as 1 | 2 | 3
             }
         } else {
-            newLevel = 1 as 1
+            newLevel = 1 as const
         }
 
         onSave({

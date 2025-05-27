@@ -22,7 +22,7 @@ import { debounce } from 'lodash'
 import { useCallback } from 'react'
 import Loading from '@/components/Loading'
 import { CirclePlus } from 'lucide-react'
-import { useSearchInventoryQuery, useGetCountTypeQuery } from '@/services/InventoryService'
+import { useSearchInventoryQuery } from '@/services/InventoryService'
 import { IInventory, IInventoryFilter } from '@/models/Inventory'
 import dayjs from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers'
@@ -147,7 +147,6 @@ function Page() {
         toDate: dayjs().format('YYYY-MM-DD')
     })
     const [keyword, setKeyword] = useState('')
-    const [open, setOpen] = useState(false)
 
     const { data: dataResponse, isLoading, isFetching, refetch } = useSearchInventoryQuery(filter)
 
@@ -228,6 +227,8 @@ function Page() {
             }))
         }
     }
+
+    useEffect(() => {}, [currentTab, handleChangeTabs])
 
     if (isLoading) {
         return <Loading />
