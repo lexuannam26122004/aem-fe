@@ -23,9 +23,11 @@ import {
 import { formatCurrency } from '@/common/format'
 import { useTranslation } from 'react-i18next'
 import AddressManager from '@/components/AddressesModal'
+import { useCreateVnpayUrlMutation } from '@/services/PaymentService'
 
 const CheckoutPage = () => {
     const { t } = useTranslation('common')
+    const [createVnpayUrl] = useCreateVnpayUrlMutation()
 
     const products = [
         {
@@ -203,7 +205,24 @@ const CheckoutPage = () => {
         setSelectedPaymentMethod(methodId)
     }
 
-    const handlePlaceOrder = () => {}
+    const handlePlaceOrder = async () => {
+        console.log('Placing order with payment method:', selectedPaymentMethod)
+        if (selectedPaymentMethod === 'vnpay') {
+            try {
+                const res = await createVnpayUrl({
+                    orderId: `ORDER_${Date.now()}`,
+                    amount: 350000 // 100,000 VND = 1,000,000 đồng sau khi *100
+                }).unwrap()
+
+                if (res.paymentUrl) {
+                    console.log('Payment URL:', res.paymentUrl) // Debug
+                    window.location.href = res.paymentUrl
+                }
+            } catch (err) {
+                console.error('Tạo link VNPay thất bại', err)
+            }
+        }
+    }
 
     return (
         <div className='min-h-screen'>

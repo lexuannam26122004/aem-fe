@@ -3,11 +3,9 @@ import { createBaseQuery } from './api'
 import { ICouponCreate, ICouponFilter, ICouponUpdate } from '@/models/Coupon'
 import { IResponse } from '@/models/Common'
 
-const apiPath = 'https://localhost:44381/api/admin/coupon'
-
 export const CouponApis = createApi({
     reducerPath: 'CouponApis',
-    baseQuery: createBaseQuery(apiPath),
+    baseQuery: createBaseQuery('admin/coupon'),
     endpoints: builder => ({
         searchCoupon: builder.query<IResponse, ICouponFilter>({
             query: filter => {

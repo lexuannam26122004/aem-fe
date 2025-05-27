@@ -1,13 +1,13 @@
 type CloudinaryResponse = {
     secure_url: string
 }
-
+const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 const uploadImageToCloudinary = async (file: File): Promise<string | undefined> => {
     try {
         const formData = new FormData()
         formData.append('file', file)
 
-        const signature = await fetch('https://localhost:44381/api/admin/cloudinary/signature').then(res => {
+        const signature = await fetch(`${BASE_API_URL}/admin/cloudinary/signature`).then(res => {
             return res.json()
         })
 

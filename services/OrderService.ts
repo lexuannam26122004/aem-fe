@@ -3,11 +3,9 @@ import { createBaseQuery } from './api'
 import { IOrderCreate, IOrderFilter, IOrderUpdate } from '@/models/Order'
 import { IResponse } from '@/models/Common'
 
-const apiPath = 'https://localhost:44381/api/admin/order'
-
 export const OrderApis = createApi({
     reducerPath: 'OrderApis',
-    baseQuery: createBaseQuery(apiPath),
+    baseQuery: createBaseQuery('admin/orders'),
     endpoints: builder => ({
         searchOrder: builder.query<IResponse, IOrderFilter>({
             query: filter => {

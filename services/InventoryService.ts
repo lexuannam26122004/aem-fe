@@ -3,11 +3,9 @@ import { createBaseQuery } from './api'
 import { IInventoryCreate, IInventoryFilter, IInventoryUpdate } from '@/models/Inventory'
 import { IResponse } from '@/models/Common'
 
-const apiPath = 'https://localhost:44381/api/admin/inventory'
-
 export const InventoryApis = createApi({
     reducerPath: 'InventoryApis',
-    baseQuery: createBaseQuery(apiPath),
+    baseQuery: createBaseQuery('admin/inventory'),
     endpoints: builder => ({
         searchInventory: builder.query<IResponse, IInventoryFilter>({
             query: filter => {

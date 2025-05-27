@@ -3,11 +3,9 @@ import { createBaseQuery } from './api'
 import { IQuotationCreate, IQuotationFilter, IQuotationUpdate } from '@/models/Quotation'
 import { IResponse } from '@/models/Common'
 
-const apiPath = 'https://localhost:44381/api/admin/quotation'
-
 export const QuotationApis = createApi({
     reducerPath: 'QuotationApis',
-    baseQuery: createBaseQuery(apiPath),
+    baseQuery: createBaseQuery('admin/quotations'),
     endpoints: builder => ({
         searchQuotation: builder.query<IResponse, IQuotationFilter>({
             query: filter => {

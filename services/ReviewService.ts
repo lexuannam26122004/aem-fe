@@ -3,11 +3,9 @@ import { createBaseQuery } from './api'
 import { IReviewFilter } from '@/models/Review'
 import { IResponse } from '@/models/Common'
 
-const apiPath = 'https://localhost:44381/api/admin/review'
-
 export const ReviewApis = createApi({
     reducerPath: 'ReviewApis',
-    baseQuery: createBaseQuery(apiPath),
+    baseQuery: createBaseQuery('admin/reviews'),
     endpoints: builder => ({
         searchReview: builder.query<IResponse, IReviewFilter>({
             query: filter => {

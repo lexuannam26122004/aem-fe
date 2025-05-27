@@ -3,11 +3,9 @@ import { createBaseQuery } from './api'
 import { IProductCreate, IProductFilter, IProductUpdate } from '@/models/Product'
 import { IResponse } from '@/models/Common'
 
-const apiPath = 'https://localhost:44381/api/admin/product'
-
 export const ProductApis = createApi({
     reducerPath: 'ProductApis',
-    baseQuery: createBaseQuery(apiPath),
+    baseQuery: createBaseQuery('admin/products'),
     endpoints: builder => ({
         searchProduct: builder.query<IResponse, IProductFilter>({
             query: filter => {

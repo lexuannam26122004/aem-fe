@@ -3,11 +3,9 @@ import { IResponse } from '@/models/Common'
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from './api'
 
-const apiPath = 'https://localhost:44381/api/admin/supplier'
-
 export const supplierApi = createApi({
     reducerPath: 'SupplierApis',
-    baseQuery: createBaseQuery(apiPath),
+    baseQuery: createBaseQuery('admin/supplier'),
     endpoints: builder => ({
         searchSupplier: builder.query<IResponse, ISupplierFilter>({
             query: filter => {

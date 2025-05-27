@@ -3,11 +3,9 @@ import { createBaseQuery } from './api'
 import { IPurchaseOrderCreate, IPurchaseOrderFilter, IPurchaseOrderUpdate } from '@/models/PurchaseOrder'
 import { IResponse } from '@/models/Common'
 
-const apiPath = 'https://localhost:44381/api/admin/purchase-order'
-
 export const PurchaseOrderApis = createApi({
     reducerPath: 'PurchaseOrderApis',
-    baseQuery: createBaseQuery(apiPath),
+    baseQuery: createBaseQuery('admin/purchase-orders'),
     endpoints: builder => ({
         searchPurchaseOrder: builder.query<IResponse, IPurchaseOrderFilter>({
             query: filter => {
