@@ -879,7 +879,23 @@
             "AVERAGE_RATING": "Average Rating",
             "BASED_ON_REVIEWS": "Based on {{count}} reviews",
             "RECOMMENDED_PRODUCTS": "Recommended Products",
-            "STARS": "stars"
+            "STARS": "stars",
+            "VIEW_SLIDE": "View slide",
+            "MODERN_ELECTRONICS": "Modern electronic devices",
+            "UPGRADE_LIVING_SPACE": "Upgrade your living space",
+            "EXPLORE_NOW": "Explore now",
+            "SMART_SOLUTIONS": "Smart solutions",
+            "AUTOMATION_FOR_ALL": "Automation for every need",
+            "VIEW_PRODUCTS": "View products",
+            "CUTTING_EDGE_TECH": "Cutting-edge technology",
+            "LEADING_FUTURE_TRENDS": "Leading future trends",
+            "LEARN_MORE": "Learn more",
+            "PRICE_UNDER_1M": "Under 1 million VND",
+            "PRICE_1M_5M": "1 - 5 million VND",
+            "PRICE_5M_10M": "5 - 10 million VND",
+            "PRICE_10M_50M": "10 - 50 million VND",
+            "PRICE_ABOVE_50M": "Over 50 million VND",
+            "SEE_ALL": "See all"
         }
     }
 }

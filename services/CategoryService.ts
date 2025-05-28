@@ -1,13 +1,13 @@
-import { IEmployeeCreate, IEmployeeUpdate, IEmployeeFilter } from '@/models/Employee'
+import { ICategoryCreate, ICategoryUpdate, ICategoryFilter } from '@/models/Category'
 import { IResponse } from '@/models/Common'
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from './api'
 
-export const EmployeeApis = createApi({
-    reducerPath: 'EmployeeApis',
-    baseQuery: createBaseQuery('admin/employee'),
+export const CategoryApis = createApi({
+    reducerPath: 'CategoryApis',
+    baseQuery: createBaseQuery('admin/categories'),
     endpoints: builder => ({
-        searchEmployee: builder.query<IResponse, IEmployeeFilter>({
+        searchCategory: builder.query<IResponse, ICategoryFilter>({
             query: filter => {
                 const params = new URLSearchParams()
 
@@ -25,7 +25,7 @@ export const EmployeeApis = createApi({
             }
         }),
 
-        createEmployee: builder.mutation<void, IEmployeeCreate>({
+        createCategory: builder.mutation<void, ICategoryCreate>({
             query: body => ({
                 url: ``,
                 method: 'POST',
@@ -33,26 +33,26 @@ export const EmployeeApis = createApi({
             })
         }),
 
-        updateEmployee: builder.mutation<void, { id: string; data: IEmployeeUpdate }>({
-            query: ({ id, data }) => ({
-                url: `${id}`,
+        updateCategory: builder.mutation<void, ICategoryUpdate>({
+            query: body => ({
+                url: ``,
                 method: 'PUT',
-                body: data
+                body: body
             })
         }),
 
-        getByIdEmployee: builder.query<IResponse, number>({
+        getByIdCategory: builder.query<IResponse, number>({
             query: id => `${id}`
         }),
 
-        deleteEmployee: builder.mutation<void, number>({
+        deleteCategory: builder.mutation<void, number>({
             query: id => ({
                 url: `${id}`,
                 method: 'DELETE'
             })
         }),
 
-        changeStatusEmployee: builder.mutation<void, number>({
+        changeStatusCategory: builder.mutation<void, number>({
             query: id => ({
                 url: `${id}/change-status`,
                 method: 'PUT'
@@ -62,10 +62,10 @@ export const EmployeeApis = createApi({
 })
 
 export const {
-    useSearchEmployeeQuery,
-    useCreateEmployeeMutation,
-    useUpdateEmployeeMutation,
-    useGetByIdEmployeeQuery,
-    useDeleteEmployeeMutation,
-    useChangeStatusEmployeeMutation
-} = EmployeeApis
+    useSearchCategoryQuery,
+    useCreateCategoryMutation,
+    useUpdateCategoryMutation,
+    useGetByIdCategoryQuery,
+    useDeleteCategoryMutation,
+    useChangeStatusCategoryMutation
+} = CategoryApis

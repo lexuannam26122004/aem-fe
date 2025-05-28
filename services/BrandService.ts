@@ -1,13 +1,13 @@
-import { IEmployeeCreate, IEmployeeUpdate, IEmployeeFilter } from '@/models/Employee'
+import { IBrandCreate, IBrandUpdate, IBrandFilter } from '@/models/Brand'
 import { IResponse } from '@/models/Common'
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from './api'
 
-export const EmployeeApis = createApi({
-    reducerPath: 'EmployeeApis',
-    baseQuery: createBaseQuery('admin/employee'),
+export const BrandApis = createApi({
+    reducerPath: 'BrandApis',
+    baseQuery: createBaseQuery('admin/brands'),
     endpoints: builder => ({
-        searchEmployee: builder.query<IResponse, IEmployeeFilter>({
+        searchBrand: builder.query<IResponse, IBrandFilter>({
             query: filter => {
                 const params = new URLSearchParams()
 
@@ -25,7 +25,7 @@ export const EmployeeApis = createApi({
             }
         }),
 
-        createEmployee: builder.mutation<void, IEmployeeCreate>({
+        createBrand: builder.mutation<void, IBrandCreate>({
             query: body => ({
                 url: ``,
                 method: 'POST',
@@ -33,26 +33,26 @@ export const EmployeeApis = createApi({
             })
         }),
 
-        updateEmployee: builder.mutation<void, { id: string; data: IEmployeeUpdate }>({
-            query: ({ id, data }) => ({
-                url: `${id}`,
+        updateBrand: builder.mutation<void, IBrandUpdate>({
+            query: body => ({
+                url: ``,
                 method: 'PUT',
-                body: data
+                body: body
             })
         }),
 
-        getByIdEmployee: builder.query<IResponse, number>({
+        getByIdBrand: builder.query<IResponse, number>({
             query: id => `${id}`
         }),
 
-        deleteEmployee: builder.mutation<void, number>({
+        deleteBrand: builder.mutation<void, number>({
             query: id => ({
                 url: `${id}`,
                 method: 'DELETE'
             })
         }),
 
-        changeStatusEmployee: builder.mutation<void, number>({
+        changeStatusBrand: builder.mutation<void, number>({
             query: id => ({
                 url: `${id}/change-status`,
                 method: 'PUT'
@@ -62,10 +62,10 @@ export const EmployeeApis = createApi({
 })
 
 export const {
-    useSearchEmployeeQuery,
-    useCreateEmployeeMutation,
-    useUpdateEmployeeMutation,
-    useGetByIdEmployeeQuery,
-    useDeleteEmployeeMutation,
-    useChangeStatusEmployeeMutation
-} = EmployeeApis
+    useSearchBrandQuery,
+    useCreateBrandMutation,
+    useUpdateBrandMutation,
+    useGetByIdBrandQuery,
+    useDeleteBrandMutation,
+    useChangeStatusBrandMutation
+} = BrandApis

@@ -3,19 +3,21 @@
 import React, { useState } from 'react'
 import { Heart, Star, ShoppingCart, Zap, Flame, ShoppingBag } from 'lucide-react'
 import { formatCurrency } from '@/common/format'
-import { IProduct } from '@/models/Product'
+import { IProductSearch } from '@/models/Product'
 import { Tooltip } from '@mui/material'
 import { useTranslation } from 'react-i18next'
+import { useRouter } from 'next/navigation'
 
 interface IProductCardProps {
-    product: IProduct
+    product: IProductSearch
     isHotSale?: boolean
 }
 
 const ProductCard = ({ product, isHotSale = false }: IProductCardProps) => {
     const { t } = useTranslation('common')
+    const router = useRouter()
     const [isWishlisted, setIsWishlisted] = useState(false)
-    const [isHovered, setIsHovered] = useState(false)
+    // const [isHovered, setIsHovered] = useState(false)
     const buttons = [
         {
             id: 'wishlist',
@@ -64,9 +66,15 @@ const ProductCard = ({ product, isHotSale = false }: IProductCardProps) => {
         )
     }
 
+    const buttonClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation()
+        router.push(`/user/products/${product.id}`)
+    }
+
     return (
         <div
             key={product.id}
+            onClick={buttonClick}
             className={`group relative ${
                 isHotSale ? 'rounded-[18px] rounded-b-[18px]' : 'rounded-[15px] rounded-b-[18px]'
             } overflow-hidden w-full shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer`}
@@ -81,8 +89,11 @@ const ProductCard = ({ product, isHotSale = false }: IProductCardProps) => {
             </div>
 
             {/* Hot Label */}
-            {product.soldCount > 100 && (
-                <div className='absolute rotate-45 top-5 z-50 right-[2px] bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1'>
+            {product.discountRate >= 20 && (
+                <div
+                    style={{ transform: 'rotate(35deg)' }}
+                    className='absolute top-[19px] z-50 right-[5px] bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1'
+                >
                     <Zap className='w-3 h-3' />
                     <span>HOT</span>
                 </div>
@@ -93,12 +104,12 @@ const ProductCard = ({ product, isHotSale = false }: IProductCardProps) => {
                 {/* Image Section */}
                 <div
                     className='relative mb-4 overflow-hidden rounded-xl'
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    // onMouseEnter={() => setIsHovered(true)}
+                    // onMouseLeave={() => setIsHovered(false)}
                 >
                     <div className='aspect-square bg-gradient-to-br from-blue-50 to-cyan-50 p-[15px]'>
                         <img
-                            src={isHovered && product.images[1] ? product.images[1] : product.images[0]}
+                            src={product.image}
                             alt={product.productName}
                             className='w-full h-full object-cover rounded-lg transition-all duration-500 transform group-hover:scale-110'
                         />
@@ -137,7 +148,7 @@ const ProductCard = ({ product, isHotSale = false }: IProductCardProps) => {
                     <div className='space-y-2.5'>
                         <div className='flex items-center justify-between'>
                             <span className='text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full'>
-                                {product.supplierName}
+                                {product.brand}
                             </span>
 
                             <div className={`px-3 py-1.5 bg-green-500 rounded-lg text-xs text-white font-medium`}>

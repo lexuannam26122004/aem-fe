@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from './api'
-import { IOrderCreate, IOrderFilter, IOrderUpdate } from '@/models/Order'
+import { IOrderCreate, IOrderFilter } from '@/models/Order'
 import { IResponse } from '@/models/Common'
 
 export const OrderApis = createApi({
@@ -32,13 +32,6 @@ export const OrderApis = createApi({
                 url: ``,
                 method: 'POST',
                 body: body
-            })
-        }),
-        updateOrder: builder.mutation<void, { id: number; data: IOrderUpdate }>({
-            query: ({ id, data }) => ({
-                url: `${id}`,
-                method: 'PUT',
-                body: data
             })
         }),
         deleteOrder: builder.mutation<void, number>({
@@ -82,7 +75,6 @@ export const OrderApis = createApi({
 export const {
     useSearchOrderQuery,
     useCreateOrderMutation,
-    useUpdateOrderMutation,
     useDeleteOrderMutation,
     useGetByIdOrderQuery,
     useExportOrderQuery,

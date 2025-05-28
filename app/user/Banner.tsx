@@ -11,23 +11,23 @@ export default function Banner() {
     const slides = [
         {
             image: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-1.webp',
-            title: 'Thiết bị điện tử hiện đại',
-            subtitle: 'Nâng tầm không gian sống của bạn',
-            cta: 'Khám phá ngay',
+            title: t('COMMON.USER.MODERN_ELECTRONICS'),
+            subtitle: t('COMMON.USER.UPGRADE_LIVING_SPACE'),
+            cta: t('COMMON.USER.EXPLORE_NOW'),
             color: 'from-blue-600 to-purple-600'
         },
         {
             image: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-2.webp',
-            title: 'Giải pháp thông minh',
-            subtitle: 'Tự động hóa cho mọi nhu cầu',
-            cta: 'Xem sản phẩm',
+            title: t('COMMON.USER.SMART_SOLUTIONS'),
+            subtitle: t('COMMON.USER.AUTOMATION_FOR_ALL'),
+            cta: t('COMMON.USER.VIEW_PRODUCTS'),
             color: 'from-green-600 to-teal-600'
         },
         {
             image: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-3.webp',
-            title: 'Công nghệ đỉnh cao',
-            subtitle: 'Dẫn đầu xu hướng tương lai',
-            cta: 'Tìm hiểu thêm',
+            title: t('COMMON.USER.CUTTING_EDGE_TECH'),
+            subtitle: t('COMMON.USER.LEADING_FUTURE_TRENDS'),
+            cta: t('COMMON.USER.LEARN_MORE'),
             color: 'from-red-600 to-orange-600'
         }
     ]
@@ -193,10 +193,10 @@ export default function Banner() {
                         }}
                         className={`transition-all duration-500 focus:outline-none ${
                             currentSlide === index
-                                ? 'w-10 h-2.5 bg-white rounded-full shadow-lg'
+                                ? 'w-8 h-2.5 bg-white rounded-full shadow-lg'
                                 : 'w-2.5 h-2.5 bg-white/40 rounded-full hover:bg-white/70'
                         }`}
-                        aria-label={`Xem slide ${index + 1}`}
+                        aria-label={`${t('COMMON.USER.VIEW_SLIDE')} ${index + 1}`}
                     />
                 ))}
             </div>

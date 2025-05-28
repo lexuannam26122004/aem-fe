@@ -220,21 +220,21 @@ const UserHeader = () => {
                             {/* Main Navigation */}
                             <div className='flex items-center ml-6 space-x-6 b'>
                                 <Link
-                                    href='/#'
+                                    href='/user'
                                     className='font-medium hover:text-blue-600 transition-colors px-4 py-2 rounded-[8px] hover:bg-blue-100'
                                 >
                                     Trang chủ
                                 </Link>
 
                                 <Link
-                                    href='/#product'
+                                    href='/user/products'
                                     className='font-medium hover:text-blue-600 transition-colors px-4 py-2 rounded-[8px] hover:bg-blue-100'
                                 >
                                     Sản phẩm
                                 </Link>
 
                                 <Link
-                                    href='/flash-sale'
+                                    href='/user/#flash-sale'
                                     className='font-medium hover:text-blue-600 transition-colors px-4 py-2 rounded-[8px] hover:bg-blue-100 transition-colors relative group'
                                 >
                                     <span className='group-hover:text-blue-600 transition-colors'>Flash Sale</span>
@@ -250,12 +250,12 @@ const UserHeader = () => {
                                     Về chúng tôi
                                 </Link>
 
-                                <Link
+                                {/* <Link
                                     href='/#blog'
                                     className='font-medium hover:text-blue-600 transition-colors px-4 py-2 rounded-[8px] hover:bg-blue-100'
                                 >
                                     Tin tức
-                                </Link>
+                                </Link> */}
 
                                 <Link
                                     href='/#contact'

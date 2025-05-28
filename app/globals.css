@@ -350,3 +350,485 @@ body {
         @apply bg-background text-foreground;
     }
 }
+
+/* TinyMCE Content Styles */
+.tinymce {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue',
+        sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fff;
+    margin: 0;
+    padding: 24px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Headings */
+.tinymce h1,
+.tinymce h2,
+.tinymce h3,
+.tinymce h4,
+.tinymce h5,
+.tinymce h6 {
+    font-family: inherit;
+    font-weight: bold;
+    color: #333;
+    margin: 0.5em 0 0.5em 0;
+    line-height: 1.2;
+}
+
+.tinymce h1 {
+    font-size: 2em;
+    margin: 0 0 0.67em 0;
+}
+
+.tinymce h2 {
+    font-size: 1.5em;
+    margin-top: 0;
+}
+
+.tinymce h3 {
+    font-size: 1.17em;
+}
+
+.tinymce h4 {
+    font-size: 1em;
+}
+
+.tinymce h5 {
+    font-size: 0.83em;
+}
+
+.tinymce h6 {
+    font-size: 0.67em;
+}
+
+/* Paragraphs */
+.tinymce p {
+    margin: 0 0 1em 0;
+    line-height: 1.6;
+}
+
+.tinymce p:last-child {
+    margin-bottom: 0;
+}
+
+/* Lists */
+.tinymce ul,
+.tinymce ol {
+    margin: 1em 0;
+    padding-left: 40px;
+}
+
+.tinymce ul {
+    list-style-type: disc;
+}
+
+.tinymce ul ul {
+    list-style-type: circle;
+    margin: 0.5em 0;
+}
+
+.tinymce ul ul ul {
+    list-style-type: square;
+}
+
+.tinymce ol {
+    list-style-type: decimal;
+}
+
+.tinymce ol ol {
+    list-style-type: lower-alpha;
+    margin: 0.5em 0;
+}
+
+.tinymce ol ol ol {
+    list-style-type: lower-roman;
+}
+
+.tinymce li {
+    margin: 0.25em 0;
+    line-height: 1.6;
+}
+
+.tinymce li p {
+    margin: 0.25em 0;
+}
+
+/* Definition Lists */
+.tinymce dl {
+    margin: 1em 0;
+}
+
+.tinymce dt {
+    font-weight: bold;
+    margin: 0.5em 0 0.25em 0;
+}
+
+.tinymce dd {
+    margin: 0 0 0.5em 40px;
+}
+
+/* Links */
+.tinymce a {
+    color: #1976d2;
+    text-decoration: underline;
+}
+
+.tinymce a:hover {
+    text-decoration: none;
+}
+
+.tinymce a:visited {
+    color: #7b1fa2;
+}
+
+/* Text Formatting */
+.tinymce strong,
+.tinymce b {
+    font-weight: bold;
+}
+
+.tinymce em,
+.tinymce i {
+    font-style: italic;
+}
+
+.tinymce u {
+    text-decoration: underline;
+}
+
+.tinymce s,
+.tinymce strike,
+.tinymce del {
+    text-decoration: line-through;
+}
+
+.tinymce sub {
+    vertical-align: sub;
+    font-size: smaller;
+}
+
+.tinymce sup {
+    vertical-align: super;
+    font-size: smaller;
+}
+
+.tinymce small {
+    font-size: 0.8em;
+}
+
+.tinymce mark {
+    background-color: #ffff00;
+    padding: 0.1em 0.2em;
+}
+
+/* Blockquotes */
+.tinymce blockquote {
+    margin: 1em 40px;
+    padding: 0.5em 1em;
+    border-left: 4px solid #ddd;
+    background-color: #f9f9f9;
+    font-style: italic;
+    color: #666;
+}
+
+.tinymce blockquote p {
+    margin: 0.5em 0;
+}
+
+.tinymce blockquote p:first-child {
+    margin-top: 0;
+}
+
+.tinymce blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+/* Code */
+.tinymce code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    background-color: #f4f4f4;
+    padding: 0.1em 0.3em;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    color: #d14;
+}
+
+.tinymce pre {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    background-color: #f4f4f4;
+    padding: 1em;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 1em 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.tinymce pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+}
+
+/* Tables */
+.tinymce table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    border: 1px solid #ddd;
+}
+
+.tinymce th,
+.tinymce td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.tinymce th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.tinymce tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.tinymce tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* Images */
+.tinymce img {
+    max-width: 100%;
+    height: auto;
+    vertical-align: bottom;
+    border: 0;
+}
+
+.tinymce figure {
+    margin: 1em 0;
+    text-align: center;
+}
+
+.tinymce figcaption {
+    font-style: italic;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 0.5em;
+}
+
+/* Horizontal Rule */
+.tinymce hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 2em 0;
+    height: 1px;
+}
+
+/* Form Elements */
+.tinymce input,
+.tinymce textarea,
+.tinymce select,
+.tinymce button {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+/* Address */
+.tinymce address {
+    font-style: italic;
+    margin: 1em 0;
+}
+
+/* Abbreviation */
+.tinymce abbr[title] {
+    border-bottom: 1px dotted;
+    cursor: help;
+}
+
+/* Keyboard */
+.tinymce kbd {
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
+    color: #333;
+    display: inline-block;
+    font-family: monospace;
+    font-size: 0.85em;
+    font-weight: bold;
+    line-height: 1;
+    padding: 2px 4px;
+    white-space: nowrap;
+}
+
+/* Sample */
+.tinymce samp {
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+/* Variable */
+.tinymce var {
+    font-style: italic;
+    font-family: monospace;
+}
+
+/* Inserted and Deleted Text */
+.tinymce ins {
+    background-color: #d4edda;
+    text-decoration: underline;
+    padding: 0.1em 0.2em;
+}
+
+.tinymce del {
+    background-color: #f8d7da;
+    text-decoration: line-through;
+    padding: 0.1em 0.2em;
+}
+
+/* Details and Summary */
+.tinymce details {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.5em;
+    margin: 1em 0;
+}
+
+.tinymce summary {
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.5em;
+    margin: -0.5em;
+    background-color: #f5f5f5;
+    border-radius: 4px 4px 0 0;
+}
+
+.tinymce details[open] summary {
+    border-bottom: 1px solid #ddd;
+    border-radius: 4px 4px 0 0;
+    margin-bottom: 0.5em;
+}
+
+/* Text Alignment Classes */
+.tinymce .text-left {
+    text-align: left;
+}
+
+.tinymce .text-center {
+    text-align: center;
+}
+
+.tinymce .text-right {
+    text-align: right;
+}
+
+.tinymce .text-justify {
+    text-align: justify;
+}
+
+/* Font Size Classes */
+.tinymce .font-size-small {
+    font-size: 0.8em;
+}
+
+.tinymce .font-size-large {
+    font-size: 1.2em;
+}
+
+.tinymce .font-size-x-large {
+    font-size: 1.5em;
+}
+
+/* Color Classes */
+.tinymce .text-red {
+    color: #dc3545;
+}
+
+.tinymce .text-blue {
+    color: #007bff;
+}
+
+.tinymce .text-green {
+    color: #28a745;
+}
+
+.tinymce .text-orange {
+    color: #fd7e14;
+}
+
+.tinymce .text-gray {
+    color: #6c757d;
+}
+
+/* Background Color Classes */
+.tinymce .bg-yellow {
+    background-color: #fff3cd;
+    padding: 0.25em 0.5em;
+    border-radius: 3px;
+}
+
+.tinymce .bg-light-blue {
+    background-color: #d1ecf1;
+    padding: 0.25em 0.5em;
+    border-radius: 3px;
+}
+
+.tinymce .bg-light-green {
+    background-color: #d4edda;
+    padding: 0.25em 0.5em;
+    border-radius: 3px;
+}
+
+/* Utility Classes */
+.tinymce .clearfix::after {
+    content: '';
+    display: table;
+    clear: both;
+}
+
+.tinymce .float-left {
+    float: left;
+    margin: 0 1em 1em 0;
+}
+
+.tinymce .float-right {
+    float: right;
+    margin: 0 0 1em 1em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .tinymce {
+        padding: 10px;
+    }
+
+    .tinymce ul,
+    .tinymce ol {
+        padding-left: 30px;
+    }
+
+    .tinymce blockquote {
+        margin: 1em 20px;
+    }
+
+    .tinymce table {
+        font-size: 0.9em;
+    }
+
+    .tinymce th,
+    .tinymce td {
+        padding: 6px 8px;
+    }
+}

@@ -24,54 +24,44 @@ import { formatCurrency } from '@/common/format'
 import { useTranslation } from 'react-i18next'
 import AddressManager from '@/components/AddressesModal'
 import { useCreateVnpayUrlMutation } from '@/services/PaymentService'
+import { IProductShort } from '@/models/Product'
+
+const products = [
+    {
+        id: 1,
+        image: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-10.webp',
+        productName: 'Bộ Điều Khiển PLC Siemens S7-1200',
+        sku: 'SIEMENS-PLC-1214C',
+        variants: 'Nguồn cấp: AC 230V, Kết nối: Ethernet',
+        price: 5200000,
+        discountPrice: 4800000,
+        quantity: 1
+    },
+    {
+        id: 2,
+        image: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-17.webp',
+        productName: 'Biến Tần Siemens SINAMICS G120',
+        sku: 'SIEMENS-G120-075',
+        variants: 'Điện áp: 380V 3 pha, Công suất: 1.5kW',
+        price: 7200000,
+        discountPrice: 6750000,
+        quantity: 1
+    }
+] as IProductShort[]
 
 const CheckoutPage = () => {
     const { t } = useTranslation('common')
     const [createVnpayUrl] = useCreateVnpayUrlMutation()
-
-    const products = [
-        {
-            id: 'P0001',
-            productName: 'Bộ điều khiển nhiệt độ Autonics',
-            sku: 'CTRL-AUT-TEMP',
-            originalPrice: 1200000,
-            discountPercentage: 5,
-            productVariant: 'TCN4S-24R',
-            productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-12.webp',
-            price: '1.150.000 VND',
-            quantity: 1
-        },
-        {
-            id: 'P0002',
-            productName: 'Cảm biến quang Keyence',
-            sku: 'SENSOR-KYC',
-            originalPrice: 1000000,
-            discountPercentage: 5,
-            productVariant: 'Màu xanh',
-            productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-10.webp',
-            price: '950.000 VND',
-            quantity: 1
-        },
-        {
-            id: 'P0003',
-            productName: 'Biến tần ABB 3.7kW',
-            sku: 'VFD-ABB-3K7',
-            originalPrice: 6000000,
-            discountPercentage: 8,
-            productVariant: 'Loại 3.7kW',
-            productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-11.webp',
-            price: '5.500.000 VND',
-            quantity: 1
-        }
-    ]
+    const [typeNote, setTypeNote] = useState('info')
+    const [customerNote, setCustomerNote] = useState('')
 
     // Order summary
     const [summary, setSummary] = useState({
-        subTotal: 1190000,
-        discountAmount: 50000,
-        discountShippingFee: 50000,
-        shippingFee: 200000,
-        totalAmount: 1290000,
+        subTotal: products.reduce((total, item) => total + item.discountPrice * item.quantity, 0),
+        discountAmount: 0,
+        discountShippingFee: 0,
+        shippingFee: 0,
+        totalAmount: 0,
         taxes: 0
     })
 
@@ -83,8 +73,7 @@ const CheckoutPage = () => {
         title: 'Nhà riêng',
         address: '123 Đường Nguyễn Huệ',
         district: 'Quận 1',
-        city: 'TP. Hồ Chí Minh',
-        note: ''
+        city: 'TP. Hồ Chí Minh'
     }
 
     // Discount codes
@@ -304,15 +293,47 @@ const CheckoutPage = () => {
                                         </div>
                                     </div>
                                 </div>
+                                {typeNote === 'info' ? (
+                                    <div className='mt-6 bg-blue-50 flex justify-between items-center gap-2 rounded-lg pl-4 pr-3 py-[11px] border-l-4 border-blue-600'>
+                                        <div className='flex items-center overflow-hidden gap-3'>
+                                            <p className='font-bold text-gray-800 whitespace-nowrap'>
+                                                {t('COMMON.PURCHASE_ORDER.NOTES')}:
+                                            </p>
+                                            <p className='text-gray-800 italic'>
+                                                {customerNote.length ? customerNote : t('COMMON.USER.EMPTY')}
+                                            </p>
+                                        </div>
 
-                                <div className='mt-6 bg-blue-50 rounded-lg px-4 py-[13px] border-l-4 border-blue-600 flex gap-2'>
-                                    <p className='font-bold text-gray-800 whitespace-nowrap'>
-                                        {t('COMMON.PURCHASE_ORDER.NOTES')}:
-                                    </p>
-                                    <p className='text-gray-800 italic'>
-                                        {shippingAddress.note.length ? shippingAddress.note : t('COMMON.USER.EMPTY')}
-                                    </p>
-                                </div>
+                                        <button
+                                            className='p-2 rounded-full text-blue-600 hover:bg-blue-100'
+                                            onClick={() => setTypeNote(prev => (prev === 'info' ? 'edit' : 'info'))}
+                                        >
+                                            <Edit2 className='w-4 h-4' />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className='mt-6'>
+                                        <label className='block text-sm font-medium text-gray-700 mb-1'>
+                                            {t('COMMON.PURCHASE_ORDER.NOTES')}
+                                        </label>
+                                        <div className='relative'>
+                                            <input
+                                                type='text'
+                                                value={customerNote}
+                                                onChange={e => setCustomerNote(e.target.value)}
+                                                className={`w-full border border-gray-300 rounded-lg pl-4 pr-11 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none`}
+                                                placeholder={t('COMMON.USER.EMPTY')}
+                                            />
+
+                                            <button
+                                                className='p-2 rounded-full text-blue-600 hover:bg-blue-100 absolute right-3 top-1/2 transform -translate-y-1/2'
+                                                onClick={() => setTypeNote(prev => (prev === 'info' ? 'edit' : 'info'))}
+                                            >
+                                                <Edit2 className='w-4 h-4' />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -333,28 +354,30 @@ const CheckoutPage = () => {
                                     >
                                         <div className='flex items-center'>
                                             <img
-                                                src={item.productImage}
+                                                src={item.image}
                                                 className='w-[62px] h-[62px] rounded-[10px] border border-gray-200 object-cover'
                                             />
                                             <div className='ml-5 space-y-1'>
                                                 <p className='font-medium text-md text-gray-900'>{item.productName}</p>
-                                                <p className='text-gray-500 text-sm'>
+                                                {/* <p className='text-gray-500 text-sm'>
                                                     SKU: <span className='text-black font-medium ml-1'>{item.sku}</span>
-                                                </p>
+                                                </p> */}
                                                 <p className='text-gray-500 text-sm'>
                                                     {t('COMMON.USER.PRODUCT_VARIANT')}:{' '}
-                                                    <span className='text-black font-medium ml-1'>
-                                                        {item.productVariant}
-                                                    </span>
+                                                    <span className='text-black font-medium ml-1'>{item.variants}</span>
                                                 </p>
                                             </div>
                                         </div>
                                         <div className='text-right'>
                                             <div className='flex items-center gap-2'>
-                                                <p className='line-through text-gray-400'>
-                                                    {formatCurrency(item.originalPrice)}
+                                                {item.discountPrice < item.price && (
+                                                    <p className='line-through text-gray-400'>
+                                                        {formatCurrency(item.price)}
+                                                    </p>
+                                                )}
+                                                <p className='font-medium text-[#3675ff]'>
+                                                    {formatCurrency(item.discountPrice)}
                                                 </p>
-                                                <p className='font-medium text-[#3675ff]'>{item.price}</p>
                                             </div>
                                             <p className='text-gray-500 mt-1'>
                                                 {t('COMMON.USER.QUANTITY')}: {item.quantity}

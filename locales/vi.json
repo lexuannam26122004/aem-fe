@@ -879,7 +879,23 @@
             "AVERAGE_RATING": "Xếp hạng trung bình",
             "BASED_ON_REVIEWS": "Dựa trên {{count}} đánh giá",
             "RECOMMENDED_PRODUCTS": "Sản phẩm đề xuất",
-            "STARS": "sao"
+            "STARS": "sao",
+            "VIEW_SLIDE": "Xem slide",
+            "MODERN_ELECTRONICS": "Thiết bị điện tử hiện đại",
+            "UPGRADE_LIVING_SPACE": "Nâng tầm không gian sống của bạn",
+            "EXPLORE_NOW": "Khám phá ngay",
+            "SMART_SOLUTIONS": "Giải pháp thông minh",
+            "AUTOMATION_FOR_ALL": "Tự động hóa cho mọi nhu cầu",
+            "VIEW_PRODUCTS": "Xem sản phẩm",
+            "CUTTING_EDGE_TECH": "Công nghệ đỉnh cao",
+            "LEADING_FUTURE_TRENDS": "Dẫn đầu xu hướng tương lai",
+            "LEARN_MORE": "Tìm hiểu thêm",
+            "PRICE_UNDER_1M": "Dưới 1 triệu",
+            "PRICE_1M_5M": "1 - 5 triệu",
+            "PRICE_5M_10M": "5 - 10 triệu",
+            "PRICE_10M_50M": "10 - 50 triệu",
+            "PRICE_ABOVE_50M": "Trên 50 triệu",
+            "SEE_ALL": "Xem tất cả"
         }
     }
 }

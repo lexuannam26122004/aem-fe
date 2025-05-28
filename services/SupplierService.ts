@@ -3,7 +3,7 @@ import { IResponse } from '@/models/Common'
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from './api'
 
-export const supplierApi = createApi({
+export const supplierApis = createApi({
     reducerPath: 'SupplierApis',
     baseQuery: createBaseQuery('admin/supplier'),
     endpoints: builder => ({
@@ -82,4 +82,4 @@ export const {
     useChangeStatusSupplierMutation,
     useChangeIsPartnerSupplierMutation,
     useGetCountPartnerQuery
-} = supplierApi
+} = supplierApis

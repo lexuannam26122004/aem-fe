@@ -1,13 +1,13 @@
-import { IEmployeeCreate, IEmployeeUpdate, IEmployeeFilter } from '@/models/Employee'
+import { IFeatureCreate, IFeatureUpdate, IFeatureFilter } from '@/models/Feature'
 import { IResponse } from '@/models/Common'
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from './api'
 
-export const EmployeeApis = createApi({
-    reducerPath: 'EmployeeApis',
-    baseQuery: createBaseQuery('admin/employee'),
+export const FeatureApis = createApi({
+    reducerPath: 'FeatureApis',
+    baseQuery: createBaseQuery('admin/features'),
     endpoints: builder => ({
-        searchEmployee: builder.query<IResponse, IEmployeeFilter>({
+        searchFeature: builder.query<IResponse, IFeatureFilter>({
             query: filter => {
                 const params = new URLSearchParams()
 
@@ -25,7 +25,7 @@ export const EmployeeApis = createApi({
             }
         }),
 
-        createEmployee: builder.mutation<void, IEmployeeCreate>({
+        createFeature: builder.mutation<void, IFeatureCreate>({
             query: body => ({
                 url: ``,
                 method: 'POST',
@@ -33,26 +33,26 @@ export const EmployeeApis = createApi({
             })
         }),
 
-        updateEmployee: builder.mutation<void, { id: string; data: IEmployeeUpdate }>({
-            query: ({ id, data }) => ({
-                url: `${id}`,
+        updateFeature: builder.mutation<void, IFeatureUpdate>({
+            query: body => ({
+                url: ``,
                 method: 'PUT',
-                body: data
+                body: body
             })
         }),
 
-        getByIdEmployee: builder.query<IResponse, number>({
+        getByIdFeature: builder.query<IResponse, number>({
             query: id => `${id}`
         }),
 
-        deleteEmployee: builder.mutation<void, number>({
+        deleteFeature: builder.mutation<void, number>({
             query: id => ({
                 url: `${id}`,
                 method: 'DELETE'
             })
         }),
 
-        changeStatusEmployee: builder.mutation<void, number>({
+        changeStatusFeature: builder.mutation<void, number>({
             query: id => ({
                 url: `${id}/change-status`,
                 method: 'PUT'
@@ -62,10 +62,10 @@ export const EmployeeApis = createApi({
 })
 
 export const {
-    useSearchEmployeeQuery,
-    useCreateEmployeeMutation,
-    useUpdateEmployeeMutation,
-    useGetByIdEmployeeQuery,
-    useDeleteEmployeeMutation,
-    useChangeStatusEmployeeMutation
-} = EmployeeApis
+    useSearchFeatureQuery,
+    useCreateFeatureMutation,
+    useUpdateFeatureMutation,
+    useGetByIdFeatureQuery,
+    useDeleteFeatureMutation,
+    useChangeStatusFeatureMutation
+} = FeatureApis

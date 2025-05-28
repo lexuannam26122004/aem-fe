@@ -74,7 +74,7 @@ const Header = () => {
                 </a>
 
                 <nav className='hidden md:flex space-x-8'>
-                    <a href='#' className='font-medium hover:text-blue-600 transition-colors'>
+                    <a href='/user' className='font-medium hover:text-blue-600 transition-colors'>
                         Trang chủ
                     </a>
                     <a href='#product' className='font-medium hover:text-blue-600 transition-colors'>

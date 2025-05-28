@@ -13,7 +13,7 @@ interface TinyMCEEditorProps {
     onChange: (content: string) => void
     apiKey: string
 }
-export default function TinyMCEEditor({ initialValue, apiKey }: TinyMCEEditorProps) {
+export default function TinyMCEEditor({ initialValue, apiKey, onChange }: TinyMCEEditorProps) {
     const editorRef = useRef<TinyMCEEditorType | null>(null)
     const { theme, systemTheme } = useTheme()
 
@@ -157,9 +157,9 @@ export default function TinyMCEEditor({ initialValue, apiKey }: TinyMCEEditorPro
                     toolbar: 'undo redo | bold italic underline | link | bullist numlist'
                 }
             }}
-            // onEditorChange={content => {
-            //     if (onChange) onChange(content)
-            // }}
+            onEditorChange={content => {
+                if (onChange) onChange(content)
+            }}
         />
     )
 }

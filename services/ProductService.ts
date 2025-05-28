@@ -15,9 +15,21 @@ export const ProductApis = createApi({
                     if (filter.pageSize) params.append('PageSize', filter.pageSize.toString())
                     if (filter.pageNumber) params.append('PageNumber', filter.pageNumber.toString())
                     if (filter.keyword) params.append('Keyword', filter.keyword)
-                    if (filter.isDesc) params.append('IsDescending', filter.isDesc.toString())
+                    if (filter.isDesc !== undefined) params.append('IsDescending', filter.isDesc.toString())
                     if (filter.sortBy) params.append('SortBy', filter.sortBy)
-                    if (filter.isActive != undefined) params.append('IsActive', filter.isActive.toString())
+                    if (filter.isActive !== undefined) params.append('IsActive', filter.isActive.toString())
+                    if (filter.typeSection) params.append('TypeSection', filter.typeSection)
+                    if (filter.categoryIds && filter.categoryIds.length > 0) {
+                        filter.categoryIds.forEach(id => params.append('CategoryId', id.toString()))
+                    }
+                    if (filter.brands && filter.brands.length > 0) {
+                        filter.brands.forEach(brand => params.append('Brand', brand))
+                    }
+                    if (filter.stockStatus) params.append('StockStatus', filter.stockStatus)
+                    if (filter.priceRange) params.append('PriceRange', filter.priceRange)
+                    if (filter.featureIds && filter.featureIds.length > 0) {
+                        filter.featureIds.forEach(id => params.append('FeatureId', id.toString()))
+                    }
                 }
 
                 const queryString = params.toString()

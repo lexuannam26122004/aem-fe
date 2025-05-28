@@ -47,21 +47,42 @@ export interface IOrderStatusHistory {
     content: string
 }
 
-export interface IOrderCreate {
-    customerId?: string
-    orderDate: string
-    shippingAddress: string
-    billingAddress?: string
-    totalAmount: number
-    subTotal?: number
-    discountAmount?: number
-    orderStatus: string
-    paymentMethod: string
-    shippingFee: number
-    customerNote?: string
+export interface IOrderItemSelectionCreate {
+    optionId: number
+    optionValueId: number
 }
 
-export interface IOrderUpdate extends IOrderCreate {}
+export interface IOrderItemCreate {
+    productId: number
+    quantity: number
+    price: number
+    discountPrice: number
+    discountType?: string
+    discountValue?: number
+    selections: IOrderItemSelectionCreate[]
+}
+
+export interface IOrderCreate {
+    paymentMethod: string
+    shippingFee: number
+    paymentTime?: string
+    customerNote: string
+    taxes: number
+    discountShippingFee: number
+    discountAmount: number
+    subTotal: number
+
+    items: IOrderItemCreate[]
+    couponIds: number[]
+
+    shippingRecipient: string
+    shippingPhone: string
+    shippingEmail: string
+    shippingAddress: string
+    shippingDistrict: string
+    shippingCity: string
+    clientIpAddress?: string
+}
 
 export interface IOrderFilter extends IFilter {
     fromDate?: string

@@ -15,7 +15,6 @@ export default function EnhancedPagination({
     // Tính tổng số trang
     const totalPages = Math.ceil(totalItems / itemsPerPage)
 
-    // Demo state - xóa khi triển khai thực tế
     const [page, setPage] = useState(currentPage)
 
     useEffect(() => {
