@@ -5,13 +5,10 @@ import {
     Briefcase,
     Search,
     Plus,
-    MoreHorizontal,
     Filter,
     Trash2,
     ClipboardList,
     Calendar,
-    Clock,
-    FileText,
     ArrowRight,
     CheckCircle,
     X,
@@ -50,7 +47,7 @@ const ProjectsPage = () => {
         status: undefined,
         projectName: ''
     })
-    const [isAddSubmit, setIsAddSubmit] = useState(false)
+
     const [createProject, { isLoading: isCreatingProjectLoading }] = useCreateProjectMutation()
     const [deleteProject, { isLoading: isDeletingProjectLoading }] = useDeleteProjectMutation()
     const {
@@ -95,7 +92,7 @@ const ProjectsPage = () => {
 
     const handleAddProject = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        setIsAddSubmit(true)
+        // setIsAddSubmit(true)
 
         if (!newProject.projectName || !newProject.projectCode || !newProject.estimatedBudget || !newProject.doneDate) {
             return
@@ -112,12 +109,12 @@ const ProjectsPage = () => {
                     estimatedBudget: 0
                 })
                 toast('Tạo dự án thành công', 'success')
-                setIsAddSubmit(false)
+                // setIsAddSubmit(false)
                 setIsAddProjectModalOpen(false)
             })
             .catch(() => {
                 toast('Tạo dự án thất bại', 'error')
-                setIsAddSubmit(false)
+                // setIsAddSubmit(false)
             })
     }
 

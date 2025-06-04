@@ -1,13 +1,11 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Eye, EyeOff, Lock, Mail, User, ArrowRight, Shield } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { useRouter } from 'next/navigation'
-import { useDispatch, useSelector } from 'react-redux'
-import { userSelector, setUserInfo } from '@/redux/slices/userSlice'
-import { useGetUserAuthMeQuery } from '@/services/UserAuthService'
-import { IUser } from '@/models/User'
+import { useDispatch } from 'react-redux'
+import { setUserInfo } from '@/redux/slices/userSlice'
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false)

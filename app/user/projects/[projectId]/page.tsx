@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import {
     FileText,
     ArrowLeftToLine,
-    AlertCircle,
     CheckCircle2,
     Package,
     Building,
@@ -14,7 +13,6 @@ import {
     Plus,
     Minus,
     Briefcase,
-    Info,
     Hourglass,
     Loader,
     LucideActivitySquare,
@@ -42,7 +40,6 @@ import { debounce } from 'lodash'
 import { useCheckQuotedQuery, useCreateQuoteMutation } from '@/services/UserQuoteService'
 import { IQuoteCreateVModel } from '@/models/Quote'
 import UserAlertDialog from '@/components/UserAlertDialog'
-import { fabClasses } from '@mui/material'
 
 const RequestQuotePage = () => {
     const { t } = useTranslation('common')

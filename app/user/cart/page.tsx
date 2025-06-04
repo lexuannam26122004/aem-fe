@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, use, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
     Trash2,
     Plus,
@@ -9,8 +9,6 @@ import {
     ShoppingCart,
     ArrowLeftToLine,
     Heart,
-    AlertCircle,
-    CheckCircle2,
     ChevronLeft,
     ChevronRight,
     Zap

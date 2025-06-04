@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FolderPlus, X, Loader2, Search, ChevronDown } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { FolderPlus, X, Loader2, ChevronDown } from 'lucide-react'
 import { formatCurrency } from '@/common/format'
 import { useAddProductIntoProjectMutation, useSearchProjectQuery } from '@/services/UserProjectService'
 import { IProjectGetAll } from '@/models/Project'

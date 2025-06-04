@@ -164,7 +164,7 @@ export default function UserProfileComponent() {
             const response = await triggerGetMe().unwrap()
             await dispatch(setUserInfo(response?.data)) // Nếu thunk, có thể await được
             toast('Cập nhật thông tin thành công', 'success')
-        } catch (error) {
+        } catch {
             toast('Cập nhật thông tin không thành công', 'error')
         } finally {
             setIsEditing(false)

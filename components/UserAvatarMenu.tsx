@@ -1,6 +1,5 @@
-import { Avatar, Box, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
@@ -9,7 +8,6 @@ import { User, ShoppingBag, FolderOpen, LogOut } from 'lucide-react'
 
 const UserAvatarMenu = () => {
     const router = useRouter()
-    const { t } = useTranslation('common')
     const dropdownRef = useRef<HTMLDivElement | null>(null)
     const [isOpen, setIsOpen] = useState(false)
     const dispatch = useDispatch()
