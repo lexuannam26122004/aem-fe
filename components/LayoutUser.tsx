@@ -1,14 +1,39 @@
 'use client'
 
 import { MapPin, Phone, Mail } from 'lucide-react'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import FacebookIcon from '@mui/icons-material/Facebook'
 import InstagramIcon from '@mui/icons-material/Instagram'
 import TwitterIcon from '@mui/icons-material/Twitter'
 import GitHubIcon from '@mui/icons-material/GitHub'
 import UserHeader from './UserHeader'
+import MainLoader from './MainLoader'
+import { useGetCartCountQuery } from '@/services/CartService'
+import { useGetFavoriteCountQuery } from '@/services/FavoriteService'
+import { useDispatch } from 'react-redux'
+import { setCartCount, setFavoriteCount } from '@/redux/slices/userSlice'
 
 export default function MainLayout({ children }: { children: ReactNode }) {
+    const { data: cartCountResponse, isLoading: isCartCountLoading } = useGetCartCountQuery()
+    const { data: favoriteCountResponse, isLoading: isFavoriteCountLoading } = useGetFavoriteCountQuery()
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        if (cartCountResponse) {
+            dispatch(setCartCount(cartCountResponse.data))
+        }
+    }, [cartCountResponse])
+
+    useEffect(() => {
+        if (favoriteCountResponse) {
+            dispatch(setFavoriteCount(favoriteCountResponse.data))
+        }
+    }, [favoriteCountResponse])
+
+    if (isCartCountLoading || isFavoriteCountLoading) {
+        return <MainLoader />
+    }
+
     return (
         <div className='min-h-screen flex flex-col'>
             <UserHeader />

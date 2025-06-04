@@ -44,6 +44,7 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
     const [formErrors, setFormErrors] = useState({
         fullName: '',
         phone: '',
+        title: '',
         email: '',
         address: '',
         district: '',
@@ -173,6 +174,7 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
             fullName: '',
             phone: '',
             email: '',
+            title: '',
             address: '',
             district: '',
             city: ''
@@ -307,7 +309,9 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                             onChange={e =>
                                                 setEditingAddress({ ...editingAddress, title: e.target.value })
                                             }
-                                            className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500'
+                                            className={`w-full border ${
+                                                formErrors.title ? 'border-red-500' : 'border-gray-300'
+                                            } rounded-lg pl-4 pr-10 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none`}
                                             placeholder='Văn phòng, Nhà riêng, Kho hàng...'
                                         />
                                     </div>
@@ -407,6 +411,7 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                                 fullName: '',
                                                 phone: '',
                                                 email: '',
+                                                title: '',
                                                 address: '',
                                                 district: '',
                                                 city: ''

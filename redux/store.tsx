@@ -11,32 +11,64 @@ import { PurchaseOrderApis } from '@/services/PurchaseOrderService'
 import { QuotationApis } from '@/services/QuotationService'
 import { InventoryApis } from '@/services/InventoryService'
 import { PaymentApis } from '@/services/PaymentService'
+import { combineReducers } from 'redux'
 import { BrandApis } from '@/services/BrandService'
 import { FeatureApis } from '@/services/FeatureService'
 import { CategoryApis } from '@/services/CategoryService'
 import { FavoriteApis } from '@/services/FavoriteService'
+import { InteractiveReviewApis } from '@/services/InteractiveReviewService'
+import { CartApis } from '@/services/CartService'
+import { UserAuthApis } from '@/services/UserAuthService'
+import { userSlice } from './slices/userSlice'
+import { persistReducer, persistStore } from 'redux-persist'
+import storage from 'redux-persist/lib/storage' // sử dụng localStorage
+import { UserApis } from '@/services/UserService'
+import { CustomerAddressApis } from '@/services/CustomerAddressService'
+import { UserOrderApis } from '@/services/UserOrderService'
+import { UserProjectApis } from '@/services/UserProjectService'
+import { UserQuoteApis } from '@/services/UserQuoteService'
+
+const persistConfig = {
+    key: 'root',
+    storage,
+    whitelist: ['user'] // chỉ persist state 'user'
+}
+const rootReducer = combineReducers({
+    [userSlice.name]: userSlice.reducer,
+    [toastSlice.name]: toastSlice.reducer,
+    [sidebarSlice.name]: sidebarSlice.reducer,
+    [supplierApis.reducerPath]: supplierApis.reducer,
+    [CouponApis.reducerPath]: CouponApis.reducer,
+    [EmployeeApis.reducerPath]: EmployeeApis.reducer,
+    [ProductApis.reducerPath]: ProductApis.reducer,
+    [ReviewApis.reducerPath]: ReviewApis.reducer,
+    [OrderApis.reducerPath]: OrderApis.reducer,
+    [PurchaseOrderApis.reducerPath]: PurchaseOrderApis.reducer,
+    [QuotationApis.reducerPath]: QuotationApis.reducer,
+    [InventoryApis.reducerPath]: InventoryApis.reducer,
+    [PaymentApis.reducerPath]: PaymentApis.reducer,
+    [BrandApis.reducerPath]: BrandApis.reducer,
+    [CategoryApis.reducerPath]: CategoryApis.reducer,
+    [FeatureApis.reducerPath]: FeatureApis.reducer,
+    [FavoriteApis.reducerPath]: FavoriteApis.reducer,
+    [InteractiveReviewApis.reducerPath]: InteractiveReviewApis.reducer,
+    [CartApis.reducerPath]: CartApis.reducer,
+    [UserAuthApis.reducerPath]: UserAuthApis.reducer,
+    [UserApis.reducerPath]: UserApis.reducer,
+    [CustomerAddressApis.reducerPath]: CustomerAddressApis.reducer,
+    [UserOrderApis.reducerPath]: UserOrderApis.reducer,
+    [UserProjectApis.reducerPath]: UserProjectApis.reducer,
+    [UserQuoteApis.reducerPath]: UserQuoteApis.reducer
+})
+
+const persistedReducer = persistReducer(persistConfig, rootReducer)
 
 export const store = configureStore({
-    reducer: {
-        [toastSlice.name]: toastSlice.reducer,
-        [sidebarSlice.name]: sidebarSlice.reducer,
-        [supplierApis.reducerPath]: supplierApis.reducer,
-        [CouponApis.reducerPath]: CouponApis.reducer,
-        [EmployeeApis.reducerPath]: EmployeeApis.reducer,
-        [ProductApis.reducerPath]: ProductApis.reducer,
-        [ReviewApis.reducerPath]: ReviewApis.reducer,
-        [OrderApis.reducerPath]: OrderApis.reducer,
-        [PurchaseOrderApis.reducerPath]: PurchaseOrderApis.reducer,
-        [QuotationApis.reducerPath]: QuotationApis.reducer,
-        [InventoryApis.reducerPath]: InventoryApis.reducer,
-        [PaymentApis.reducerPath]: PaymentApis.reducer,
-        [BrandApis.reducerPath]: BrandApis.reducer,
-        [CategoryApis.reducerPath]: CategoryApis.reducer,
-        [FeatureApis.reducerPath]: FeatureApis.reducer,
-        [FavoriteApis.reducerPath]: FavoriteApis.reducer
-    },
+    reducer: persistedReducer,
     middleware: getDefaultMiddleware =>
-        getDefaultMiddleware().concat(
+        getDefaultMiddleware({
+            serializableCheck: false
+        }).concat(
             supplierApis.middleware,
             CouponApis.middleware,
             EmployeeApis.middleware,
@@ -50,13 +82,21 @@ export const store = configureStore({
             BrandApis.middleware,
             CategoryApis.middleware,
             FeatureApis.middleware,
-            FavoriteApis.middleware
-        )
+            FavoriteApis.middleware,
+            InteractiveReviewApis.middleware,
+            CartApis.middleware,
+            UserAuthApis.middleware,
+            UserApis.middleware,
+            CustomerAddressApis.middleware,
+            UserOrderApis.middleware,
+            UserProjectApis.middleware,
+            UserQuoteApis.middleware
+        ) as any
 })
 
-// Infer the `RootState` and `AppDispatch` types from the store itself
+export const persistor = persistStore(store)
+
 export type RootState = ReturnType<typeof store.getState>
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
 export type AppDispatch = typeof store.dispatch
 
 export default store

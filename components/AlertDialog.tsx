@@ -105,10 +105,10 @@ export default function AlertDialog({
                         sx={{
                             borderRadius: '8px',
                             minWidth: '75px',
-                            backgroundColor: 'var(--background-button-delete)',
+                            backgroundColor: 'var(--background-color-confirm-delete)',
                             fontWeight: 'bold',
                             '&:hover': {
-                                backgroundColor: 'var(--background-button-delete-hover)'
+                                backgroundColor: 'var(--background-color-confirm-delete-hover)'
                             },
                             fontSize: '15px',
                             textTransform: 'none'
@@ -128,7 +128,7 @@ export default function AlertDialog({
                             borderColor: 'var(--border-color)',
                             fontSize: '15px',
                             '&:hover': {
-                                backgroundColor: 'var(--background-button-confirm-cancel-hover)'
+                                backgroundColor: 'var(--background-color-item-hover)'
                             },
                             textTransform: 'none'
                         }}

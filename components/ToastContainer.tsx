@@ -1,71 +1,147 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Snackbar, Alert, Slide } from '@mui/material'
+import { CheckCircle, AlertCircle, Info, AlertTriangle, X } from 'lucide-react'
 import { toastSlice, toastSelector } from '@/redux/slices/toastSlice'
 
 const ToastContainer = () => {
     const dispatch = useDispatch()
     const toasts = useSelector(toastSelector)
+    const [toastHeights, setToastHeights] = useState<{ [key: string]: number }>({})
 
-    const handleClose = (id: string) => (_event?: React.SyntheticEvent | Event, reason?: string) => {
-        if (reason === 'clickaway') return
+    const handleClose = (id: string) => {
         dispatch(toastSlice.actions.removeToast(id))
     }
 
-    const getAlertColor = (typeToast: string) => {
+    useEffect(() => {
+        const heights: { [key: string]: number } = {}
+        toasts.forEach(toast => {
+            const element = document.getElementById(`toast-${toast.id}`)
+            if (element) {
+                heights[toast.id] = element.offsetHeight
+            }
+        })
+        setToastHeights(heights)
+    }, [toasts])
+
+    const getToastClasses = (typeToast: string) => {
+        const baseClasses =
+            'fixed right-6 flex items-center p-4 rounded-xl shadow-lg border backdrop-blur-sm transition-all duration-300 ease-out transform min-w-80 max-w-md z-50'
+
         switch (typeToast) {
             case 'success':
-                return { backgroundColor: '#41ed48', color: '#fff' }
+                return `${baseClasses} bg-green-50/95 border-green-200/50 text-green-600`
             case 'error':
-                return { backgroundColor: '#f44336', color: '#fff' }
+                return `${baseClasses} bg-red-50/95 border-red-200/50 text-red-600`
             case 'info':
-                return { backgroundColor: '#00bbff', color: '#fff' }
+                return `${baseClasses} bg-blue-50/95 border-blue-200/50 text-blue-600`
             case 'warning':
-                return { backgroundColor: '#ffdd00', color: '#fff' }
+                return `${baseClasses} bg-yellow-50/95 border-yellow-200/50 text-yellow-600`
             default:
-                return {}
+                return `${baseClasses} bg-gray-50/95 border-gray-200/50 text-gray-600`
         }
     }
 
+    const getIcon = (typeToast: string) => {
+        const iconClasses = 'flex-shrink-0 mr-3 mt-0.5'
+
+        switch (typeToast) {
+            case 'success':
+                return <CheckCircle className={`${iconClasses} text-green-500`} size={20} />
+            case 'error':
+                return <AlertCircle className={`${iconClasses} text-red-500`} size={20} />
+            case 'info':
+                return <Info className={`${iconClasses} text-blue-500`} size={20} />
+            case 'warning':
+                return <AlertTriangle className={`${iconClasses} text-yellow-500`} size={20} />
+            default:
+                return <Info className={`${iconClasses} text-gray-500`} size={20} />
+        }
+    }
+
+    const getCloseButtonClasses = (typeToast: string) => {
+        const baseClasses =
+            'flex-shrink-0 ml-3 p-1.5 rounded-full transition-all duration-200 opacity-80 hover:opacity-100'
+
+        switch (typeToast) {
+            case 'success':
+                return `${baseClasses} text-green-500 hover:bg-green-100`
+            case 'error':
+                return `${baseClasses} text-red-500 hover:bg-red-100`
+            case 'info':
+                return `${baseClasses} text-blue-500 hover:bg-blue-100`
+            case 'warning':
+                return `${baseClasses} text-yellow-500 hover:bg-yellow-100`
+            default:
+                return `${baseClasses} text-gray-500 hover:bg-gray-100`
+        }
+    }
+
+    // Calculate cumulative top position for each toast
+    const calculateTopPosition = (currentIndex: number) => {
+        let totalHeight = 24 // Initial top margin
+        for (let i = 0; i < currentIndex; i++) {
+            const toast = toasts[i]
+            const height = toastHeights[toast.id] || 72 // fallback height
+            totalHeight += height + 12 // 12px gap between toasts
+        }
+        return totalHeight
+    }
+
     return (
-        <>
+        <div className='fixed top-0 right-0 pointer-events-none z-50'>
             {toasts.slice(0, 5).map((toast, index) => (
-                <Snackbar
+                <div
                     key={toast.id}
-                    open={true}
-                    autoHideDuration={toast.hideDuration || 4000}
-                    onClose={handleClose(toast.id)}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    TransitionComponent={Slide}
-                    sx={{
-                        mt: `${index * 62}px`,
-                        transition: 'margin-top 0.3s ease-in-out'
+                    id={`toast-${toast.id}`}
+                    className={getToastClasses(toast.typeToast)}
+                    style={{
+                        top: `${calculateTopPosition(index)}px`,
+                        animation: 'slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        pointerEvents: 'auto'
+                    }}
+                    onAnimationEnd={() => {
+                        // Auto close after animation
+                        if (toast.hideDuration !== 0) {
+                            setTimeout(() => {
+                                handleClose(toast.id)
+                            }, toast.hideDuration || 5000)
+                        }
                     }}
                 >
-                    <Alert
-                        onClose={handleClose(toast.id)}
-                        severity={toast.typeToast}
-                        sx={{
-                            // whiteSpace: 'pre-line',
-                            display: 'flex',
-                            alignItems: 'center',
-                            width: '100%',
-                            height: '55px',
-                            fontSize: '15px',
-                            fontFamily: 'inherit',
-                            ...getAlertColor(toast.typeToast),
-                            '& .MuiAlert-icon': { color: '#fff', marginRight: '18px', fontSize: '24px' },
-                            '& .MuiAlert-action': { marginTop: '-5px' },
-                            borderRadius: '8px',
-                            boxShadow: '0px 4px 6px rgba(0,0,0,0.1)'
-                        }}
-                        variant={toast.variant || 'standard'}
-                    >
-                        {toast.message}
-                    </Alert>
-                </Snackbar>
+                    {getIcon(toast.typeToast)}
+
+                    <div className='flex-1 text-sm font-medium leading-relaxed pr-2'>{toast.message}</div>
+
+                    <button onClick={() => handleClose(toast.id)} className={getCloseButtonClasses(toast.typeToast)}>
+                        <X size={16} />
+                    </button>
+                </div>
             ))}
-        </>
+
+            <style jsx>{`
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes slideOutRight {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            `}</style>
+        </div>
     )
 }
 

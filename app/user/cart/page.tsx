@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, use, useRef } from 'react'
 import {
     Trash2,
     Plus,
@@ -19,290 +19,147 @@ import { formatCurrency } from '@/common/format'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
 import EmptyItem from '@/components/EmptyItem'
-import { IProduct } from '@/models/Product'
+import { IProductSearch } from '@/models/Product'
 import ProductCard from '../ProductCard'
-
-const generateProducts = (): IProduct[] => {
-    const covers = [
-        'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-1.webp',
-        'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-2.webp',
-        'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-3.webp',
-        'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-4.webp',
-        'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-5.webp'
-    ]
-
-    const productNames = [
-        'Siemens S7-1200 PLC',
-        'Cảm biến quang Omron E3Z',
-        'Biến tần ABB ACS580',
-        'HMI Weintek MT8071iE',
-        'Động cơ servo Mitsubishi MR-J4',
-        'Module mở rộng Phoenix Contact',
-        'Robot SCARA Epson T6',
-        'Cảm biến áp suất IFM',
-        'Bộ điều khiển nhiệt độ Autonics',
-        'Rơ-le thời gian Carlo Gavazzi',
-        'Máy đo lưu lượng Endress+Hauser',
-        'Cáp truyền thông Profinet',
-        'Màn hình công nghiệp Advantech',
-        'Mô-đun Analog Delta DVP',
-        'Thiết bị IoT Gateway Moxa',
-        'Camera công nghiệp Cognex',
-        'Cảm biến độ rung SKF',
-        'Cảm biến nhiệt Honeywell',
-        'Bộ mã hóa vòng quay Sick',
-        'Thiết bị an toàn Pilz'
-    ]
-
-    const categories = [
-        'PLC',
-        'Sensor',
-        'Drive',
-        'HMI',
-        'Servo',
-        'Module',
-        'Robot',
-        'Automation',
-        'Temperature',
-        'Timer'
-    ]
-    const suppliers = [
-        'Siemens',
-        'Omron',
-        'ABB',
-        'Weintek',
-        'Mitsubishi',
-        'Phoenix',
-        'Epson',
-        'IFM',
-        'Autonics',
-        'Pilz'
-    ]
-    const units = ['cái', 'bộ', 'chiếc', 'hộp']
-
-    const products: IProduct[] = []
-
-    for (let i = 0; i < 20; i++) {
-        const price = Math.floor(Math.random() * 90_000_000) + 1_000_000
-        const discountRate = Math.floor(Math.random() * 30) + 5
-        const discountPrice = discountRate > 0 ? Math.floor(price * (1 - discountRate / 100)) : price
-
-        products.push({
-            id: i + 1,
-            serialNumber: `SN-${100000 + i}`,
-            discountRate,
-            discountPrice,
-            price,
-            images: [covers[i % covers.length]],
-            description: `Mô tả chi tiết cho sản phẩm ${productNames[i]}.`,
-            productName: productNames[i],
-            categoryName: categories[i % categories.length],
-            supplierName: suppliers[i % suppliers.length],
-            unit: units[i % units.length],
-            warrantyPeriod: Math.floor(Math.random() * 36) + 12, // 12 - 48 tháng
-            stockQuantity: Math.floor(Math.random() * 50) + 10,
-            soldCount: Math.floor(Math.random() * 500),
-            minStockThreshold: Math.floor(Math.random() * 10) + 5,
-            rating: parseFloat((Math.random() * 2 + 3).toFixed(1)), // 3.0 - 5.0
-            createdAt: new Date(Date.now() - Math.random() * 3_600_000_000).toISOString(), // trong quá khứ
-            createdBy: 'admin'
-        })
-    }
-
-    return products
-}
+import { useSearchProductQuery } from '@/services/ProductService'
+import { useDeleteCartMutation, useSearchCartQuery, useUpdateCartQuantityMutation } from '@/services/CartService'
+import { ICart } from '@/models/Cart'
+import Loading from '@/components/Loading'
+import { useDeleteFavoriteMutation } from '@/services/FavoriteService'
+import FavoriteFormModal from '@/components/FavoriteFormModal'
+import { debounce } from 'lodash'
 
 const CartPage = () => {
     const { t } = useTranslation('common')
-    const [cart, setCart] = useState([
-        {
-            id: 1,
-            productName: 'Áo thun nam basic',
-            productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-9.webp',
-            price: '320.000₫',
-            originalPrice: '400.000₫',
-            priceValue: 320000,
-            sku: 'AT-001',
-            isFavorite: false,
-            productVariant: 'Trắng / L',
-            quantity: 2,
-            selected: false
-        },
-        {
-            id: 2,
-            productName: 'Quần jean nam slim fit Quần jean nam slim fit Quần jean nam slim fit Quần jean nam slim fit',
-            productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-19.webp',
-            price: '550.000₫',
-            originalPrice: '650.000₫',
-            priceValue: 550000,
-            sku: 'QJ-023',
-            isFavorite: true,
-            productVariant: 'Xanh đậm / 32',
-            quantity: 1,
-            selected: false
-        },
-        {
-            id: 3,
-            productName: 'Giày thể thao nữ',
-            productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-7.webp',
-            price: '890.000₫',
-            originalPrice: '1.200.000₫',
-            priceValue: 890000,
-            sku: 'GT-045',
-            isFavorite: false,
-            productVariant: 'Trắng / 38',
-            quantity: 1,
-            selected: false
-        }
-    ])
-    const [discountError, setDiscountError] = useState('')
-    const [discountSuccess, setDiscountSuccess] = useState('')
-    const [newDiscountCode, setNewDiscountCode] = useState('')
+    const [carts, setCarts] = useState<ICart[]>([])
     const router = useRouter()
-    const [appliedDiscounts, setAppliedDiscounts] = useState([
-        {
-            id: 1,
-            code: 'WELCOME20',
-            description: 'Giảm 50.000₫ cho đơn hàng đầu tiên',
-            amount: 50000
-        }
-    ])
-
-    const handleRemoveDiscount = (discountId: number) => {
-        const discountToRemove = appliedDiscounts.find(d => d.id === discountId)
-
-        setAppliedDiscounts(appliedDiscounts.filter(discount => discount.id !== discountId))
-
-        // Update summary
-        if (discountToRemove) {
-            if (discountToRemove.code === 'WELCOME20') {
-                setSummary({
-                    ...summary,
-                    discountAmount: summary.discountAmount - discountToRemove.amount,
-                    totalAmount: summary.totalAmount + discountToRemove.amount
-                })
-            } else if (discountToRemove.code === 'FREESHIP') {
-                setSummary({
-                    ...summary,
-                    discountShippingFee: summary.discountShippingFee - discountToRemove.amount,
-                    totalAmount: summary.totalAmount + discountToRemove.amount
-                })
-            }
-        }
-    }
-
-    const handleApplyDiscount = () => {
-        if (!newDiscountCode.trim()) {
-            setDiscountError(t('COMMON.USER.EMPTY_DISCOUNT_CODE'))
-            return
-        }
-
-        if (appliedDiscounts.some(discount => discount.code === newDiscountCode)) {
-            setDiscountError(t('COMMON.USER.DISCOUNT_ALREADY_APPLIED'))
-            return
-        }
-
-        if (newDiscountCode === 'FREESHIP') {
-            const newDiscount = {
-                id: Date.now(),
-                code: 'FREESHIP',
-                description: 'Miễn phí vận chuyển',
-                amount: 100000
-            }
-
-            setAppliedDiscounts([...appliedDiscounts, newDiscount])
-
-            setSummary({
-                ...summary,
-                discountShippingFee: summary.discountShippingFee + 100000,
-                totalAmount: summary.totalAmount - 100000
-            })
-
-            setDiscountSuccess(t('COMMON.USER.DISCOUNT_APPLIED_SUCCESS'))
-            setDiscountError('')
-            setNewDiscountCode('')
-
-            setTimeout(() => {
-                setDiscountSuccess('')
-            }, 3000)
-        } else {
-            setDiscountError(t('COMMON.USER.INVALID_DISCOUNT_CODE'))
-        }
-    }
-
+    const [selectedFavorite, setSelectedFavorite] = useState<ICart | null>(null)
+    const [showEmptyState, setShowEmptyState] = useState(false)
     const [summary, setSummary] = useState({
         subTotal: 0,
-        discountAmount: 50000,
-        discountShippingFee: 50000,
-        shippingFee: 200000,
+        shippingFee: 0,
         totalAmount: 0,
         taxes: 0
     })
 
-    // Đề xuất sản phẩm
-    const suggestedProducts = generateProducts().slice(0, 8)
+    const { data: flashSaleResponse, isLoading: isLoadingResponseFlashSale } = useSearchProductQuery({
+        pageSize: 8,
+        pageNumber: 1,
+        typeSection: 'hot_sale'
+    })
+    const { data: cartResponse, isFetching: isLoadingResponseCart } = useSearchCartQuery(undefined, {
+        refetchOnMountOrArgChange: true
+    })
+
+    const productsFlashSale = Array.isArray(flashSaleResponse?.data.records)
+        ? (flashSaleResponse?.data.records as IProductSearch[])
+        : []
+
+    useEffect(() => {
+        if (Array.isArray(cartResponse?.data) && cartResponse?.data?.length > 0) {
+            setCarts(cartResponse.data)
+            setShowEmptyState(cartResponse.data.length === 0)
+        }
+    }, [cartResponse])
+
+    const [deleteFavorite] = useDeleteFavoriteMutation()
+    const [deleteCard] = useDeleteCartMutation()
+    const [changeQuantity] = useUpdateCartQuantityMutation()
 
     useEffect(() => {
         calculateSummary()
-    }, [cart])
+    }, [carts])
 
     const calculateSummary = () => {
-        const selectedItems = cart.filter(item => item.selected)
+        const selectedItems = carts.filter(item => item.isSelected)
         const subTotal = selectedItems.reduce((total, item) => {
-            return total + item.priceValue * item.quantity
+            return total + item.discountPrice * item.quantity
         }, 0)
 
         setSummary({
             ...summary,
             subTotal,
-            totalAmount:
-                subTotal + summary.shippingFee - summary.discountAmount - summary.discountShippingFee + summary.taxes
+            totalAmount: subTotal + summary.shippingFee + summary.taxes
         })
     }
 
+    const debouncedChangeQuantity = useRef(
+        debounce((fn, id: number, quantity: number, snapshot) => {
+            fn({ id, quantity })
+                .unwrap()
+                .catch(() => {
+                    setCarts(snapshot)
+                })
+        }, 800)
+    ).current
+
     const handleQuantityChange = (id: number, newQuantity: number) => {
         if (newQuantity < 1) return
+        const snapshot = carts.map(item => ({ ...item }))
 
-        setCart(cart.map(item => (item.id === id ? { ...item, quantity: newQuantity } : item)))
+        setCarts(carts.map(item => (item.id === id ? { ...item, quantity: newQuantity } : item)))
+
+        debouncedChangeQuantity(changeQuantity, id, newQuantity, snapshot)
     }
 
+    useEffect(() => {
+        return () => {
+            debouncedChangeQuantity.cancel() // cleanup nếu component unmount
+        }
+    }, [])
+
     const handleRemoveItem = (id: number) => {
-        setCart(cart.filter(item => item.id !== id))
+        const snapshot = carts.map(item => ({ ...item }))
+        setCarts(carts.filter(item => item.id !== id))
+        deleteCard(id)
+            .unwrap()
+            .catch(() => setCarts(snapshot))
     }
 
     const handleUpdateFavorite = (id: number) => {
-        setCart(prevCart => prevCart.map(item => (item.id === id ? { ...item, isFavorite: !item.isFavorite } : item)))
+        const snapshot = carts.map(item => ({ ...item }))
+        const item = snapshot.find(item => item.id === id)
+        if (item.isFavorite) {
+            setCarts(prevCart => prevCart.map(item => (item.id === id ? { ...item, isFavorite: false } : item)))
+            deleteFavorite(item.productId)
+                .unwrap()
+                .catch(() => setCarts(snapshot)) // Rollback on error
+        } else {
+            setSelectedFavorite(item)
+        }
     }
 
     const handleSelectItem = (id: number) => {
-        setCart(cart.map(item => (item.id === id ? { ...item, selected: !item.selected } : item)))
+        setCarts(carts.map(item => (item.id === id ? { ...item, isSelected: !item.isSelected } : item)))
     }
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         const isChecked = e.target.checked
-        setCart(cart.map(item => ({ ...item, selected: isChecked })))
+        setCarts(carts.map(item => ({ ...item, isSelected: isChecked })))
     }
 
-    const allSelected = cart.length > 0 && cart.every(item => item.selected)
-    const selectedCount = cart.filter(item => item.selected).length
+    const allSelected = carts.length > 0 && carts.every(item => item.isSelected)
+    const selectedCount = carts.filter(item => item.isSelected).length
 
     useEffect(() => {
         if (selectedCount === 0) {
             setSummary({
                 subTotal: 0,
                 shippingFee: 0,
-                discountAmount: 0,
-                discountShippingFee: 0,
                 taxes: 0,
                 totalAmount: 0
             })
         }
     }, [selectedCount])
 
+    if (isLoadingResponseCart || isLoadingResponseFlashSale) {
+        return <Loading />
+    }
+
     return (
         <div className='min-h-screen'>
             <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-                {cart.length > 0 ? (
+                {!showEmptyState ? (
                     <div className='flex flex-col lg:flex-row gap-6'>
                         {/* Main cart content */}
                         <div className='w-full lg:w-2/3'>
@@ -320,7 +177,7 @@ const CartPage = () => {
                                                     className='w-4 h-4 rounded-[10px] border-[#d1e0ff] accent-[#3675ff] text-[#3675ff] cursor-pointer'
                                                 />
                                                 <span className='ml-4 font-medium text-gray-800'>
-                                                    {t('COMMON.USER.SELECT_ALL', { count: cart.length })}
+                                                    {t('COMMON.USER.SELECT_ALL', { count: carts.length })}
                                                 </span>
                                             </div>
                                             <div className='text-gray-600 flex items-center'>
@@ -336,11 +193,11 @@ const CartPage = () => {
 
                                     {/* Cart Items */}
                                     <div className='divide-y divide-gray-100'>
-                                        {cart.map(item => (
+                                        {carts.map(item => (
                                             <div
                                                 key={item.id}
                                                 className={`p-6 transition-colors ${
-                                                    item.selected ? 'bg-blue-50/30' : ''
+                                                    item.isSelected ? 'bg-blue-50/30' : ''
                                                 }`}
                                             >
                                                 <div className='flex'>
@@ -348,7 +205,7 @@ const CartPage = () => {
                                                     <div className='flex items-start pt-1'>
                                                         <input
                                                             type='checkbox'
-                                                            checked={item.selected}
+                                                            checked={item.isSelected}
                                                             onChange={() => handleSelectItem(item.id)}
                                                             className='w-4 h-4 rounded-[10px] border-[#d1e0ff] accent-[#3675ff] text-[#3675ff] cursor-pointer'
                                                         />
@@ -356,30 +213,29 @@ const CartPage = () => {
 
                                                     {/* Product Image */}
                                                     <div className='ml-4 flex-shrink-0'>
-                                                        <div className='relative group'>
+                                                        <div className='relative'>
                                                             <img
-                                                                src={item.productImage}
+                                                                src={item.image}
+                                                                className='w-[70px] h-[70px] rounded-[10px] border border-gray-200 object-cover'
                                                                 alt={item.productName}
-                                                                className='w-[65px] h-[65px] rounded-[10px] border border-gray-200 object-cover'
                                                             />
-                                                            <button className='absolute top-2 right-2 bg-white/80 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white'>
-                                                                <Heart className='w-4 h-4 text-gray-600' />
-                                                            </button>
+                                                            {item.discountRate > 0 && (
+                                                                <div className='absolute -top-[10px] -right-[10px] bg-red-500 text-white text-xs font-bold rounded-full w-[35px] h-[35px] flex items-center justify-center'>
+                                                                    -{item.discountRate}%
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
 
                                                     {/* Product Details */}
                                                     <div className='ml-5 flex-grow'>
                                                         <div className='flex flex-col sm:flex-row sm:justify-between sm:items-start'>
-                                                            <div className='space-y-0.5'>
+                                                            <div className='space-y-1'>
                                                                 <p className='font-medium text-md text-gray-900'>
                                                                     {item.productName}
                                                                 </p>
                                                                 <p className='text-gray-500 text-sm'>SKU: {item.sku}</p>
-                                                                <p className='text-gray-500 text-sm'>
-                                                                    {t('COMMON.USER.PRODUCT_VARIANT')}:{' '}
-                                                                    {item.productVariant}
-                                                                </p>
+                                                                <p className='text-black text-sm'>{item.variants}</p>
                                                             </div>
 
                                                             <div className='flex items-center justify-between mt-3 sm:ml-3 sm:mt-0'>
@@ -415,13 +271,14 @@ const CartPage = () => {
                                                                 {/* Price */}
                                                                 <div className='text-right min-w-[120px]'>
                                                                     <p className='font-medium text-blue-600'>
-                                                                        {item.price}
+                                                                        {formatCurrency(item.discountPrice)}
                                                                     </p>
-                                                                    {item.originalPrice && (
-                                                                        <p className='line-through text-gray-400'>
-                                                                            {item.originalPrice}
-                                                                        </p>
-                                                                    )}
+                                                                    {item.originalPrice &&
+                                                                        item.discountPrice < item.originalPrice && (
+                                                                            <p className='line-through text-gray-400'>
+                                                                                {formatCurrency(item.originalPrice)}
+                                                                            </p>
+                                                                        )}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -453,7 +310,7 @@ const CartPage = () => {
                                 </div>
                             </div>
 
-                            <ProductHotSale products={suggestedProducts} title='Hot Sales' />
+                            <ProductHotSale products={productsFlashSale} title='Hot Sales' />
                         </div>
 
                         {/* Order summary */}
@@ -480,26 +337,6 @@ const CartPage = () => {
                                             </div>
 
                                             <div className='flex justify-between'>
-                                                <p className='text-gray-600'>
-                                                    {t('COMMON.ORDER.DISCOUNT_SHIPPING_FEE')}
-                                                </p>
-                                                <p className='font-medium text-[#ff5630]'>
-                                                    {summary.discountShippingFee && summary.discountShippingFee >= 0
-                                                        ? '- '
-                                                        : ''}
-                                                    {formatCurrency(summary.discountShippingFee || 0)}
-                                                </p>
-                                            </div>
-
-                                            <div className='flex justify-between'>
-                                                <p className='text-gray-600'>{t('COMMON.ORDER.DISCOUNT_AMOUNT')}</p>
-                                                <p className='font-medium text-[#ff5630]'>
-                                                    {summary.discountAmount && summary.discountAmount >= 0 ? '- ' : ''}
-                                                    {formatCurrency(summary.discountAmount || 0)}
-                                                </p>
-                                            </div>
-
-                                            <div className='flex justify-between'>
                                                 <p className='text-gray-600'>{t('COMMON.ORDER.TAXES')}</p>
                                                 <p className='font-medium'>{formatCurrency(summary.taxes || 0)}</p>
                                             </div>
@@ -516,70 +353,6 @@ const CartPage = () => {
                                                 {t('COMMON.USER.VAT_INCLUDED')}
                                             </p>
                                         </div>
-                                    </div>
-
-                                    <div className='mt-6'>
-                                        <label className='block text-sm font-medium text-gray-700 mb-3'>
-                                            {t('COMMON.USER.DISCOUNT_CODE')}
-                                        </label>
-                                        <div className='flex'>
-                                            <input
-                                                type='text'
-                                                onChange={e => setNewDiscountCode(e.target.value)}
-                                                className='flex-1 border border-gray-300 rounded-l-lg px-4 py-[11px] focus:ring-blue-500 focus:border-blue-500 outline-none'
-                                                placeholder={t('COMMON.USER.ENTER_DISCOUNT_CODE')}
-                                            />
-                                            <button
-                                                className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-[11px] rounded-r-lg font-medium transition'
-                                                onClick={handleApplyDiscount}
-                                            >
-                                                {t('COMMON.USER.APPLY')}
-                                            </button>
-                                        </div>
-
-                                        {discountError && (
-                                            <div className='mt-2 text-red-600 text-sm flex items-center'>
-                                                <AlertCircle className='w-4 h-4 mr-1' />
-                                                {discountError}
-                                            </div>
-                                        )}
-
-                                        {discountSuccess && (
-                                            <div className='mt-2 text-green-600 text-sm flex items-center'>
-                                                <CheckCircle2 className='w-4 h-4 mr-1' />
-                                                {discountSuccess}
-                                            </div>
-                                        )}
-
-                                        {/* Applied discount codes */}
-                                        {appliedDiscounts.length > 0 && (
-                                            <div className='mt-3 space-y-3'>
-                                                {appliedDiscounts.map(discount => (
-                                                    <div
-                                                        key={discount.id}
-                                                        className='bg-blue-50 rounded-lg p-4 flex justify-between items-center'
-                                                    >
-                                                        <div>
-                                                            <div className='flex items-center'>
-                                                                <CheckCircle2 className='w-4 h-4 text-green-600 mr-1.5' />
-                                                                <span className='font-medium text-gray-800'>
-                                                                    {discount.code}
-                                                                </span>
-                                                            </div>
-                                                            <p className='text-sm text-gray-600 mt-1'>
-                                                                {discount.description}
-                                                            </p>
-                                                        </div>
-                                                        <button
-                                                            className='p-2 bg-red-50 rounded-full text-red-600 hover:bg-red-100 transition-colors'
-                                                            onClick={() => handleRemoveDiscount(discount.id)}
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
                                     </div>
 
                                     <div className='mt-6'>
@@ -603,12 +376,32 @@ const CartPage = () => {
                         </div>
                     </div>
                 ) : (
-                    <EmptyItem
-                        icon={<ShoppingCart className='w-10 h-10 text-blue-600' />}
-                        title={t('COMMON.USER.CART_EMPTY_TITLE')}
-                        description={t('COMMON.USER.CART_EMPTY_DESCRIPTION')}
-                        buttonText={t('COMMON.USER.CONTINUE_SHOPPING')}
-                        onClick={() => router.push('/')}
+                    <div className='mt-8'>
+                        <EmptyItem
+                            icon={<ShoppingCart className='w-10 h-10 text-blue-600' />}
+                            title={t('COMMON.USER.CART_EMPTY_TITLE')}
+                            description={t('COMMON.USER.CART_EMPTY_DESCRIPTION')}
+                            buttonText={t('COMMON.USER.CONTINUE_SHOPPING')}
+                            onClick={() => router.push('/')}
+                        />
+                    </div>
+                )}
+
+                {selectedFavorite && (
+                    <FavoriteFormModal
+                        isOpen={!!selectedFavorite}
+                        onClose={() => setSelectedFavorite(null)}
+                        productId={Number(selectedFavorite.productId) || 0}
+                        variants={selectedFavorite?.selections}
+                        productName={selectedFavorite.productName}
+                        currentPrice={selectedFavorite.discountPrice}
+                        onChange={() => {
+                            setCarts(prevCart =>
+                                prevCart.map(item =>
+                                    item.id === selectedFavorite.id ? { ...item, isFavorite: true } : item
+                                )
+                            )
+                        }}
                     />
                 )}
             </div>
@@ -616,23 +409,16 @@ const CartPage = () => {
     )
 }
 
-type ProductHotSaleProps = {
-    title: string
-    products: IProduct[]
-    viewAll?: boolean
-}
-
 const ProductHotSale = ({ title, products }: ProductHotSaleProps) => {
     const [currentPage, setCurrentPage] = useState(0)
     const [currentIndex, setCurrentIndex] = useState(0)
-    products = products.slice(0, 19)
-    const totalPages = Math.min(Math.floor((products.length - 1) / 2), 10)
+    const totalPages = Math.min(Math.floor(products.length - 1), 10)
 
     const nextPage = () => {
         if (currentPage + 1 >= totalPages) {
             return
         }
-        setCurrentIndex(prev => prev + 2)
+        setCurrentIndex(prev => prev + 1)
         setCurrentPage(prev => prev + 1)
     }
 
@@ -642,18 +428,14 @@ const ProductHotSale = ({ title, products }: ProductHotSaleProps) => {
     }
 
     const prevPage = () => {
-        setCurrentIndex(prev => Math.max(prev - 2, 0))
+        setCurrentIndex(prev => Math.max(prev - 1, 0))
         setCurrentPage(prev => Math.max(prev - 1, 0))
     }
 
-    console.log('currentIndex', currentIndex)
-    console.log('currentPage', currentPage)
-    console.log('totalPages', totalPages)
-
-    const currentProducts = products.slice(currentIndex, Math.min(currentIndex + 2, 20))
+    const currentProducts = products.slice(currentIndex, Math.min(currentIndex + 2, 8))
 
     return (
-        <div className='rounded-[15px] mt-6 overflow-hidden relative'>
+        <div id='flash-sale' className='mt-6 rounded-xl overflow-hidden relative'>
             {/* Simplified enhanced background */}
             <div className='absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-500 to-blue-400'>
                 {/* Simplified pattern - just using background dots */}
@@ -677,9 +459,9 @@ const ProductHotSale = ({ title, products }: ProductHotSaleProps) => {
             </div>
 
             {/* Content container */}
-            <div className='relative z-10 p-6 text-white'>
+            <div className='relative z-10 px-8 py-6 text-white'>
                 {/* Header with enhanced hot label */}
-                <div className='flex items-center justify-center mb-6'>
+                <div className='flex items-center mt-1 justify-center mb-6'>
                     <div className='relative'>
                         <h2 className='text-3xl font-extrabold text-white tracking-wide text-center px-4'>
                             {title.toUpperCase()}
@@ -698,18 +480,16 @@ const ProductHotSale = ({ title, products }: ProductHotSaleProps) => {
                 </div>
 
                 {/* Product grid */}
-                <div className='rounded-[15px] overflow-hidden bg-white shadow-lg bg-opacity-10 p-10 mx-4 backdrop-blur-sm'>
-                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-6'>
-                        {currentProducts.map((product, index) => (
-                            <ProductCard key={index} product={product} isHotSale={true} />
-                        ))}
-                    </div>
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-14 px-4'>
+                    {currentProducts.map((product, index) => (
+                        <ProductCard key={index} product={product} isHotSale={true} />
+                    ))}
                 </div>
 
                 {/* Navigation buttons */}
                 <button
                     onClick={prevPage}
-                    className='absolute left-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-10 hover:bg-opacity-20 text-white pr-2 pl-1 py-2 rounded-r-lg shadow-lg backdrop-blur-sm transition-all border border-white border-opacity-30'
+                    className='absolute left-0 top-1/2 -translate-y-1/2 bg-blue-200 bg-opacity-20 hover:bg-opacity-30 text-white pr-2 pl-1 py-2 rounded-r-lg shadow-lg backdrop-blur-sm transition-all border border-white border-opacity-30'
                     aria-label='Previous page'
                 >
                     <ChevronLeft size={24} />
@@ -717,7 +497,7 @@ const ProductHotSale = ({ title, products }: ProductHotSaleProps) => {
 
                 <button
                     onClick={nextPage}
-                    className='absolute right-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-10 hover:bg-opacity-20 text-white pr-1 pl-2 py-2 rounded-l-lg shadow-lg backdrop-blur-sm transition-all border border-white border-opacity-30'
+                    className='absolute right-0 top-1/2 -translate-y-1/2 bg-blue-200 bg-opacity-20 hover:bg-opacity-30 text-white pr-1 pl-2 py-2 rounded-l-lg shadow-lg backdrop-blur-sm transition-all border border-white border-opacity-30'
                     aria-label='Next page'
                 >
                     <ChevronRight size={24} />
@@ -725,7 +505,7 @@ const ProductHotSale = ({ title, products }: ProductHotSaleProps) => {
 
                 {/* Page indicators */}
                 {totalPages > 1 && (
-                    <div className='flex justify-center mt-6 space-x-2'>
+                    <div className='flex justify-center mt-8 space-x-2 pb-2'>
                         {Array.from({ length: totalPages }).map((_, index) => (
                             <button
                                 key={index}
@@ -743,6 +523,12 @@ const ProductHotSale = ({ title, products }: ProductHotSaleProps) => {
             </div>
         </div>
     )
+}
+
+type ProductHotSaleProps = {
+    title: string
+    products: IProductSearch[]
+    viewAll?: boolean
 }
 
 export default CartPage

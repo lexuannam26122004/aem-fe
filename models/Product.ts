@@ -66,12 +66,14 @@ export interface ProductVariantWithOptions {
 }
 
 export interface VariantOptionWithValues {
+    id: number
     isHasImage: boolean
     optionName: string
     values: VariantOptionDetail[]
 }
 
 export interface VariantOptionDetail {
+    id: number
     value: string
     image?: string
 }

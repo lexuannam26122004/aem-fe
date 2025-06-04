@@ -9,6 +9,9 @@ export default {
     ],
     theme: {
         extend: {
+            animation: {
+                'spin-slow': 'spin 4s linear infinite' // xoay chậm hơn
+            },
             fontSize: {
                 xs: ['0.75rem', { lineHeight: '1rem' }], // 12px
                 sm: ['0.875rem', { lineHeight: '1.25rem' }], // 14px

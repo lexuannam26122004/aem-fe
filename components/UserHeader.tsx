@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Search, User, Heart, ShoppingCart, Menu, X, ChevronDown, Phone, Mail, MapPin, Bell, LogIn } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSelector } from 'react-redux'
+import { userSelector } from '@/redux/slices/userSlice'
+import UserAvatarMenu from './UserAvatarMenu'
+import { usePathname } from 'next/navigation'
 
 const Logo = () => {
     return (
@@ -29,6 +33,8 @@ const UserHeader = () => {
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
     const [isSearchFocused, setIsSearchFocused] = useState(false)
+    const user = useSelector(userSelector)
+    const pathName = usePathname()
 
     const toggleMenu = () => {
         setIsOpen(!isOpen)
@@ -134,45 +140,66 @@ const UserHeader = () => {
                         <div className='flex items-center space-x-1 md:space-x-6'>
                             <div className='hidden md:flex items-center'>
                                 <Link
-                                    href='/user/profile'
-                                    className='flex flex-col items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all'
-                                >
-                                    <User size={22} strokeWidth={1.5} />
-                                    <span className='text-xs mt-1 font-medium'>Tài khoản</span>
-                                </Link>
-                                <Link
                                     href='/user/wishlist'
-                                    className='flex flex-col items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all'
+                                    className={`flex flex-col items-center px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all relative ${
+                                        pathName.includes('user/wishlist')
+                                            ? 'bg-blue-50 text-blue-600'
+                                            : 'text-gray-700'
+                                    }`}
                                 >
                                     <Heart size={22} strokeWidth={1.5} />
+                                    {user.cartCount > 0 && (
+                                        <motion.span
+                                            className='absolute -top-0 -right-0 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center'
+                                            initial={{ scale: 0.8 }}
+                                            animate={{ scale: 1 }}
+                                            transition={{
+                                                type: 'spring',
+                                                stiffness: 500,
+                                                damping: 10
+                                            }}
+                                        >
+                                            {user.favoriteCount}
+                                        </motion.span>
+                                    )}
                                     <span className='text-xs mt-1 font-medium'>Yêu thích</span>
                                 </Link>
                                 <Link
                                     href='/user/cart'
-                                    className='flex flex-col items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all relative'
+                                    className={`ml-2 flex flex-col items-center px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all relative ${
+                                        pathName.includes('user/cart') ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
+                                    }`}
                                 >
                                     <ShoppingCart size={22} strokeWidth={1.5} />
-                                    <motion.span
-                                        className='absolute -top-1 -right-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center'
-                                        initial={{ scale: 0.8 }}
-                                        animate={{ scale: 1 }}
-                                        transition={{
-                                            type: 'spring',
-                                            stiffness: 500,
-                                            damping: 10
-                                        }}
-                                    >
-                                        3
-                                    </motion.span>
+                                    {user.cartCount > 0 && (
+                                        <motion.span
+                                            className='absolute -top-0 -right-0 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center'
+                                            initial={{ scale: 0.8 }}
+                                            animate={{ scale: 1 }}
+                                            transition={{
+                                                type: 'spring',
+                                                stiffness: 500,
+                                                damping: 10
+                                            }}
+                                        >
+                                            {user.cartCount}
+                                        </motion.span>
+                                    )}
                                     <span className='text-xs mt-1 font-medium'>Giỏ hàng</span>
                                 </Link>
-                                <Link
-                                    href='/login'
-                                    className='ml-4 flex items-center bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-6 py-3 rounded-full transition-all'
-                                >
-                                    <LogIn size={18} className='mr-2' />
-                                    <span className='font-medium'>Đăng nhập</span>
-                                </Link>
+                                {!user.isAuthenticated ? (
+                                    <Link
+                                        href='/login'
+                                        className='ml-4 flex items-center bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-6 py-3 rounded-full transition-all'
+                                    >
+                                        <LogIn size={18} className='mr-2' />
+                                        <span className='font-medium'>Đăng nhập</span>
+                                    </Link>
+                                ) : (
+                                    <div className='ml-4 relative'>
+                                        <UserAvatarMenu />
+                                    </div>
+                                )}
                             </div>
 
                             {/* Mobile Menu Button */}

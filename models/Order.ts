@@ -25,7 +25,11 @@ export interface IOrderDetail extends IOrder {
     customerNote?: string
     customerEmail?: string
     customerIp: string
-    itemList: IOrderItem[]
+    shippingPhone: string
+    shippingRecipient: string
+    shippingDistrict: string
+    shippingCity: string
+    items: IOrderItem[]
     shippingAddress: string
     billingAddress?: string
     shipBy?: string
@@ -33,7 +37,7 @@ export interface IOrderDetail extends IOrder {
     trackingCode?: string
     discountShippingFee?: number
     taxes?: number
-    orderStatusHistory: IOrderStatusHistory[]
+    histories: IOrderStatusHistory[]
     paymentTime?: string
     carrierDeliveryTime?: string
     deliveryTime?: string
@@ -44,7 +48,7 @@ export interface IOrderDetail extends IOrder {
 
 export interface IOrderStatusHistory {
     time: string
-    content: string
+    title: string
 }
 
 export interface IOrderItemSelectionCreate {
@@ -89,4 +93,31 @@ export interface IOrderFilter extends IFilter {
     toDate?: string
     orderStatus?: string
     paymentMethod?: string
+}
+
+export interface IUserOrderFilter {
+    pageSize?: number
+    pageNumber?: number
+    status?: string
+    orderCode?: string
+}
+
+export interface IUserOrderGetAll {
+    id: number
+    orderCode: string
+    orderStatus: string
+    orderDate: string
+    trackingCode: string
+    totalAmount: number
+    items: IOrderItemShort[]
+}
+
+export interface IOrderItemShort {
+    image?: string
+    productName: string
+    sku: string
+    variants: string
+    price: number
+    discountPrice: number
+    quantity: number
 }

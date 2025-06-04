@@ -832,3 +832,11 @@ body {
         padding: 6px 8px;
     }
 }
+
+.btn-primary {
+    @apply px-6 py-3 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 flex items-center gap-2 transition;
+}
+
+.btn-outline {
+    @apply px-6 py-3 rounded-lg border border-gray-300 font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition;
+}

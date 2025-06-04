@@ -23,8 +23,11 @@ export const ReviewApis = createApi({
                 const queryString = params.toString()
                 return queryString ? `?${queryString}` : ''
             }
+        }),
+        getReviewByProductId: builder.query<IResponse, { productId: number; pageNumber: number }>({
+            query: ({ productId, pageNumber }) => `by-product/${productId}?pageNumber=${pageNumber}`
         })
     })
 })
 
-export const { useSearchReviewQuery } = ReviewApis
+export const { useSearchReviewQuery, useGetReviewByProductIdQuery } = ReviewApis

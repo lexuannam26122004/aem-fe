@@ -2,8 +2,8 @@ export interface IOrderItem {
     id: number
     productId: string
     productName: string
-    productImage: string
-    productVariant: string
+    image: string
+    variants: string
     quantity: number
     price: number
     subtotal: number

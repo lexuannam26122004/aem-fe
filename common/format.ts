@@ -42,20 +42,5 @@ export const convertToVietnamTime = (date: Date) => {
     return formattedDate // Trả về thời gian đã được định dạng
 }
 
-export function formatWorkingTime(hours: number, t: any) {
-    const minutes = hours * 60
-
-    if (minutes < 60) {
-        return `${Math.round(minutes)} ${t('COMMON.MINUTES')}`
-    } else if (hours < 24) {
-        const roundedHours = parseFloat(hours.toFixed(1))
-        return `${roundedHours} ${t('COMMON.HOURS')}`
-    } else {
-        const days = hours / 24
-        const roundedDays = parseFloat(days.toFixed(1))
-        return `${roundedDays} ${t('COMMON.DAYS')}`
-    }
-}
-
 export const maxValueCurrency = 100000000
 export const maxValuePercentage = 100

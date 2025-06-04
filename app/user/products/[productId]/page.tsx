@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
     Star,
     Wifi,
@@ -27,110 +27,11 @@ import { useGetByIdProductQuery, useSearchProductQuery } from '@/services/Produc
 import { usePathname } from 'next/navigation'
 import Loading from '@/components/Loading'
 import ObjectEmptyState from '@/components/ObjectEmptyState'
-import { useGetFavoriteCountQuery } from '@/services/FavoriteService'
-
-const reviewsResponse = {
-    success: false,
-    data: {
-        summary: {
-            oneStarCount: 0,
-            twoStarCount: 0,
-            threeStarCount: 1,
-            fourStarCount: 2,
-            fiveStarCount: 2,
-            reviewCount: 5,
-            rating: 4.2,
-            reviews: [
-                {
-                    id: 4,
-                    interactionType: null,
-                    likes: 14,
-                    dislikes: 0,
-                    avatar: null,
-                    fullName: 'Trần Ngọc Mai',
-                    reviewDate: '2025-05-23T17:29:47.803',
-                    productId: 4,
-                    rating: 5,
-                    comment: 'Đóng gói cẩn thận, sản phẩm đúng mô tả.',
-                    isApproved: true,
-                    images: [
-                        'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-3.webp',
-                        'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-2.webp'
-                    ]
-                },
-                {
-                    id: 5,
-                    interactionType: null,
-                    likes: 9,
-                    dislikes: 1,
-                    avatar: null,
-                    fullName: 'Nguyễn Minh Tuấn',
-                    reviewDate: '2025-05-21T17:29:47.803',
-                    productId: 4,
-                    rating: 4,
-                    comment: 'Sản phẩm đúng kỳ vọng, sẽ mua thêm lần tới.',
-                    isApproved: true,
-                    images: []
-                },
-                {
-                    id: 1,
-                    interactionType: 'like',
-                    likes: 12,
-                    dislikes: 1,
-                    avatar: null,
-                    fullName: 'Lê Thị Hồng',
-                    reviewDate: '2025-05-20T17:29:47.803',
-                    productId: 4,
-                    rating: 5,
-                    comment: 'Sản phẩm rất tốt, đáng giá tiền!',
-                    isApproved: true,
-                    images: [
-                        'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-10.webp',
-                        'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-9.webp',
-                        'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-8.webp'
-                    ]
-                },
-                {
-                    id: 3,
-                    interactionType: 'like',
-                    likes: 5,
-                    dislikes: 2,
-                    avatar: null,
-                    fullName: 'Phạm Văn Hòa',
-                    reviewDate: '2025-05-17T17:29:47.803',
-                    productId: 4,
-                    rating: 3,
-                    comment: 'Chất lượng ổn nhưng giao hàng hơi chậm.',
-                    isApproved: true,
-                    images: [
-                        'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-5.webp',
-                        'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-4.webp'
-                    ]
-                },
-                {
-                    id: 2,
-                    interactionType: null,
-                    likes: 8,
-                    dislikes: 0,
-                    avatar: null,
-                    fullName: 'Hoàng Trung Kiên',
-                    reviewDate: '2025-05-16T17:29:47.803',
-                    productId: 4,
-                    rating: 4,
-                    comment: 'Hoạt động ổn định, hỗ trợ kỹ thuật nhanh.',
-                    isApproved: true,
-                    images: [
-                        'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-7.webp',
-                        'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-6.webp'
-                    ]
-                }
-            ]
-        },
-        totalRecords: 5
-    }
-}
-
-const reviews = reviewsResponse.data.summary.reviews
+import { useDeleteFavoriteMutation, useGetFavoriteCountByProductQuery } from '@/services/FavoriteService'
+import FavoriteFormModal from '@/components/FavoriteFormModal'
+import { useGetReviewByProductIdQuery } from '@/services/ReviewService'
+import { useCreateInteractiveReviewMutation } from '@/services/InteractiveReviewService'
+import ProjectFormModal from '@/components/ProjectFormModal'
 
 type ProductHotSaleProps = {
     title: string
@@ -140,12 +41,26 @@ type ProductHotSaleProps = {
 
 const ProductDetail = () => {
     const { t } = useTranslation('common')
-    const [selectedModel, setSelectedModel] = useState(0)
-    const [selectedConnectivity, setSelectedConnectivity] = useState(0)
     const [activeTab, setActiveTab] = useState('info')
+    const [pageNumber, setPageNumber] = useState(1)
     const pathName = usePathname()
     const productId = pathName.split('/').pop()
+    const [copied, setCopied] = useState(false)
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const [isShowProjectModal, setIsShowProjectModal] = useState(false)
+    const [isShowFavoriteModal, setIsShowFavoriteModal] = useState(false)
+    const [reviews, setReviews] = useState([])
+    const [favoriteCount, setFavoriteCount] = useState({ isFavorite: false, count: 0 })
+    const [selectedOptions, setSelectedOptions] = useState({} as Record<number, number>)
 
+    const {
+        data: reviewsResponse,
+        isLoading: isReviewsLoading,
+        refetch: reviewRefetch
+    } = useGetReviewByProductIdQuery({
+        productId: Number(productId),
+        pageNumber: pageNumber
+    })
     const { data: productResponse, isLoading: isProductLoading } = useGetByIdProductQuery(Number(productId))
 
     const { data: dataResponseFlashSale, isLoading: isLoadingResponseFlashSale } = useSearchProductQuery({
@@ -154,12 +69,70 @@ const ProductDetail = () => {
         typeSection: 'hot_sale'
     })
 
-    const { data: favoriteCountResponse, isLoading: isFavoriteCountLoading } = useGetFavoriteCountQuery(
+    const [deleteFavorite] = useDeleteFavoriteMutation()
+
+    const [createInteractiveReview] = useCreateInteractiveReviewMutation()
+
+    const { data: favoriteCountResponse, isLoading: isFavoriteCountLoading } = useGetFavoriteCountByProductQuery(
         Number(productId)
     )
 
+    const rating = reviewsResponse?.data?.summary?.rating || 5
+    const oneStarCount = reviewsResponse?.data?.summary?.oneStarCount || 0
+    const twoStarCount = reviewsResponse?.data?.summary?.twoStarCount || 0
+    const threeStarCount = reviewsResponse?.data?.summary?.threeStarCount || 0
+    const fourStarCount = reviewsResponse?.data?.summary?.fourStarCount || 0
+    const fiveStarCount = reviewsResponse?.data?.summary?.fiveStarCount || 0
+    const reviewCount = reviewsResponse?.data?.summary?.reviewCount || 0
+    const reviewData = useMemo(() => {
+        return reviewsResponse?.data?.summary?.reviews || []
+    }, [reviewsResponse])
+    const favoriteCountData = useMemo(() => {
+        return favoriteCountResponse?.data || { isFavorite: false, count: 0 }
+    }, [favoriteCountResponse])
     const product = productResponse?.data as IProductGetById
     const productsFlashSale = (dataResponseFlashSale?.data?.records as IProductSearch[]) || []
+
+    const handleOptionChange = (optionId: number, valueId: number) => {
+        setSelectedOptions(prev => ({
+            ...prev,
+            [optionId]: valueId
+        }))
+    }
+
+    useEffect(() => {
+        const newReviews = reviewData
+
+        const isEqual = JSON.stringify(reviews) === JSON.stringify(newReviews)
+
+        if (!isEqual) {
+            setReviews(newReviews)
+        }
+    }, [reviewData])
+
+    useEffect(() => {
+        if (product && product.variants) {
+            const acc: Record<number, number> = {}
+            product.variants.forEach(variant => {
+                variant.options.forEach(option => {
+                    if (option.values.length > 0) {
+                        acc[option.id] = option.values[0].id
+                    }
+                })
+            })
+            setSelectedOptions(acc)
+        }
+    }, [product])
+
+    useEffect(() => {
+        const newCount = favoriteCountData || { isFavorite: false, count: 0 }
+
+        const isEqual = JSON.stringify(favoriteCount) === JSON.stringify(newCount)
+
+        if (!isEqual) {
+            setFavoriteCount(newCount)
+        }
+    }, [favoriteCountData])
 
     const ProductSection = ({ title, products, viewAll = false }: ProductHotSaleProps) => {
         return (
@@ -202,7 +175,85 @@ const ProductDetail = () => {
         )
     }
 
-    if (isProductLoading || isLoadingResponseFlashSale || isFavoriteCountLoading) {
+    const handleCopyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href)
+            setCopied(true)
+
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current)
+            }
+
+            timeoutRef.current = setTimeout(() => {
+                setCopied(false)
+            }, 2000)
+        } catch {}
+    }
+
+    useEffect(() => {
+        reviewRefetch()
+    }, [pageNumber])
+
+    const handleFavorite = async () => {
+        const snapshot = { ...favoriteCount }
+
+        if (favoriteCount.isFavorite) {
+            setFavoriteCount(prev => ({ ...prev, isFavorite: false, count: prev.count - 1 }))
+
+            try {
+                await deleteFavorite(Number(productId)).unwrap()
+            } catch {
+                setFavoriteCount(snapshot) // rollback nếu lỗi
+            }
+        } else {
+            setIsShowFavoriteModal(true)
+        }
+    }
+
+    const handleLikeDislike = (reviewId: number, type: 'like' | 'dislike') => {
+        const snapshot = reviews.map(item => ({ ...item }))
+
+        const updated = reviews.map(review => {
+            if (review.id !== reviewId) return review
+
+            const isLiked = review.interactionType === 'like'
+            const isDisliked = review.interactionType === 'dislike'
+
+            let newInteractionType: 'like' | 'dislike' | null = review.interactionType
+
+            if (type === review.interactionType) {
+                newInteractionType = null
+            } else {
+                newInteractionType = type
+            }
+
+            return {
+                ...review,
+                interactionType: newInteractionType,
+                likes:
+                    type === 'like'
+                        ? review.likes + (isLiked ? -1 : isDisliked ? 1 : 1)
+                        : review.likes - (isLiked ? 1 : 0),
+                dislikes:
+                    type === 'dislike'
+                        ? review.dislikes + (isDisliked ? -1 : isLiked ? 1 : 1)
+                        : review.dislikes - (isDisliked ? 1 : 0)
+            }
+        })
+
+        setReviews(updated)
+
+        createInteractiveReview({
+            reviewId,
+            interactionType: type
+        })
+            .unwrap()
+            .catch(() => {
+                setReviews(snapshot)
+            })
+    }
+
+    if (isProductLoading || isLoadingResponseFlashSale || isFavoriteCountLoading || isReviewsLoading) {
         return <Loading />
     }
 
@@ -215,7 +266,10 @@ const ProductDetail = () => {
                         <div className='flex-1 max-w-lg'>
                             <ImageGallery images={product.images} />
                             <div className='flex items-center gap-5 mt-6'>
-                                <button className='group flex items-center gap-2 px-4 py-3 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all duration-300 hover:shadow-md'>
+                                <button
+                                    onClick={() => setIsShowProjectModal(true)}
+                                    className='group flex items-center gap-2 px-4 py-3 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all duration-300 hover:shadow-md'
+                                >
                                     <svg
                                         className='w-[18px] h-[18px] group-hover:scale-110 transition-transform'
                                         fill='none'
@@ -232,34 +286,44 @@ const ProductDetail = () => {
                                     <span className='font-medium text-sm'>{t('COMMON.USER.ADD_TO_PROJECT')}</span>
                                 </button>
 
-                                <button className='group flex items-center gap-2 px-4 py-3 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition-all duration-300 hover:shadow-md'>
-                                    <svg
-                                        className='w-[18px] h-[18px] group-hover:scale-110 transition-transform'
-                                        fill='none'
-                                        viewBox='0 0 24 24'
-                                        stroke='currentColor'
+                                <div className='relative'>
+                                    <button
+                                        onClick={handleCopyLink}
+                                        className='group flex items-center gap-2 px-4 py-3 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition-all duration-300 hover:shadow-md'
                                     >
-                                        <path
-                                            strokeLinecap='round'
-                                            strokeLinejoin='round'
-                                            strokeWidth={2}
-                                            d='M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z'
-                                        />
-                                    </svg>
-                                    <span className='font-medium text-sm'>{t('COMMON.USER.SHARE')}</span>
-                                </button>
+                                        <svg
+                                            className='w-[18px] h-[18px] group-hover:scale-110 transition-transform'
+                                            fill='none'
+                                            viewBox='0 0 24 24'
+                                            stroke='currentColor'
+                                        >
+                                            <path
+                                                strokeLinecap='round'
+                                                strokeLinejoin='round'
+                                                strokeWidth={2}
+                                                d='M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z'
+                                            />
+                                        </svg>
+                                        <span className='font-medium text-sm'>{t('COMMON.USER.SHARE')}</span>
+                                    </button>
+
+                                    {copied && (
+                                        <div className='absolute top-full mt-2 left-1/2 whitespace-nowrap -translate-x-1/2 px-3 py-2 text-xs bg-green-50 text-green-600 rounded shadow'>
+                                            Đã sao chép liên kết!
+                                        </div>
+                                    )}
+                                </div>
 
                                 <button
                                     className={`group flex items-center ${
-                                        favoriteCountResponse.data.isFavorite
-                                            ? 'bg-[#e94c4c] text-white'
-                                            : 'text-[#f11212]'
+                                        favoriteCount.isFavorite ? 'bg-[#e94c4c] text-white' : 'text-[#f11212]'
                                     } gap-2 px-4 py-[11px] border border-[#f11212] rounded-lg transition-all duration-300 hover:shadow-md`}
+                                    onClick={handleFavorite}
                                 >
                                     <Heart
                                         size={18}
                                         className={`group-hover:scale-110 ${
-                                            !favoriteCountResponse.data.isFavorite
+                                            !favoriteCount.isFavorite
                                                 ? 'text-[#f11212] fill-[#f11212]'
                                                 : 'text-white fill-white'
                                         } transition-transform`}
@@ -293,9 +357,7 @@ const ProductDetail = () => {
 
                                     <div className='flex items-center gap-2 text-sm text-gray-600'>
                                         <Heart size={18} color='#f11212' fill='#f11212' />
-                                        <span className='font-semibold text-gray-700'>
-                                            {favoriteCountResponse.data.count}
-                                        </span>
+                                        <span className='font-semibold text-gray-700'>{favoriteCount.count}</span>
                                     </div>
 
                                     <div className='w-px h-4 bg-gray-300'></div>
@@ -370,9 +432,11 @@ const ProductDetail = () => {
                                                         ? option.values.map((value, valueIdx) => (
                                                               <button
                                                                   key={valueIdx}
-                                                                  onClick={() => setSelectedConnectivity(valueIdx)}
+                                                                  onClick={() =>
+                                                                      handleOptionChange(option.id, value.id)
+                                                                  }
                                                                   className={`px-4 py-2.5 rounded-lg border-[1px] font-medium ${
-                                                                      selectedConnectivity === valueIdx
+                                                                      selectedOptions[option.id] === value.id
                                                                           ? 'border-blue-600 bg-blue-50 text-blue-700'
                                                                           : 'border-gray-200 hover:border-blue-500 text-gray-700'
                                                                   }`}
@@ -383,9 +447,11 @@ const ProductDetail = () => {
                                                         : option.values.map((value, valueIdx) => (
                                                               <button
                                                                   key={valueIdx}
-                                                                  onClick={() => setSelectedModel(valueIdx)}
+                                                                  onClick={() =>
+                                                                      handleOptionChange(option.id, value.id)
+                                                                  }
                                                                   className={`flex items-center gap-4 p-3 rounded-xl border-[1px] transition-all duration-100 text-left ${
-                                                                      selectedModel === valueIdx
+                                                                      selectedOptions[option.id] === value.id
                                                                           ? 'border-blue-500 bg-blue-50'
                                                                           : 'border-gray-200 hover:border-blue-500 bg-white'
                                                                   }`}
@@ -402,7 +468,7 @@ const ProductDetail = () => {
                                                                           {value.value}
                                                                       </div>
                                                                   </div>
-                                                                  {selectedModel === valueIdx && (
+                                                                  {selectedOptions[option.id] === value.id && (
                                                                       <div className='ml-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center'>
                                                                           <div className='w-2 h-2 bg-white rounded-full'></div>
                                                                       </div>
@@ -583,17 +649,11 @@ const ProductDetail = () => {
                                             <p className='text-lg font-semibold text-gray-700'>
                                                 {t('COMMON.USER.AVERAGE_RATING')}
                                             </p>
-                                            <div className='text-4xl font-bold text-blue-600'>
-                                                {reviewsResponse.data.summary.rating}/5
-                                            </div>
-                                            {renderStars(
-                                                reviewsResponse.data.summary.rating,
-                                                'w-[25px] h-[25px]',
-                                                'space-x-2.5'
-                                            )}
+                                            <div className='text-4xl font-bold text-blue-600'>{rating}/5</div>
+                                            {renderStars(rating, 'w-[25px] h-[25px]', 'space-x-2.5')}
                                             <p className='text-sm text-gray-500'>
                                                 {t('COMMON.USER.BASED_ON_REVIEWS', {
-                                                    count: reviewsResponse.data.summary.reviewCount
+                                                    count: reviewCount
                                                 })}
                                             </p>
                                         </div>
@@ -602,28 +662,28 @@ const ProductDetail = () => {
                                         <div className='space-y-3 min-w-[350px]'>
                                             <RatingBar
                                                 label={'5 ' + t('COMMON.USER.STARS')}
-                                                value={reviewsResponse.data.summary.fiveStarCount}
-                                                total={reviewsResponse.data.summary.reviewCount}
+                                                value={fiveStarCount}
+                                                total={reviewCount}
                                             />
                                             <RatingBar
                                                 label={'4 ' + t('COMMON.USER.STARS')}
-                                                value={reviewsResponse.data.summary.fourStarCount}
-                                                total={reviewsResponse.data.summary.reviewCount}
+                                                value={fourStarCount}
+                                                total={reviewCount}
                                             />
                                             <RatingBar
                                                 label={'3 ' + t('COMMON.USER.STARS')}
-                                                value={reviewsResponse.data.summary.threeStarCount}
-                                                total={reviewsResponse.data.summary.reviewCount}
+                                                value={threeStarCount}
+                                                total={reviewCount}
                                             />
                                             <RatingBar
                                                 label={'2 ' + t('COMMON.USER.STARS')}
-                                                value={reviewsResponse.data.summary.twoStarCount}
-                                                total={reviewsResponse.data.summary.reviewCount}
+                                                value={twoStarCount}
+                                                total={reviewCount}
                                             />
                                             <RatingBar
                                                 label={'1 ' + t('COMMON.USER.STARS')}
-                                                value={reviewsResponse.data.summary.oneStarCount}
-                                                total={reviewsResponse.data.summary.reviewCount}
+                                                value={oneStarCount}
+                                                total={reviewCount}
                                             />
                                         </div>
                                     </div>
@@ -631,76 +691,125 @@ const ProductDetail = () => {
                                     <hr className='border-gray-300 border-dashed -mx-6' />
 
                                     {/* Individual Reviews */}
-                                    <div className='space-y-8 px-0 md:px-24 pt-6'>
-                                        {reviews.map((review, index) => (
-                                            <div
-                                                key={index}
-                                                className='flex gap-6 pb-8 border-b border-gray-100 last:border-b-0'
-                                            >
-                                                {/* User Info */}
-                                                <div className='flex flex-col items-center space-y-2 max-w-[220px] w-[220px]'>
-                                                    <img
-                                                        src={review.avatar || '/images/account.png'}
-                                                        alt={review.fullName}
-                                                        className='w-16 h-16 rounded-full object-cover border-2 border-gray-200'
-                                                    />
-                                                    <div className='text-center'>
-                                                        <p className='font-semibold text-gray-800'>{review.fullName}</p>
-                                                        <p className='text-sm mt-1 text-gray-500'>
-                                                            {formatTime(review.reviewDate)}
-                                                        </p>
-                                                        <p className='text-sm mt-0.5 text-gray-500'>
-                                                            {formatDate(review.reviewDate)}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Review Content */}
-                                                <div className='flex-1 space-y-3'>
-                                                    <StarRating rating={review.rating} />
-                                                    <p className='text-gray-700 leading-relaxed'>{review.comment}</p>
-                                                    {review.images && review.images.length > 0 && (
-                                                        <ImageGalleryThumbnail
-                                                            images={review.images.map((image, index) => ({
-                                                                id: index,
-                                                                src: image,
-                                                                alt: image.split('/').pop() || 'Image'
-                                                            }))}
+                                    {reviews && reviews.length > 0 ? (
+                                        <div className='space-y-8 px-0 md:px-24 pt-6'>
+                                            {reviews.map((review, index) => (
+                                                <div
+                                                    key={index}
+                                                    className='flex gap-6 pb-8 border-b border-gray-100 last:border-b-0'
+                                                >
+                                                    {/* User Info */}
+                                                    <div className='flex flex-col items-center space-y-2 max-w-[220px] w-[220px]'>
+                                                        <img
+                                                            src={review.avatar || '/images/account.png'}
+                                                            alt={review.fullName}
+                                                            className='w-16 h-16 rounded-full object-cover border-2 border-gray-200'
                                                         />
-                                                    )}
+                                                        <div className='text-center'>
+                                                            <p className='font-semibold text-gray-800'>
+                                                                {review.fullName}
+                                                            </p>
+                                                            <p className='text-sm mt-1 text-gray-500'>
+                                                                {formatTime(review.reviewDate)}
+                                                            </p>
+                                                            <p className='text-sm mt-0.5 text-gray-500'>
+                                                                {formatDate(review.reviewDate)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
 
-                                                    <div className='flex items-center gap-8 pt-1'>
-                                                        <button className='flex items-center hover:scale-105 gap-2 text-green-500 hover:text-green-600 transition-colors'>
-                                                            <ThumbsUp
-                                                                className={`w-4 h-4 ${
-                                                                    review.interactionType === 'like' &&
-                                                                    'fill-green-500'
-                                                                }`}
+                                                    {/* Review Content */}
+                                                    <div className='flex-1 space-y-3'>
+                                                        <StarRating rating={review.rating} />
+                                                        <p className='text-gray-700 leading-relaxed'>
+                                                            {review.comment}
+                                                        </p>
+                                                        {review.images && review.images.length > 0 && (
+                                                            <ImageGalleryThumbnail
+                                                                images={review.images.map((image, index) => ({
+                                                                    id: index,
+                                                                    src: image,
+                                                                    alt: image.split('/').pop() || 'Image'
+                                                                }))}
                                                             />
-                                                            <span className='text-sm font-medium'>{review.likes}</span>
-                                                        </button>
-                                                        <button className='flex items-center hover:scale-105 gap-2 text-red-500 hover:text-red-600 transition-colors'>
-                                                            <ThumbsDown
-                                                                className={`w-4 h-4 ${
-                                                                    review.interactionType === 'dislike' &&
-                                                                    'fill-red-500'
-                                                                }`}
-                                                            />
-                                                            <span className='text-sm font-medium'>
-                                                                {review.dislikes}
-                                                            </span>
-                                                        </button>
+                                                        )}
+
+                                                        <div className='flex items-center gap-8 pt-1'>
+                                                            <button
+                                                                onClick={() => handleLikeDislike(review.id, 'like')}
+                                                                className='flex items-center hover:scale-105 gap-2 text-green-500 hover:text-green-600 transition-colors'
+                                                            >
+                                                                <ThumbsUp
+                                                                    className={`w-4 h-4 ${
+                                                                        review.interactionType === 'like' &&
+                                                                        'fill-green-500'
+                                                                    }`}
+                                                                />
+                                                                <span className='text-sm font-medium'>
+                                                                    {review.likes}
+                                                                </span>
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleLikeDislike(review.id, 'dislike')}
+                                                                className='flex items-center hover:scale-105 gap-2 text-red-500 hover:text-red-600 transition-colors'
+                                                            >
+                                                                <ThumbsDown
+                                                                    className={`w-4 h-4 ${
+                                                                        review.interactionType === 'dislike' &&
+                                                                        'fill-red-500'
+                                                                    }`}
+                                                                />
+                                                                <span className='text-sm font-medium'>
+                                                                    {review.dislikes}
+                                                                </span>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <ObjectEmptyState isShowButton={false} title='Chưa có bài đánh giá nào' />
+                                    )}
 
-                                    <EnhancedPagination totalItems={reviewsResponse.data.totalRecords} />
+                                    <EnhancedPagination
+                                        totalItems={reviewsResponse.data.totalRecords}
+                                        itemsPerPage={5}
+                                        currentPage={pageNumber}
+                                        onPageChange={value => setPageNumber(value)}
+                                        siblingCount={1}
+                                    />
                                 </div>
                             )}
                         </div>
                     </div>
+
+                    <ProjectFormModal
+                        isOpen={isShowProjectModal}
+                        onClose={() => setIsShowProjectModal(false)}
+                        productId={Number(productId) || 0}
+                        selections={Object.entries(selectedOptions).map(([optionId, optionValueId]) => ({
+                            optionId: Number(optionId),
+                            optionValueId
+                        }))}
+                        productName={product.productName}
+                        currentPrice={product.price}
+                    />
+
+                    <FavoriteFormModal
+                        isOpen={isShowFavoriteModal}
+                        onClose={() => setIsShowFavoriteModal(false)}
+                        productId={Number(productId) || 0}
+                        variants={Object.entries(selectedOptions).map(([optionId, optionValueId]) => ({
+                            optionId: Number(optionId),
+                            optionValueId
+                        }))}
+                        productName={product.productName}
+                        currentPrice={product.price}
+                        onChange={() => {
+                            setFavoriteCount(prev => ({ ...prev, isFavorite: true, count: prev.count + 1 }))
+                        }}
+                    />
                 </div>
             ) : (
                 <ObjectEmptyState title='Không tìm thấy sản phẩm' type='product' />

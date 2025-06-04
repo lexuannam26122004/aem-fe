@@ -21,6 +21,7 @@ import FacebookIcon from '@mui/icons-material/Facebook'
 import InstagramIcon from '@mui/icons-material/Instagram'
 import TwitterIcon from '@mui/icons-material/Twitter'
 import GitHubIcon from '@mui/icons-material/GitHub'
+import { useRouter } from 'next/navigation'
 
 // Custom hook for intersection observer (animation on scroll)
 function useIntersectionObserver(options = {}): [React.RefObject<HTMLDivElement>, boolean] {
@@ -51,6 +52,7 @@ function useIntersectionObserver(options = {}): [React.RefObject<HTMLDivElement>
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
+    const router = useRouter()
 
     useEffect(() => {
         const handleScroll = () => {
@@ -107,7 +109,10 @@ const Header = () => {
                             3
                         </span>
                     </button> */}
-                    <button className='bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors'>
+                    <button
+                        onClick={() => router.push('/login')}
+                        className='bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors'
+                    >
                         Đăng nhập
                     </button>
                 </div>

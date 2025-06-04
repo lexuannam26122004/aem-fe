@@ -1,28 +1,16 @@
-import { IFavoriteCreate, IFavoriteUpdate, IFavoriteFilter } from '@/models/Favorite'
+import { IFavoriteCreate, IFavoriteUpdate, IFavoriteExpectedPrice } from '@/models/Favorite'
 import { IResponse } from '@/models/Common'
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from './api'
+import { IProjectAddProduct } from '@/models/Project'
 
 export const FavoriteApis = createApi({
     reducerPath: 'FavoriteApis',
     baseQuery: createBaseQuery('user/favorites'),
+    tagTypes: ['Favorite'],
     endpoints: builder => ({
-        searchFavorite: builder.query<IResponse, IFavoriteFilter>({
-            query: filter => {
-                const params = new URLSearchParams()
-
-                if (filter) {
-                    if (filter.pageSize) params.append('PageSize', filter.pageSize.toString())
-                    if (filter.pageNumber) params.append('PageNumber', filter.pageNumber.toString())
-                    if (filter.keyword) params.append('Keyword', filter.keyword)
-                    if (filter.isDesc) params.append('IsDescending', filter.isDesc.toString())
-                    if (filter.sortBy) params.append('SortBy', filter.sortBy)
-                    if (filter.isActive != undefined) params.append('IsActive', filter.isActive.toString())
-                }
-
-                const queryString = params.toString()
-                return queryString ? `?${queryString}` : ''
-            }
+        searchFavorite: builder.query<IResponse, void>({
+            query: () => ''
         }),
 
         createFavorite: builder.mutation<void, IFavoriteCreate>({
@@ -30,7 +18,8 @@ export const FavoriteApis = createApi({
                 url: ``,
                 method: 'POST',
                 body: body
-            })
+            }),
+            invalidatesTags: ['Favorite']
         }),
 
         updateFavorite: builder.mutation<void, IFavoriteUpdate>({
@@ -41,8 +30,29 @@ export const FavoriteApis = createApi({
             })
         }),
 
-        getFavoriteCount: builder.query<IResponse, number>({
+        updateNotify: builder.mutation<void, number>({
+            query: id => ({
+                url: `${id}/update-notify`,
+                method: 'PUT',
+                body: {}
+            })
+        }),
+
+        updateExpectedPrice: builder.mutation<void, IFavoriteExpectedPrice>({
+            query: body => ({
+                url: ``,
+                method: 'PUT',
+                body: body
+            })
+        }),
+
+        getFavoriteCountByProduct: builder.query<IResponse, number>({
             query: productId => `${productId}/count`
+        }),
+
+        getFavoriteCount: builder.query<IResponse, void>({
+            query: () => `count`,
+            providesTags: [{ type: 'Favorite' }]
         }),
 
         getByIdFavorite: builder.query<IResponse, number>({
@@ -53,7 +63,8 @@ export const FavoriteApis = createApi({
             query: id => ({
                 url: `${id}`,
                 method: 'DELETE'
-            })
+            }),
+            invalidatesTags: ['Favorite']
         }),
 
         changeStatusFavorite: builder.mutation<void, number>({
@@ -71,6 +82,9 @@ export const {
     useUpdateFavoriteMutation,
     useGetFavoriteCountQuery,
     useGetByIdFavoriteQuery,
+    useUpdateNotifyMutation,
+    useGetFavoriteCountByProductQuery,
+    useUpdateExpectedPriceMutation,
     useDeleteFavoriteMutation,
     useChangeStatusFavoriteMutation
 } = FavoriteApis

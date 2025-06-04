@@ -13,53 +13,30 @@ import {
     Eye,
     EyeOff,
     Save,
-    AlertCircle,
     CheckCircle,
     House,
     User2,
     PhoneCall,
     Mail,
-    Building
+    Building,
+    Loader2
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
 import GetStyleCustomer from '@/components/GetStyleCustomer'
 import { useToast } from '@/hooks/useToast'
-
-const customerData = {
-    id: 'C00123',
-    fullName: 'Nguyễn Văn An',
-    email: 'vannguyen@gmail.com',
-    phone: '0912345678',
-    rank: 'new_customer',
-    company: 'Công ty TNHH Tự động hóa Việt Nam',
-    taxCode: '0123456789',
-    avatar: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-22.webp',
-    addresses: [
-        {
-            id: 1,
-            fullName: 'Nguyễn Văn An',
-            phone: '0912345678',
-            email: 'nguyenvanan@gmail.com',
-            title: 'Văn phòng công ty',
-            address: 'Số 123 Đường Lê Lợi, Phường Bến Nghé',
-            district: 'Quận 1',
-            city: 'TP. Hồ Chí Minh',
-            isDefault: true
-        },
-        {
-            id: 2,
-            fullName: 'Lê Xuân Nam',
-            phone: '0912345678',
-            email: 'lexuannam@gmail.com',
-            title: 'Kho hàng',
-            address: 'Số 45 Đường Nguyễn Thị Minh Khai, Phường 5',
-            district: 'Quận 3',
-            city: 'TP. Hồ Chí Minh',
-            isDefault: false
-        }
-    ]
-}
+import { useChangePasswordMutation, useDeleteUserMutation, useUpdateUserMutation } from '@/services/UserService'
+import { useDispatch, useSelector } from 'react-redux'
+import { setUserInfo, userSelector } from '@/redux/slices/userSlice'
+import { useLazyGetUserAuthMeQuery } from '@/services/UserAuthService'
+import {
+    useChangeDefaultCustomerAddressMutation,
+    useCreateCustomerAddressMutation,
+    useDeleteCustomerAddressMutation,
+    useSearchCustomerAddressQuery,
+    useUpdateCustomerAddressMutation
+} from '@/services/CustomerAddressService'
+import { ICustomerAddress, ICustomerAddressCreate, ICustomerAddressUpdate } from '@/models/CustomerAddress'
 
 export default function UserProfileComponent() {
     const { t } = useTranslation('common')
@@ -68,15 +45,16 @@ export default function UserProfileComponent() {
     const [confirmDelete, setConfirmDelete] = useState(false)
     const [fileImage, setFileImage] = useState<File | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
-    const [userData, setUserData] = useState(customerData)
+    const userInfo = useSelector(userSelector).userInfo
     const [editingUser, setEditingUser] = useState({
-        fullName: userData.fullName,
-        avatar: userData.avatar,
-        email: userData.email,
-        phone: userData.phone,
-        taxCode: userData.taxCode,
-        company: userData.company
+        fullName: userInfo.fullName,
+        avatarPath: userInfo.avatar,
+        email: userInfo.email,
+        phoneNumber: userInfo.phoneNumber,
+        taxCode: userInfo.taxCode,
+        companyName: userInfo.companyName
     })
+
     useEffect(() => {}, [fileImage])
 
     const handleClickBox = () => {
@@ -90,7 +68,7 @@ export default function UserProfileComponent() {
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
         }
-        setEditingUser({ ...editingUser, avatar: '' })
+        setEditingUser({ ...editingUser, avatarPath: '' })
         setFileImage(null)
     }
 
@@ -114,7 +92,7 @@ export default function UserProfileComponent() {
             toast(t('COMMON.INVALID_FILE_SIZE'), 'error')
             if (fileInputRef.current) {
                 fileInputRef.current.value = ''
-                setEditingUser({ ...editingUser, avatar: '' })
+                setEditingUser({ ...editingUser, avatarPath: '' })
                 setFileImage(null)
             }
             return
@@ -123,59 +101,47 @@ export default function UserProfileComponent() {
         const reader = new FileReader()
 
         reader.onloadend = () => {
-            setEditingUser({ ...editingUser, avatar: reader.result as string })
+            setEditingUser({ ...editingUser, avatarPath: reader.result as string })
         }
 
         reader.readAsDataURL(file)
         setFileImage(file)
     }
 
-    // State cho tab đang được chọn
     const [activeTab, setActiveTab] = useState('profile')
 
-    // State cho chế độ chỉnh sửa
     const [isEditing, setIsEditing] = useState(false)
 
-    // State cho thông tin cá nhân
-
-    // State cho form đổi mật khẩu
     const [passwordForm, setPasswordForm] = useState({
-        currentPassword: '',
+        oldPassword: '',
         newPassword: '',
-        confirmPassword: ''
+        confirmedNewPassword: ''
     })
 
-    // State hiển thị mật khẩu
     const [showPassword, setShowPassword] = useState({
         current: false,
         new: false,
         confirm: false
     })
 
-    // State cho thông báo
-    const [notification, setNotification] = useState({
-        show: false,
-        type: '',
-        message: ''
-    })
-
-    // State cho xác nhận xóa tài khoản
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-    // State cho địa chỉ đang chỉnh sửa hoặc thêm mới
-    type AddressType = {
-        id?: number
-        fullName: string
-        phone: string
-        email: string
-        title: string
-        address: string
-        district: string
-        city: string
-        isDefault: boolean
-    }
-    const [editingAddress, setEditingAddress] = useState<AddressType | null>(null)
+    const [editingAddress, setEditingAddress] = useState<ICustomerAddress | null>(null)
     const [isAddingAddress, setIsAddingAddress] = useState(false)
+    const [changePassword] = useChangePasswordMutation()
+    const [deleteUser] = useDeleteUserMutation()
+    const [createCustomerAddress, { isLoading: isCreateLoading }] = useCreateCustomerAddressMutation()
+    const [updateCustomerAddress, { isLoading: isUpdateLoading }] = useUpdateCustomerAddressMutation()
+    const [deleteCustomerAddress, { isLoading: isDeleteLoading, originalArgs: originalDeleteArgs }] =
+        useDeleteCustomerAddressMutation()
+    const [changeDefaultCustomerAddress, { isLoading: isChangeDefaultLoading, originalArgs }] =
+        useChangeDefaultCustomerAddressMutation()
+    const { data: customerAddressResponse, isFetching } = useSearchCustomerAddressQuery()
+    const [updateUser, { isLoading: isLoadingSave }] = useUpdateUserMutation()
+    const dispatch = useDispatch()
+    const [triggerGetMe] = useLazyGetUserAuthMeQuery()
+
+    const addresses = (customerAddressResponse?.data as ICustomerAddress[]) || []
 
     const [formErrors, setFormErrors] = useState({
         fullName: '',
@@ -186,155 +152,113 @@ export default function UserProfileComponent() {
         city: ''
     })
 
-    // Xử lý chuyển tab
     const handleTabChange = (tab: string) => {
         setActiveTab(tab)
         setIsEditing(false)
         setShowDeleteConfirm(false)
-        setNotification({ show: false, type: '', message: '' })
     }
 
-    // Xử lý lưu thông tin cá nhân
-    const handleSaveProfile = () => {
-        setUserData({
-            ...userData,
-            fullName: editingUser.fullName,
-            email: editingUser.email,
-            phone: editingUser.phone,
-            taxCode: editingUser.taxCode,
-            company: editingUser.company,
-            avatar: editingUser.avatar
-        })
-        setIsEditing(false)
-        showNotification('success', 'Thông tin cá nhân đã được cập nhật thành công')
+    const handleSaveProfile = async () => {
+        try {
+            await updateUser(editingUser).unwrap()
+            const response = await triggerGetMe().unwrap()
+            await dispatch(setUserInfo(response?.data)) // Nếu thunk, có thể await được
+            toast('Cập nhật thông tin thành công', 'success')
+        } catch (error) {
+            toast('Cập nhật thông tin không thành công', 'error')
+        } finally {
+            setIsEditing(false)
+        }
     }
 
-    // Hiển thị thông báo
-    const showNotification = (type: string, message: string) => {
-        setNotification({
-            show: true,
-            type,
-            message
-        })
-
-        // Ẩn thông báo sau 3 giây
-        setTimeout(() => {
-            setNotification({ show: false, type: '', message: '' })
-        }, 3000)
-    }
-
-    // Xử lý đổi mật khẩu
     const handleChangePassword = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        // Kiểm tra mật khẩu mới và xác nhận mật khẩu
-        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-            showNotification('error', 'Mật khẩu mới và xác nhận mật khẩu không khớp')
+        if (passwordForm.newPassword !== passwordForm.confirmedNewPassword) {
+            toast('Mật khẩu mới và xác nhận mật khẩu không khớp', 'error')
             return
         }
 
-        // Xử lý API call để đổi mật khẩu
-        showNotification('success', 'Mật khẩu đã được thay đổi thành công')
-        setPasswordForm({
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: ''
-        })
+        changePassword(passwordForm)
+            .unwrap()
+            .then(() => {
+                toast('Mật khẩu đã được thay đổi thành công', 'success')
+                setPasswordForm({
+                    oldPassword: '',
+                    newPassword: '',
+                    confirmedNewPassword: ''
+                })
+            })
+            .catch(() => {
+                toast('Đổi mật khẩu không thành công', 'error')
+            })
     }
 
-    // Xử lý xóa tài khoản
     const handleDeleteAccount = () => {
         if (confirmDelete) {
-            router.push('/auth/login')
-            showNotification('success', 'Tài khoản đã được xóa thành công')
+            deleteUser()
+                .unwrap()
+                .then(() => {
+                    toast('Tài khoản đã được xóa thành công', 'success')
+
+                    router.push('/login')
+                })
+                .catch(() => {
+                    toast('Xóa tài khoản không thành công', 'error')
+                })
         }
-        showNotification('error', 'Vui lòng xác nhận trước khi xóa tài khoản')
     }
 
-    // Xử lý lưu địa chỉ
-    const handleSaveAddress = (address: AddressType) => {
-        if (isAddingAddress) {
-            const newAddress = {
-                ...address,
-                id: userData.addresses.length + 1
-            }
-
-            const addresses = [...userData.addresses, newAddress]
-
-            setUserData({
-                ...userData,
-                addresses: [...userData.addresses, newAddress]
+    const handleCreateAddress = (address: ICustomerAddressCreate) => {
+        createCustomerAddress(address)
+            .unwrap()
+            .then(() => {
+                setEditingAddress(null)
+                setIsAddingAddress(false)
+                toast('Địa chỉ đã được thêm thành công', 'success')
             })
-
-            if (newAddress.isDefault) {
-                setUserData({
-                    ...userData,
-                    addresses: addresses.map(addr => ({
-                        ...addr,
-                        isDefault: addr.id === newAddress.id
-                    }))
-                })
-            } else {
-                setUserData({
-                    ...userData,
-                    addresses: addresses
-                })
-            }
-
-            showNotification('success', 'Địa chỉ đã được thêm thành công')
-        } else {
-            if (!address.id) return
-
-            const addresses = userData.addresses.map(addr =>
-                addr.id === address.id ? { ...address, id: address.id ?? addr.id } : addr
-            )
-
-            if (address.isDefault) {
-                setUserData({
-                    ...userData,
-                    addresses: addresses.map(addr => ({
-                        ...addr,
-                        isDefault: addr.id === address.id
-                    }))
-                })
-            } else {
-                setUserData({
-                    ...userData,
-                    addresses: addresses
-                })
-            }
-
-            showNotification('success', 'Địa chỉ đã được cập nhật thành công')
-        }
-
-        setEditingAddress(null)
-        setIsAddingAddress(false)
+            .catch(error => {
+                const errorMessage = error.data?.message || 'Thêm địa chỉ không thành công'
+                toast(errorMessage, 'error')
+            })
     }
 
-    // Xử lý xóa địa chỉ
+    const handleUpdateAddress = (id: number, address: ICustomerAddressUpdate) => {
+        updateCustomerAddress({ id, body: address })
+            .unwrap()
+            .then(() => {
+                setEditingAddress(null)
+                setIsAddingAddress(false)
+                toast('Địa chỉ đã được cập nhật thành công', 'success')
+            })
+            .catch(error => {
+                const errorMessage = error.data?.message || 'Cập nhật địa chỉ không thành công'
+                toast(errorMessage, 'error')
+            })
+    }
+
     const handleDeleteAddress = (id: number) => {
-        setUserData({
-            ...userData,
-            addresses: userData.addresses.filter(addr => addr.id !== id)
-        })
-
-        showNotification('success', 'Địa chỉ đã được xóa thành công')
+        deleteCustomerAddress(id)
+            .unwrap()
+            .then(() => toast('Địa chỉ đã được xóa thành công', 'success'))
+            .catch(error => {
+                const errorMessage = error.data?.message || 'Xóa địa chỉ không thành công'
+                toast(errorMessage, 'error')
+            })
     }
 
-    // Xử lý đặt địa chỉ mặc định
     const handleSetDefaultAddress = (id: number) => {
-        setUserData({
-            ...userData,
-            addresses: userData.addresses.map(addr => ({
-                ...addr,
-                isDefault: addr.id === id
-            }))
-        })
-
-        showNotification('success', 'Đã đặt địa chỉ mặc định')
+        changeDefaultCustomerAddress(id)
+            .unwrap()
+            .then(() => {
+                toast('Địa chỉ đã được đặt làm mặc định', 'success')
+            })
+            .catch(error => {
+                const errorMessage = error.data?.message || 'Đặt địa chỉ mặc định không thành công'
+                toast(errorMessage, 'error')
+            })
     }
 
-    // Render các tab
     const renderContent = () => {
         switch (activeTab) {
             case 'profile':
@@ -350,7 +274,6 @@ export default function UserProfileComponent() {
         }
     }
 
-    // Render nội dung tab thông tin cá nhân
     const renderProfileContent = () => {
         return (
             <div className='bg-white rounded-[15px] shadow-[0_4px_16px_rgba(0,0,0,0.1)] overflow-hidden'>
@@ -364,12 +287,12 @@ export default function UserProfileComponent() {
                         <button
                             onClick={() => {
                                 setEditingUser({
-                                    fullName: userData.fullName,
-                                    email: userData.email,
-                                    phone: userData.phone,
-                                    avatar: userData.avatar,
-                                    taxCode: userData.taxCode,
-                                    company: userData.company
+                                    fullName: userInfo.fullName,
+                                    email: userInfo.email,
+                                    phoneNumber: userInfo.phoneNumber,
+                                    avatarPath: userInfo.avatar,
+                                    taxCode: userInfo.taxCode,
+                                    companyName: userInfo.companyName
                                 })
                                 setIsEditing(true)
                             }}
@@ -389,8 +312,8 @@ export default function UserProfileComponent() {
                                     <span className='absolute inset-0 bg-gradient-to-r from-[#ffc41f] to-[#3675ff] rounded-full animate-spin [animation-duration:5s] z-0' />
                                     <span className='absolute inset-[3px] bg-white rounded-full z-2' />
                                     <img
-                                        src={editingUser.avatar || '/images/account.png'}
-                                        alt={userData.fullName}
+                                        src={editingUser.avatarPath || '/images/account.png'}
+                                        alt={userInfo.fullName}
                                         className='w-[121px] h-[121px] rounded-full object-cover relative z-10'
                                     />
                                 </div>
@@ -412,16 +335,16 @@ export default function UserProfileComponent() {
                                 )}
                             </div>
 
-                            <h3 className='font-bold text-lg text-center my-5'>{userData.fullName}</h3>
+                            <h3 className='font-bold text-lg text-center my-5'>{userInfo.fullName}</h3>
 
                             <GetStyleCustomer
-                                customerRank={userData.rank}
+                                customerRank={userInfo.rank}
                                 padding='10px 18px'
                                 fontSize='15px'
                                 iconSize={24}
                             />
 
-                            {isEditing && editingUser.avatar && (
+                            {isEditing && editingUser.avatarPath && (
                                 <div
                                     onClick={handleDeleteImage}
                                     className='flex items-center gap-2 px-2.5 mt-5 py-1.5 rounded-[8px] border border-[--text-color-button-cancel] hover:cursor-pointer hover:border-[--background-color-button-cancel-hover] hover:bg-[--background-color-button-cancel-hover]'
@@ -448,7 +371,7 @@ export default function UserProfileComponent() {
                                             className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500'
                                         />
                                     ) : (
-                                        <p className='p-3 bg-gray-50 rounded-lg overflow-hidden'>{userData.fullName}</p>
+                                        <p className='p-3 bg-gray-50 rounded-lg overflow-hidden'>{userInfo.fullName}</p>
                                     )}
                                 </div>
 
@@ -464,7 +387,7 @@ export default function UserProfileComponent() {
                                             className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500'
                                         />
                                     ) : (
-                                        <p className='p-3 bg-gray-50 rounded-lg overflow-hidden'>{userData.email}</p>
+                                        <p className='p-3 bg-gray-50 rounded-lg overflow-hidden'>{userInfo.email}</p>
                                     )}
                                 </div>
                             </div>
@@ -477,12 +400,16 @@ export default function UserProfileComponent() {
                                     {isEditing ? (
                                         <input
                                             type='tel'
-                                            value={editingUser.phone}
-                                            onChange={e => setEditingUser({ ...editingUser, phone: e.target.value })}
+                                            value={editingUser.phoneNumber}
+                                            onChange={e =>
+                                                setEditingUser({ ...editingUser, phoneNumber: e.target.value })
+                                            }
                                             className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500'
                                         />
                                     ) : (
-                                        <p className='p-3 bg-gray-50 rounded-lg overflow-hidden'>{userData.phone}</p>
+                                        <p className='p-3 bg-gray-50 rounded-lg overflow-hidden'>
+                                            {userInfo.phoneNumber}
+                                        </p>
                                     )}
                                 </div>
 
@@ -493,12 +420,14 @@ export default function UserProfileComponent() {
                                     {isEditing ? (
                                         <input
                                             type='text'
-                                            value={editingUser.taxCode}
+                                            value={editingUser.taxCode || ''}
                                             onChange={e => setEditingUser({ ...editingUser, taxCode: e.target.value })}
                                             className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500'
                                         />
                                     ) : (
-                                        <p className='p-3 bg-gray-50 rounded-lg overflow-hidden'>{userData.taxCode}</p>
+                                        <p className='p-3 bg-gray-50 min-h-[46.5px] rounded-lg overflow-hidden'>
+                                            {userInfo.taxCode}
+                                        </p>
                                     )}
                                 </div>
                             </div>
@@ -510,23 +439,26 @@ export default function UserProfileComponent() {
                                 {isEditing ? (
                                     <input
                                         type='text'
-                                        value={editingUser.company}
-                                        onChange={e => setEditingUser({ ...editingUser, company: e.target.value })}
+                                        value={editingUser.companyName || ''}
+                                        onChange={e => setEditingUser({ ...editingUser, companyName: e.target.value })}
                                         className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500'
                                     />
                                 ) : (
-                                    <p className='p-3 bg-gray-50 rounded-lg overflow-hidden'>{userData.company}</p>
+                                    <p className='p-3 bg-gray-50 min-h-[46.5px] rounded-lg overflow-hidden'>
+                                        {userInfo.companyName}
+                                    </p>
                                 )}
                             </div>
 
                             {isEditing && (
                                 <div className='flex justify-end space-x-6 pt-2'>
                                     <button
+                                        disabled={isLoadingSave}
                                         onClick={() => {
                                             setIsEditing(false)
                                             setEditingUser({
                                                 ...editingUser,
-                                                avatar: userData.avatar
+                                                avatarPath: userInfo.avatar
                                             })
                                         }}
                                         className='px-6 py-[11px] font-medium border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition'
@@ -535,9 +467,14 @@ export default function UserProfileComponent() {
                                     </button>
                                     <button
                                         onClick={handleSaveProfile}
+                                        disabled={isLoadingSave}
                                         className='px-6 py-[11px] font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center'
                                     >
-                                        <Save size={16} className='mr-2' />
+                                        {isLoadingSave ? (
+                                            <Loader2 size={16} className='mr-2 animate-spin' />
+                                        ) : (
+                                            <Save size={16} className='mr-2' />
+                                        )}
                                         {t('COMMON.USER.SAVE')}
                                     </button>
                                 </div>
@@ -558,7 +495,7 @@ export default function UserProfileComponent() {
                         <MapPin size={20} className='w-5 h-5 text-blue-600 mr-3' color='#3675ff' />
                         {t('COMMON.USER.DELIVERY_ADDRESSES')}
                         <span className='ml-3 px-2 py-0.5 bg-blue-100 text-blue-700 text-sm rounded-full'>
-                            {userData.addresses.length}
+                            {addresses.length}
                         </span>
                     </h2>
 
@@ -567,7 +504,7 @@ export default function UserProfileComponent() {
                             setIsAddingAddress(true)
                             setEditingAddress({
                                 title: '',
-                                fullName: '',
+                                recipient: '',
                                 phone: '',
                                 email: '',
                                 address: '',
@@ -593,9 +530,9 @@ export default function UserProfileComponent() {
                                 <div className='relative'>
                                     <input
                                         type='text'
-                                        value={editingAddress.fullName}
+                                        value={editingAddress.recipient}
                                         onChange={e =>
-                                            setEditingAddress({ ...editingAddress, fullName: e.target.value })
+                                            setEditingAddress({ ...editingAddress, recipient: e.target.value })
                                         }
                                         className={`w-full border ${
                                             formErrors.fullName ? 'border-red-500' : 'border-gray-300'
@@ -759,24 +696,44 @@ export default function UserProfileComponent() {
                                 {t('COMMON.USER.CANCEL')}
                             </button>
                             <button
-                                onClick={() => handleSaveAddress(editingAddress)}
+                                disabled={isCreateLoading || isUpdateLoading || isFetching}
+                                onClick={() => {
+                                    if (isAddingAddress) {
+                                        handleCreateAddress(editingAddress)
+                                    } else {
+                                        handleUpdateAddress(editingAddress.id, {
+                                            recipient: editingAddress.recipient,
+                                            phone: editingAddress.phone,
+                                            email: editingAddress.email,
+                                            title: editingAddress.title,
+                                            address: editingAddress.address,
+                                            district: editingAddress.district,
+                                            city: editingAddress.city,
+                                            isDefault: editingAddress.isDefault
+                                        })
+                                    }
+                                }}
                                 className='px-6 py-[11px] font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center'
                             >
-                                <Save size={16} className='mr-2' />
+                                {isCreateLoading || isUpdateLoading || isFetching ? (
+                                    <Loader2 size={16} className='mr-2 animate-spin' />
+                                ) : (
+                                    <Save size={16} className='mr-2' />
+                                )}
                                 {t('COMMON.USER.SAVE')}
                             </button>
                         </div>
                     </div>
-                ) : userData.addresses.length > 0 ? (
+                ) : addresses.length > 0 ? (
                     <div className='p-6 space-y-6'>
-                        {userData.addresses.map(address => (
+                        {addresses.map(address => (
                             <div key={address.id} className='bg-gray-50 rounded-[15px] relative'>
                                 <div className='p-6 space-y-3.5'>
                                     <div className='flex items-start'>
                                         <div className='min-w-[140px] text-gray-500'>{t('COMMON.USER.RECIPIENT')}</div>
                                         <div className='font-medium text-gray-900 flex items-center'>
                                             <User2 className='w-4 h-4 text-blue-600 mr-3' />
-                                            {address.fullName}
+                                            {address.recipient}
                                         </div>
                                     </div>
 
@@ -821,10 +778,17 @@ export default function UserProfileComponent() {
                                     {!address.isDefault ? (
                                         <button
                                             onClick={() => handleSetDefaultAddress(address.id)}
+                                            disabled={
+                                                isFetching || (isChangeDefaultLoading && address.id === originalArgs)
+                                            }
                                             className='p-2 bg-green-50 rounded-full text-green-600 hover:bg-green-100 transition-colors'
                                             title={t('COMMON.USER.SET_AS_DEFAULT')}
                                         >
-                                            <CheckCircle size={18} />
+                                            {isFetching || (isChangeDefaultLoading && address.id === originalArgs) ? (
+                                                <Loader2 size={18} className='animate-spin' />
+                                            ) : (
+                                                <CheckCircle size={18} />
+                                            )}
                                         </button>
                                     ) : (
                                         <span className='px-3 flex items-center bg-green-50 text-green-600 text-sm font-medium rounded-full'>
@@ -845,7 +809,11 @@ export default function UserProfileComponent() {
                                         className='p-2 bg-red-50 rounded-full text-red-600 hover:bg-red-100 transition-colors'
                                         title={t('COMMON.USER.DELETE')}
                                     >
-                                        <Trash2 size={18} />
+                                        {isDeleteLoading && address.id === originalDeleteArgs ? (
+                                            <Loader2 size={18} className='animate-spin' />
+                                        ) : (
+                                            <Trash2 size={18} />
+                                        )}
                                     </button>
                                 </div>
                             </div>
@@ -883,9 +851,9 @@ export default function UserProfileComponent() {
                                 <div className='relative'>
                                     <input
                                         type={showPassword.current ? 'text' : 'password'}
-                                        value={passwordForm.currentPassword}
+                                        value={passwordForm.oldPassword}
                                         onChange={e =>
-                                            setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                                            setPasswordForm({ ...passwordForm, oldPassword: e.target.value })
                                         }
                                         className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10'
                                         required
@@ -935,9 +903,9 @@ export default function UserProfileComponent() {
                                 <div className='relative'>
                                     <input
                                         type={showPassword.confirm ? 'text' : 'password'}
-                                        value={passwordForm.confirmPassword}
+                                        value={passwordForm.confirmedNewPassword}
                                         onChange={e =>
-                                            setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                                            setPasswordForm({ ...passwordForm, confirmedNewPassword: e.target.value })
                                         }
                                         className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10'
                                         required
@@ -1045,30 +1013,6 @@ export default function UserProfileComponent() {
                         </div>
                     )}
                 </div>
-            </div>
-        )
-    }
-
-    // Render thông báo
-    const renderNotification = () => {
-        if (!notification.show) return null
-
-        return (
-            <div
-                className={`fixed bottom-6 right-6 p-4 rounded-lg shadow-lg flex items-center ${
-                    notification.type === 'success'
-                        ? 'bg-green-50 border border-green-200'
-                        : 'bg-red-50 border border-red-200'
-                }`}
-            >
-                {notification.type === 'success' ? (
-                    <CheckCircle className='text-green-600 mr-3' size={20} />
-                ) : (
-                    <AlertCircle className='text-red-600 mr-3' size={20} />
-                )}
-                <p className={notification.type === 'success' ? 'text-green-700' : 'text-red-700'}>
-                    {notification.message}
-                </p>
             </div>
         )
     }
@@ -1185,8 +1129,6 @@ export default function UserProfileComponent() {
                 {/* Main Content */}
                 <div className='lg:col-span-3'>{renderContent()}</div>
             </div>
-
-            {renderNotification()}
         </div>
     )
 }
