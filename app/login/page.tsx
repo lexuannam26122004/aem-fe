@@ -33,6 +33,8 @@ const LoginPage = () => {
         }))
     }
 
+    const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmit(true)
@@ -49,7 +51,7 @@ const LoginPage = () => {
         }
 
         try {
-            const response = await fetch('https://localhost:44381/api/user/auth/login', {
+            const response = await fetch(`${BASE_API_URL}/user/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json-patch+json'
@@ -71,7 +73,7 @@ const LoginPage = () => {
             sessionStorage.setItem('auth_token', token)
 
             // Gọi API getMe trực tiếp bằng fetch
-            const meResponse = await fetch('https://localhost:44381/api/user/auth/me', {
+            const meResponse = await fetch(`${BASE_API_URL}/user/auth/me`, {
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${token}`
