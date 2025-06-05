@@ -7,7 +7,7 @@ import { IProjectAddProduct } from '@/models/Project'
 export const FavoriteApis = createApi({
     reducerPath: 'FavoriteApis',
     baseQuery: createBaseQuery('user/favorites'),
-    tagTypes: ['Favorite'],
+    tagTypes: ['Favorite', 'FavoriteCountByProduct'],
     endpoints: builder => ({
         searchFavorite: builder.query<IResponse, void>({
             query: () => '',
@@ -48,7 +48,8 @@ export const FavoriteApis = createApi({
         }),
 
         getFavoriteCountByProduct: builder.query<IResponse, number>({
-            query: productId => `${productId}/count`
+            query: productId => `${productId}/count`,
+            providesTags: [{ type: 'FavoriteCountByProduct' }]
         }),
 
         getFavoriteCount: builder.query<IResponse, void>({
@@ -66,6 +67,14 @@ export const FavoriteApis = createApi({
                 method: 'DELETE'
             }),
             invalidatesTags: ['Favorite']
+        }),
+
+        deleteFavoriteByProductId: builder.mutation<void, number>({
+            query: productId => ({
+                url: `by-productId/${productId}`,
+                method: 'DELETE'
+            }),
+            invalidatesTags: ['Favorite', 'FavoriteCountByProduct']
         }),
 
         changeStatusFavorite: builder.mutation<void, number>({
@@ -87,5 +96,6 @@ export const {
     useGetFavoriteCountByProductQuery,
     useUpdateExpectedPriceMutation,
     useDeleteFavoriteMutation,
+    useDeleteFavoriteByProductIdMutation,
     useChangeStatusFavoriteMutation
 } = FavoriteApis

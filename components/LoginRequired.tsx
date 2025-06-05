@@ -59,11 +59,11 @@ export default function LoginRequired(props: LoginRequiredProps) {
     const finalDescription = customDescription || content.description
 
     return (
-        <div className='rounded-[15px] mx-auto overflow-hidden w-[55%] shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white'>
+        <div className='rounded-[15px] mt-12 mx-auto overflow-hidden w-[55%] shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white'>
             <div className='py-12 px-6 text-center'>
                 <div className='mb-5 inline-flex p-4 bg-blue-50 rounded-full'>{content.icon}</div>
-                <h3 className='text-xl font-medium text-gray-800 mb-3'>{finalTitle}</h3>
-                <p className='text-gray-500 mx-auto mb-6 max-w-md'>{finalDescription}</p>
+                <h3 className='text-xl font-medium text-gray-800 mb-4'>{finalTitle}</h3>
+                <p className='text-gray-500 mx-auto mb-6 max-w-lg'>{finalDescription}</p>
                 <button
                     className='inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm'
                     onClick={() => router.push('/login')}
@@ -76,7 +76,7 @@ export default function LoginRequired(props: LoginRequiredProps) {
                         Chưa có tài khoản?{' '}
                         <button
                             onClick={() => router.push('/register')}
-                            className='text-blue-600 ml-1 hover:text-blue-700 font-medium'
+                            className='text-blue-600 ml-1 hover:text-blue-700 hover:underline font-medium'
                         >
                             Đăng ký ngay
                         </button>

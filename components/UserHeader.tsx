@@ -36,8 +36,6 @@ const UserHeader = () => {
     const user = useSelector(userSelector)
     const pathName = usePathname()
 
-    console.log('UserHeader rendered', user)
-
     const toggleMenu = () => {
         setIsOpen(!isOpen)
     }
@@ -103,114 +101,116 @@ const UserHeader = () => {
                     {/* Desktop Header */}
                     <div className='h-20 flex items-center justify-between'>
                         {/* Logo */}
-                        <div className='flex items-center'>
-                            <Link href='/' className='flex items-center'>
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                                >
-                                    <Logo />
-                                </motion.div>
-                            </Link>
-                        </div>
-
-                        {/* Search Bar */}
-                        <div className='hidden md:flex flex-1 max-w-xl mx-8 relative'>
-                            <div
-                                className={`flex w-full items-center overflow-hidden rounded-full border transition-all duration-300 ${
-                                    isSearchFocused
-                                        ? 'border-blue-500 ring-2 ring-blue-100'
-                                        : 'border-gray-300 hover:border-gray-400'
-                                }`}
+                        <Link href='/' className='flex items-center'>
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                             >
-                                <input
-                                    type='text'
-                                    placeholder='Tìm kiếm sản phẩm...'
-                                    className='w-full py-3 pl-5 pr-12 rounded-full focus:outline-none bg-transparent'
-                                    value={searchQuery}
-                                    onChange={e => setSearchQuery(e.target.value)}
-                                    onFocus={() => setIsSearchFocused(true)}
-                                    onBlur={() => setIsSearchFocused(false)}
-                                />
-                                <button className='absolute right-4 text-gray-500 hover:text-blue-600 transition-colors'>
-                                    <Search size={20} />
+                                <Logo />
+                            </motion.div>
+                        </Link>
+
+                        <div className='flex items-center'>
+                            {/* Search Bar */}
+                            <div className='hidden md:flex flex-1 w-[562px] max-w-xl mx-6 relative'>
+                                <div
+                                    className={`flex w-full items-center overflow-hidden rounded-full border transition-all duration-100 ${
+                                        isSearchFocused
+                                            ? 'border-blue-500 ring-2 ring-blue-100'
+                                            : 'border-gray-300 hover:border-gray-400'
+                                    }`}
+                                >
+                                    <input
+                                        type='text'
+                                        placeholder='Tìm kiếm sản phẩm...'
+                                        className='w-full py-3 pl-5 pr-12 rounded-full focus:outline-none bg-transparent'
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                        onFocus={() => setIsSearchFocused(true)}
+                                        onBlur={() => setIsSearchFocused(false)}
+                                    />
+                                    <button className='absolute right-4 text-gray-500 hover:text-blue-600 transition-colors'>
+                                        <Search size={20} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Right Navigation */}
+                            <div className='flex items-center space-x-1 md:space-x-6'>
+                                <div className='hidden md:flex items-center'>
+                                    <Link
+                                        href='/user/wishlist'
+                                        className={`flex flex-col items-center px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all relative ${
+                                            pathName.includes('user/wishlist')
+                                                ? 'bg-blue-50 text-blue-600'
+                                                : 'text-gray-700'
+                                        }`}
+                                    >
+                                        <Heart size={22} strokeWidth={1.5} />
+                                        {user.favoriteCount > 0 && (
+                                            <motion.span
+                                                className='absolute -top-0 -right-0 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center'
+                                                initial={{ scale: 0.8 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{
+                                                    type: 'spring',
+                                                    stiffness: 500,
+                                                    damping: 10
+                                                }}
+                                            >
+                                                {user.favoriteCount}
+                                            </motion.span>
+                                        )}
+                                        <span className='text-xs mt-1 font-medium'>Yêu thích</span>
+                                    </Link>
+                                    <Link
+                                        href='/user/cart'
+                                        className={`ml-2 flex flex-col items-center px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all relative ${
+                                            pathName.includes('user/cart')
+                                                ? 'bg-blue-50 text-blue-600'
+                                                : 'text-gray-700'
+                                        }`}
+                                    >
+                                        <ShoppingCart size={22} strokeWidth={1.5} />
+                                        {user.cartCount > 0 && (
+                                            <motion.span
+                                                className='absolute -top-0 -right-0 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center'
+                                                initial={{ scale: 0.8 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{
+                                                    type: 'spring',
+                                                    stiffness: 500,
+                                                    damping: 10
+                                                }}
+                                            >
+                                                {user.cartCount}
+                                            </motion.span>
+                                        )}
+                                        <span className='text-xs mt-1 font-medium'>Giỏ hàng</span>
+                                    </Link>
+                                    {!user.isAuthenticated ? (
+                                        <Link
+                                            href='/login'
+                                            className='ml-4 flex items-center bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-6 py-3 rounded-full transition-all'
+                                        >
+                                            <LogIn size={18} className='mr-2' />
+                                            <span className='font-medium'>Đăng nhập</span>
+                                        </Link>
+                                    ) : (
+                                        <div className='ml-4 relative'>
+                                            <UserAvatarMenu />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Mobile Menu Button */}
+                                <button
+                                    className='md:hidden p-2 rounded-full text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all'
+                                    onClick={toggleMenu}
+                                >
+                                    {isOpen ? <X size={24} /> : <Menu size={24} />}
                                 </button>
                             </div>
-                        </div>
-
-                        {/* Right Navigation */}
-                        <div className='flex items-center space-x-1 md:space-x-6'>
-                            <div className='hidden md:flex items-center'>
-                                <Link
-                                    href='/user/wishlist'
-                                    className={`flex flex-col items-center px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all relative ${
-                                        pathName.includes('user/wishlist')
-                                            ? 'bg-blue-50 text-blue-600'
-                                            : 'text-gray-700'
-                                    }`}
-                                >
-                                    <Heart size={22} strokeWidth={1.5} />
-                                    {user.favoriteCount > 0 && (
-                                        <motion.span
-                                            className='absolute -top-0 -right-0 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center'
-                                            initial={{ scale: 0.8 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{
-                                                type: 'spring',
-                                                stiffness: 500,
-                                                damping: 10
-                                            }}
-                                        >
-                                            {user.favoriteCount}
-                                        </motion.span>
-                                    )}
-                                    <span className='text-xs mt-1 font-medium'>Yêu thích</span>
-                                </Link>
-                                <Link
-                                    href='/user/cart'
-                                    className={`ml-2 flex flex-col items-center px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all relative ${
-                                        pathName.includes('user/cart') ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
-                                    }`}
-                                >
-                                    <ShoppingCart size={22} strokeWidth={1.5} />
-                                    {user.cartCount > 0 && (
-                                        <motion.span
-                                            className='absolute -top-0 -right-0 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center'
-                                            initial={{ scale: 0.8 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{
-                                                type: 'spring',
-                                                stiffness: 500,
-                                                damping: 10
-                                            }}
-                                        >
-                                            {user.cartCount}
-                                        </motion.span>
-                                    )}
-                                    <span className='text-xs mt-1 font-medium'>Giỏ hàng</span>
-                                </Link>
-                                {!user.isAuthenticated ? (
-                                    <Link
-                                        href='/login'
-                                        className='ml-4 flex items-center bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-6 py-3 rounded-full transition-all'
-                                    >
-                                        <LogIn size={18} className='mr-2' />
-                                        <span className='font-medium'>Đăng nhập</span>
-                                    </Link>
-                                ) : (
-                                    <div className='ml-4 relative'>
-                                        <UserAvatarMenu />
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Mobile Menu Button */}
-                            <button
-                                className='md:hidden p-2 rounded-full text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all'
-                                onClick={toggleMenu}
-                            >
-                                {isOpen ? <X size={24} /> : <Menu size={24} />}
-                            </button>
                         </div>
                     </div>
 

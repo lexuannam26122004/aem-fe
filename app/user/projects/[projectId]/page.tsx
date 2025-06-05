@@ -40,6 +40,8 @@ import { debounce } from 'lodash'
 import { useCheckQuotedQuery, useCreateQuoteMutation } from '@/services/UserQuoteService'
 import { IQuoteCreateVModel } from '@/models/Quote'
 import UserAlertDialog from '@/components/UserAlertDialog'
+import LoginRequired from '@/components/LoginRequired'
+import ForbiddenAccess from '@/components/ForbiddenAccess'
 
 const RequestQuotePage = () => {
     const { t } = useTranslation('common')
@@ -66,7 +68,7 @@ const RequestQuotePage = () => {
 
     const id = pathName.split('/').pop() // Get the last part of the path as ID
 
-    const { data: projectResponse, refetch } = useGetByIdProjectQuery(Number(id))
+    const { data: projectResponse, refetch, error: errorProject } = useGetByIdProjectQuery(Number(id))
     const [updateProject, { isLoading: isUpdatingProject }] = useUpdateProjectMutation()
     const [deleteProjectProduct, { isLoading: isDeleteLoading }] = useDeleteProjectProductMutation()
     const [updateQuantity] = useUpdateProjectQuantityMutation()
@@ -292,6 +294,14 @@ const RequestQuotePage = () => {
             default:
                 return t('COMMON.USER.CANCELLED')
         }
+    }
+
+    if (errorProject && typeof errorProject === 'object' && 'status' in errorProject && errorProject.status === 401) {
+        return <LoginRequired type='quote' />
+    }
+
+    if (errorProject && typeof errorProject === 'object' && 'status' in errorProject && errorProject.status === 403) {
+        return <ForbiddenAccess type='quote' />
     }
 
     if (isLoading) {

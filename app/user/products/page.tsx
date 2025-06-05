@@ -3,135 +3,89 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Search, ChevronDown, Filter } from 'lucide-react'
 import ProductCard from '../ProductCard'
-import { IProduct } from '@/models/Product'
+import { IProductFilter, IProductSearch } from '@/models/Product'
 import EmptyItem from '@/components/EmptyItem'
 import EnhancedPagination from '@/components/EnhancedPagination'
-
-// Dữ liệu mẫu
-const CATEGORIES = [
-    { id: 'all', name: 'Tất cả' },
-    { id: 'plc', name: 'PLC & HMI' },
-    { id: 'sensors', name: 'Cảm biến' },
-    { id: 'motors', name: 'Động cơ & Biến tần' },
-    { id: 'robotics', name: 'Robot công nghiệp' },
-    { id: 'iot', name: 'IoT & Truyền thông' },
-    { id: 'software', name: 'Phần mềm SCADA' }
-]
-
-const BRANDS = ['Siemens', 'ABB', 'Schneider', 'Mitsubishi', 'Omron', 'Delta', 'Allen Bradley']
-
-const PRICE_RANGE = [
-    { value: '0-1', label: 'Dưới 1 triệu' },
-    { value: '1-5', label: '1 - 5 triệu' },
-    { value: '5-10', label: '5 - 10 triệu' },
-    { value: '10-50', label: '10 - 50 triệu' },
-    { value: '50+', label: 'Trên 50 triệu' }
-]
-
-// Dữ liệu sản phẩm mẫu
-const generateProducts = (): IProduct[] => {
-    const covers = [
-        'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-1.webp',
-        'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-2.webp',
-        'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-3.webp',
-        'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-4.webp',
-        'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-5.webp'
-    ]
-
-    const productNames = [
-        'Siemens S7-1200 PLC',
-        'Cảm biến quang Omron E3Z',
-        'Biến tần ABB ACS580',
-        'HMI Weintek MT8071iE',
-        'Động cơ servo Mitsubishi MR-J4',
-        'Module mở rộng Phoenix Contact',
-        'Robot SCARA Epson T6',
-        'Cảm biến áp suất IFM',
-        'Bộ điều khiển nhiệt độ Autonics',
-        'Rơ-le thời gian Carlo Gavazzi',
-        'Máy đo lưu lượng Endress+Hauser',
-        'Cáp truyền thông Profinet',
-        'Màn hình công nghiệp Advantech',
-        'Mô-đun Analog Delta DVP',
-        'Thiết bị IoT Gateway Moxa',
-        'Camera công nghiệp Cognex',
-        'Cảm biến độ rung SKF',
-        'Cảm biến nhiệt Honeywell',
-        'Bộ mã hóa vòng quay Sick',
-        'Thiết bị an toàn Pilz'
-    ]
-
-    const categories = [
-        'PLC',
-        'Sensor',
-        'Drive',
-        'HMI',
-        'Servo',
-        'Module',
-        'Robot',
-        'Automation',
-        'Temperature',
-        'Timer'
-    ]
-    const suppliers = [
-        'Siemens',
-        'Omron',
-        'ABB',
-        'Weintek',
-        'Mitsubishi',
-        'Phoenix',
-        'Epson',
-        'IFM',
-        'Autonics',
-        'Pilz'
-    ]
-    const units = ['cái', 'bộ', 'chiếc', 'hộp']
-
-    const products: IProduct[] = []
-
-    for (let i = 0; i < 20; i++) {
-        const price = Math.floor(Math.random() * 90_000_000) + 1_000_000
-        const discountRate = Math.floor(Math.random() * 30) + 5
-        const discountPrice = discountRate > 0 ? Math.floor(price * (1 - discountRate / 100)) : price
-
-        products.push({
-            id: i + 1,
-            serialNumber: `SN-${100000 + i}`,
-            discountRate,
-            discountPrice,
-            price,
-            images: [covers[i % covers.length]],
-            description: `Mô tả chi tiết cho sản phẩm ${productNames[i]}.`,
-            productName: productNames[i],
-            categoryName: categories[i % categories.length],
-            supplierName: suppliers[i % suppliers.length],
-            unit: units[i % units.length],
-            warrantyPeriod: Math.floor(Math.random() * 36) + 12, // 12 - 48 tháng
-            stockQuantity: Math.floor(Math.random() * 50) + 10,
-            soldCount: Math.floor(Math.random() * 500),
-            minStockThreshold: Math.floor(Math.random() * 10) + 5,
-            rating: parseFloat((Math.random() * 2 + 3).toFixed(1)), // 3.0 - 5.0
-            createdAt: new Date(Date.now() - Math.random() * 3_600_000_000).toISOString(), // trong quá khứ
-            createdBy: 'admin'
-        })
-    }
-
-    return products
-}
+import { useTranslation } from 'react-i18next'
+import { useSearchProductQuery } from '@/services/ProductService'
+import Loading from '@/components/Loading'
+import { useSearchCategoryQuery } from '@/services/CategoryService'
+import { useSearchBrandQuery } from '@/services/BrandService'
+import { useSearchFeatureQuery } from '@/services/FeatureService'
+import { IFeature } from '@/models/Feature'
+import { IBrand } from '@/models/Brand'
+import { ICategory } from '@/models/Category'
 
 export default function AutomationShop() {
-    const [products, setProducts] = useState<IProduct[]>([])
-    const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([])
-    const [category, setCategory] = useState('all')
-    const [priceRange, setPriceRange] = useState<string[]>([])
-    const [brands, setBrands] = useState<string[]>([])
-    const [searchQuery, setSearchQuery] = useState('')
+    const { t } = useTranslation('common')
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-    const [selectedSortOption, setSelectedSortOption] = useState('popular')
-    // Add this with other imports and state declarations
     const [showScrollTop, setShowScrollTop] = useState(false)
+    const [filterProductSearch, setFilterProductSearch] = useState<IProductFilter>({
+        pageSize: 12,
+        pageNumber: 1
+    })
 
-    // Add this effect to track scroll position
+    const {
+        data: dataResponseAll,
+        isLoading: isLoadingResponseAll,
+        refetch
+    } = useSearchProductQuery(filterProductSearch)
+
+    const { data: categoryResponse, isLoading: isLoadingCategory } = useSearchCategoryQuery({
+        pageSize: 50,
+        pageNumber: 1
+    })
+
+    const { data: brandResponse, isLoading: isLoadingBrand } = useSearchBrandQuery({
+        pageSize: 50,
+        pageNumber: 1
+    })
+
+    const { data: featuresResponse, isLoading: isLoadingFeature } = useSearchFeatureQuery({
+        pageSize: 50,
+        pageNumber: 1
+    })
+
+    const totalRecords = dataResponseAll?.data.totalRecords || 0
+
+    const categories = Array.isArray(categoryResponse?.data.records)
+        ? (categoryResponse?.data.records as ICategory[])
+        : []
+    const brands = Array.isArray(brandResponse?.data.records) ? (brandResponse?.data.records as IBrand[]) : []
+    const features = Array.isArray(featuresResponse?.data.records) ? (featuresResponse?.data.records as IFeature[]) : []
+    const products = Array.isArray(dataResponseAll?.data.records)
+        ? (dataResponseAll?.data.records as IProductSearch[])
+        : []
+
+    const DROPDOWN_OPTIONS = {
+        sort: [
+            { value: 'popular', label: 'Phổ biến nhất' },
+            { value: 'newest', label: 'Mới nhất trước' },
+            { value: 'price_asc', label: 'Giá thấp đến cao' },
+            { value: 'price_desc', label: 'Giá cao đến thấp' }
+        ],
+        availability: [
+            { value: 'all', label: 'Tất cả sản phẩm' },
+            { value: 'in-stock', label: 'Còn hàng' },
+            { value: 'out-of-stock', label: 'Hết hàng' },
+            { value: 'pre-order', label: 'Đặt trước' }
+        ],
+        techFeatures: features
+            ? features.map(feature => ({
+                  value: feature.id,
+                  label: feature.featureName
+              }))
+            : []
+    }
+
+    const priceRange = [
+        { value: 'under_1m', label: t('COMMON.USER.PRICE_UNDER_1M') },
+        { value: '1_5m', label: t('COMMON.USER.PRICE_1M_5M') },
+        { value: '5_10m', label: t('COMMON.USER.PRICE_5M_10M') },
+        { value: '10_50m', label: t('COMMON.USER.PRICE_10M_50M') },
+        { value: 'above_50m', label: t('COMMON.USER.PRICE_ABOVE_50M') }
+    ]
+
     useEffect(() => {
         const handleScroll = () => {
             const scrollPosition = window.scrollY
@@ -142,107 +96,58 @@ export default function AutomationShop() {
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
-    // Khởi tạo dữ liệu sản phẩm
     useEffect(() => {
-        const data = generateProducts()
-        setProducts(data)
-        setFilteredProducts(data)
-    }, [])
+        refetch()
+    }, [filterProductSearch])
 
-    // Xử lý lọc sản phẩm
-    useEffect(() => {
-        let result = [...products]
-
-        // Lọc theo danh mục
-        if (category !== 'all') {
-            result = result.filter(product => product.categoryName === category)
-        }
-
-        // Lọc theo giá
-        if (priceRange.length > 0) {
-            result = result.filter(product => {
-                const priceInMillions = product.price / 1000000
-                return priceRange.some(range => {
-                    if (range === '0-1') return priceInMillions < 1
-                    if (range === '1-5') return priceInMillions >= 1 && priceInMillions < 5
-                    if (range === '5-10') return priceInMillions >= 5 && priceInMillions < 10
-                    if (range === '10-50') return priceInMillions >= 10 && priceInMillions < 50
-                    if (range === '50+') return priceInMillions >= 50
-                    return false
-                })
+    const handleBrandChange = (value: string) => {
+        if (filterProductSearch.brands && filterProductSearch.brands.includes(value)) {
+            setFilterProductSearch({
+                ...filterProductSearch,
+                pageNumber: 1,
+                brands: filterProductSearch.brands.filter(brand => brand !== value)
+            })
+        } else if (filterProductSearch.brands) {
+            setFilterProductSearch({
+                ...filterProductSearch,
+                pageNumber: 1,
+                brands: [...filterProductSearch.brands, value]
+            })
+        } else {
+            setFilterProductSearch({
+                ...filterProductSearch,
+                pageNumber: 1,
+                brands: [value]
             })
         }
-
-        // Lọc theo thương hiệu
-        if (brands.length > 0) {
-            result = result.filter(product => brands.includes(product.supplierName))
-        }
-
-        // Lọc theo từ khóa tìm kiếm
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase()
-            result = result.filter(
-                product =>
-                    product.productName.toLowerCase().includes(query) ||
-                    product.supplierName.toLowerCase().includes(query) ||
-                    product.categoryName.toLowerCase().includes(query)
-            )
-        }
-
-        // Sắp xếp sản phẩm
-        if (selectedSortOption === 'price-asc') {
-            result.sort((a, b) => a.price - b.price)
-        } else if (selectedSortOption === 'price-desc') {
-            result.sort((a, b) => b.price - a.price)
-        } else if (selectedSortOption === 'newest') {
-            // Giả lập sắp xếp theo mới nhất (trong thực tế sẽ dùng createdAt)
-            result.sort((a, b) => b.id - a.id)
-        } else {
-            // Mặc định: phổ biến (theo rating và số lượng đánh giá)
-            result.sort((a, b) => Number(b.rating) * b.rating - Number(a.rating) * a.rating)
-        }
-
-        setFilteredProducts(result)
-    }, [products, category, priceRange, brands, searchQuery, selectedSortOption])
-
-    // Xử lý thay đổi lọc giá
-    const handlePriceChange = (value: string) => {
-        if (priceRange.includes(value)) {
-            setPriceRange(priceRange.filter(item => item !== value))
-        } else {
-            setPriceRange([...priceRange, value])
-        }
     }
 
-    // Xử lý thay đổi lọc thương hiệu
-    const handleBrandChange = (value: string) => {
-        if (brands.includes(value)) {
-            setBrands(brands.filter(item => item !== value))
-        } else {
-            setBrands([...brands, value])
-        }
-    }
-
-    const [availability, setAvailability] = useState('all')
-    const [selectedTechFeatures, setSelectedTechFeatures] = useState<string[]>([])
-    const [itemsPerPage] = useState(15)
-    const [currentPage, setCurrentPage] = useState(1)
-
-    // Thay đổi trang trong phân trang
     const handlePageChange = (page: number) => {
-        setCurrentPage(page)
+        setFilterProductSearch({
+            ...filterProductSearch,
+            pageNumber: page
+        })
     }
 
-    // Các hàm xử lý không thay đổi
     const handleResetFilters = () => {
-        setSelectedTechFeatures([])
-        setSelectedSortOption('popular')
-        setAvailability('all')
+        setFilterProductSearch({
+            ...filterProductSearch,
+            pageNumber: 1,
+            categoryIds: undefined,
+            brands: undefined,
+            priceRange: '',
+            stockStatus: '',
+            featureIds: undefined,
+            sortBy: undefined
+        })
+    }
+
+    if (isLoadingResponseAll || isLoadingCategory || isLoadingBrand || isLoadingFeature) {
+        return <Loading />
     }
 
     return (
         <div className='max-w-7xl mx-auto sm:px-6 space-y-8 lg:px-8'>
-            {/* Tất cả sản phẩm với bộ lọc */}
             <div>
                 <h2 className='text-xl font-bold text-gray-800 mb-6'>Tất cả sản phẩm</h2>
 
@@ -274,36 +179,56 @@ export default function AutomationShop() {
                                     <h3 className='font-bold text-gray-800'>Danh mục sản phẩm</h3>
                                 </div>
                                 <ul className='space-y-1.5 pl-1'>
-                                    {CATEGORIES.map(cat => (
-                                        <li key={cat.id}>
-                                            <button
-                                                className={`w-full text-left py-2 px-3 rounded-lg transition-all duration-200 flex items-center ${
-                                                    category === cat.id
-                                                        ? 'bg-blue-500 hover:bg-blue-600 text-white font-medium shadow-md'
-                                                        : 'hover:bg-blue-50 text-gray-700'
-                                                }`}
-                                                onClick={() => setCategory(cat.id)}
-                                            >
-                                                {category === cat.id && (
-                                                    <svg
-                                                        xmlns='http://www.w3.org/2000/svg'
-                                                        className='h-4 w-4 mr-2'
-                                                        fill='none'
-                                                        viewBox='0 0 24 24'
-                                                        stroke='currentColor'
+                                    {categories &&
+                                        categories.length > 0 &&
+                                        categories.map(cat => {
+                                            const isSelected =
+                                                filterProductSearch.categoryIds &&
+                                                filterProductSearch.categoryIds.includes(cat.id)
+
+                                            return (
+                                                <li key={cat.id}>
+                                                    <button
+                                                        className={`w-full text-left py-2 px-3 rounded-lg transition-all duration-200 flex items-center ${
+                                                            isSelected
+                                                                ? 'bg-blue-500 hover:bg-blue-600 text-white font-medium shadow-md'
+                                                                : 'hover:bg-blue-50 text-gray-700'
+                                                        }`}
+                                                        onClick={() =>
+                                                            setFilterProductSearch({
+                                                                ...filterProductSearch,
+                                                                pageNumber: 1,
+                                                                categoryIds: isSelected
+                                                                    ? filterProductSearch.categoryIds.filter(
+                                                                          id => id !== cat.id
+                                                                      )
+                                                                    : filterProductSearch.categoryIds
+                                                                    ? [...filterProductSearch.categoryIds, cat.id]
+                                                                    : [cat.id]
+                                                            })
+                                                        }
                                                     >
-                                                        <path
-                                                            strokeLinecap='round'
-                                                            strokeLinejoin='round'
-                                                            strokeWidth={2}
-                                                            d='M5 13l4 4L19 7'
-                                                        />
-                                                    </svg>
-                                                )}
-                                                {cat.name}
-                                            </button>
-                                        </li>
-                                    ))}
+                                                        {isSelected && (
+                                                            <svg
+                                                                xmlns='http://www.w3.org/2000/svg'
+                                                                className='h-4 w-4 mr-2'
+                                                                fill='none'
+                                                                viewBox='0 0 24 24'
+                                                                stroke='currentColor'
+                                                            >
+                                                                <path
+                                                                    strokeLinecap='round'
+                                                                    strokeLinejoin='round'
+                                                                    strokeWidth={2}
+                                                                    d='M5 13l4 4L19 7'
+                                                                />
+                                                            </svg>
+                                                        )}
+                                                        {cat.categoryName}
+                                                    </button>
+                                                </li>
+                                            )
+                                        })}
                                 </ul>
                             </div>
 
@@ -313,24 +238,46 @@ export default function AutomationShop() {
                                     <div className='w-1 h-6 bg-blue-500 rounded-full mr-2'></div>
                                     <h3 className='font-bold text-gray-800'>Khoảng giá</h3>
                                 </div>
-                                <div className='space-y-1.5 pl-1'>
-                                    {PRICE_RANGE.map(range => (
-                                        <label
-                                            key={range.value}
-                                            className={`w-full text-left py-2 px-3 cursor-pointer rounded-lg hover:bg-blue-50 transition-all duration-200 flex items-center ${
-                                                priceRange.includes(range.value) ? 'bg-blue-100' : ''
-                                            }`}
-                                        >
-                                            <input
-                                                type='checkbox'
-                                                className='w-[17px] h-[17px] rounded text-blue-600 accent-[#3675ff] focus:ring-blue-400 border-gray-300'
-                                                checked={priceRange.includes(range.value)}
-                                                onChange={() => handlePriceChange(range.value)}
-                                            />
-                                            <span className='ml-3 text-gray-700'>{range.label}</span>
-                                        </label>
-                                    ))}
-                                </div>
+                                <ul className='space-y-1.5 pl-1'>
+                                    {priceRange &&
+                                        priceRange.length > 0 &&
+                                        priceRange.map((range, index) => (
+                                            <li key={index}>
+                                                <button
+                                                    className={`w-full text-left py-2 px-3 rounded-lg transition-all duration-200 flex items-center ${
+                                                        range.value === filterProductSearch.priceRange
+                                                            ? 'bg-blue-500 hover:bg-blue-600 text-white font-medium shadow-md'
+                                                            : 'hover:bg-blue-50 text-gray-700'
+                                                    }`}
+                                                    onClick={() =>
+                                                        setFilterProductSearch({
+                                                            ...filterProductSearch,
+                                                            pageNumber: 1,
+                                                            priceRange: range.value
+                                                        })
+                                                    }
+                                                >
+                                                    {range.value === filterProductSearch.priceRange && (
+                                                        <svg
+                                                            xmlns='http://www.w3.org/2000/svg'
+                                                            className='h-4 w-4 mr-2'
+                                                            fill='none'
+                                                            viewBox='0 0 24 24'
+                                                            stroke='currentColor'
+                                                        >
+                                                            <path
+                                                                strokeLinecap='round'
+                                                                strokeLinejoin='round'
+                                                                strokeWidth={2}
+                                                                d='M5 13l4 4L19 7'
+                                                            />
+                                                        </svg>
+                                                    )}
+                                                    {range.label}
+                                                </button>
+                                            </li>
+                                        ))}
+                                </ul>
                             </div>
 
                             {/* Brand filter */}
@@ -340,34 +287,33 @@ export default function AutomationShop() {
                                     <h3 className='font-bold text-gray-800'>Thương hiệu</h3>
                                 </div>
                                 <div className='space-y-1.5 pl-1'>
-                                    {BRANDS.map(brand => (
-                                        <label
-                                            key={brand}
-                                            className={`w-full text-left py-2 px-3 cursor-pointer hover:bg-blue-50 rounded-lg transition-all duration-200 flex items-center ${
-                                                brands.includes(brand) ? 'bg-blue-100' : ''
-                                            }`}
-                                        >
-                                            <input
-                                                type='checkbox'
-                                                className='w-[17px] h-[17px] rounded text-blue-600 accent-[#3675ff] focus:ring-blue-400 border-gray-300'
-                                                checked={brands.includes(brand)}
-                                                onChange={() => handleBrandChange(brand)}
-                                            />
-                                            <span className='ml-3 text-gray-700'>{brand}</span>
-                                        </label>
-                                    ))}
+                                    {brands &&
+                                        brands.map(brand => (
+                                            <label
+                                                key={brand.id}
+                                                className={`w-full text-left py-2 px-3 cursor-pointer hover:bg-blue-50 rounded-lg transition-all duration-200 flex items-center ${
+                                                    filterProductSearch.brands &&
+                                                    filterProductSearch.brands.includes(brand.brandName)
+                                                        ? 'bg-blue-100'
+                                                        : ''
+                                                }`}
+                                            >
+                                                <input
+                                                    type='checkbox'
+                                                    className='w-[17px] h-[17px] rounded text-blue-600 accent-[#3675ff] focus:ring-blue-400 border-gray-300'
+                                                    checked={!!filterProductSearch.brands?.includes(brand.brandName)}
+                                                    onChange={() => handleBrandChange(brand.brandName)}
+                                                />
+                                                <span className='ml-3 text-gray-700'>{brand.brandName}</span>
+                                            </label>
+                                        ))}
                                 </div>
                             </div>
 
                             {/* Clear filters button with gradient hover */}
                             <button
-                                className='w-full bg-blue-500 text-white py-3 px-6 rounded-lg font-medium transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-400 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
-                                onClick={() => {
-                                    setCategory('all')
-                                    setPriceRange([])
-                                    setBrands([])
-                                    setSearchQuery('')
-                                }}
+                                className='w-full bg-blue-500 text-white py-3 px-6 rounded-lg font-medium transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-400 shadow-md hover:shadow-lg transform'
+                                onClick={handleResetFilters}
                             >
                                 Xóa tất cả bộ lọc
                             </button>
@@ -378,7 +324,6 @@ export default function AutomationShop() {
                     <div className='flex-1'>
                         {/* Sorting and view options */}
                         <div className='mb-6 bg-white rounded-[15px] shadow-lg border border-blue-100'>
-                            {/* Header with gradient - matching the filter style */}
                             <div className='h-[65px] flex items-center rounded-t-[14px] border-b border-blue-100 pl-6'>
                                 <h2 className='text-black font-bold text-lg flex items-center'>
                                     <Search className='mr-3 text-blue-600' size={20} />
@@ -386,29 +331,49 @@ export default function AutomationShop() {
                                 </h2>
                             </div>
 
-                            {/* Controls panel - Thay thế các select boxes bằng components mới */}
                             <div className='p-6 grid grid-cols-1 md:grid-cols-3 gap-6'>
-                                {/* Technical Features Filter - Sử dụng component mới */}
                                 <TechFeaturesSelect
                                     label='Tính năng nổi bật:'
-                                    selectedValues={selectedTechFeatures}
-                                    onChange={setSelectedTechFeatures}
+                                    selectedValues={filterProductSearch.featureIds || []}
+                                    onChange={value => {
+                                        setFilterProductSearch({
+                                            ...filterProductSearch,
+                                            pageNumber: 1,
+                                            featureIds:
+                                                filterProductSearch.featureIds &&
+                                                filterProductSearch.featureIds.includes(value)
+                                                    ? filterProductSearch.featureIds.filter(id => id !== value)
+                                                    : filterProductSearch.featureIds
+                                                    ? [...filterProductSearch.featureIds, value]
+                                                    : [value]
+                                        })
+                                    }}
                                     options={DROPDOWN_OPTIONS.techFeatures}
                                 />
 
-                                {/* Sort options - Sử dụng component mới */}
                                 <EnhancedSelect
                                     label='Sắp xếp theo:'
-                                    value={selectedSortOption}
-                                    onChange={setSelectedSortOption}
+                                    value={filterProductSearch.sortBy || ''}
+                                    onChange={value =>
+                                        setFilterProductSearch({
+                                            ...filterProductSearch,
+                                            pageNumber: 1,
+                                            sortBy: String(value)
+                                        })
+                                    }
                                     options={DROPDOWN_OPTIONS.sort}
                                 />
 
-                                {/* Availability filter - Sử dụng component mới */}
                                 <EnhancedSelect
                                     label='Tình trạng hàng:'
-                                    value={availability}
-                                    onChange={setAvailability}
+                                    value={filterProductSearch.stockStatus || ''}
+                                    onChange={value =>
+                                        setFilterProductSearch({
+                                            ...filterProductSearch,
+                                            pageNumber: 1,
+                                            stockStatus: String(value)
+                                        })
+                                    }
                                     options={DROPDOWN_OPTIONS.availability}
                                 />
                             </div>
@@ -430,7 +395,7 @@ export default function AutomationShop() {
                                             d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
                                         />
                                     </svg>
-                                    Hiển thị {filteredProducts.length} sản phẩm
+                                    Hiển thị {products.length} sản phẩm
                                 </span>
 
                                 <button
@@ -456,9 +421,10 @@ export default function AutomationShop() {
                             </div>
                         </div>
 
-                        {filteredProducts.length > 0 ? (
+                        {/* Product grid/list */}
+                        {products.length > 0 ? (
                             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
-                                {filteredProducts.map((product, index) => (
+                                {products.map((product, index) => (
                                     <ProductCard product={product} key={index} />
                                 ))}
                             </div>
@@ -468,21 +434,16 @@ export default function AutomationShop() {
                                 description='Rất tiếc, chúng tôi không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.'
                                 buttonText='Xóa bộ lọc'
                                 icon={<Search className='w-10 h-10 text-blue-600' />}
-                                onClick={() => {
-                                    setCategory('all')
-                                    setPriceRange([])
-                                    setBrands([])
-                                    setSearchQuery('')
-                                }}
+                                onClick={handleResetFilters}
                             />
                         )}
 
-                        {filteredProducts.length > 0 && (
+                        {products.length > 0 && (
                             <div className='mt-8'>
                                 <EnhancedPagination
-                                    totalItems={filteredProducts.length}
-                                    itemsPerPage={itemsPerPage}
-                                    currentPage={currentPage}
+                                    totalItems={totalRecords}
+                                    itemsPerPage={12}
+                                    currentPage={filterProductSearch.pageNumber}
                                     onPageChange={handlePageChange}
                                     siblingCount={1}
                                     showFirstLast={true}
@@ -632,28 +593,6 @@ export default function AutomationShop() {
     )
 }
 
-const DROPDOWN_OPTIONS = {
-    sort: [
-        { value: 'popular', label: 'Phổ biến nhất' },
-        { value: 'newest', label: 'Mới nhất trước' },
-        { value: 'price-asc', label: 'Giá thấp đến cao' },
-        { value: 'price-desc', label: 'Giá cao đến thấp' }
-    ],
-    availability: [
-        { value: 'all', label: 'Tất cả sản phẩm' },
-        { value: 'in-stock', label: 'Còn hàng' },
-        { value: 'out-of-stock', label: 'Hết hàng' },
-        { value: 'pre-order', label: 'Đặt trước' }
-    ],
-    techFeatures: [
-        { value: 'ce', label: 'Có chứng nhận CE' },
-        { value: 'ip68', label: 'Chống nước IP68' },
-        { value: 'rs485', label: 'Giao tiếp RS485' },
-        { value: 'modbus', label: 'Hỗ trợ MODBUS' },
-        { value: 'safety', label: 'Tiêu chuẩn an toàn SIL' }
-    ]
-}
-
 const useDropdownState = () => {
     const [isOpen, setIsOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement | null>(null)
@@ -673,7 +612,6 @@ const useDropdownState = () => {
             }
         }
 
-        // Only add listener when dropdown is open
         if (isOpen) {
             document.addEventListener('mousedown', handleClickOutside)
             return () => document.removeEventListener('mousedown', handleClickOutside)
@@ -685,9 +623,9 @@ const useDropdownState = () => {
 
 type EnhancedSelectProps = {
     label: string
-    value: string
-    onChange: (value: string) => void
-    options: { value: string; label: string; icon?: string }[]
+    value: string | number
+    onChange: (value: string | number) => void
+    options: { value: string | number; label: string; icon?: string }[]
     type?: string
 }
 
@@ -697,7 +635,7 @@ export const EnhancedSelect = ({ label, value, onChange, options }: EnhancedSele
     // Find the currently selected option
     const selectedOption = options.find(opt => opt.value === value)
 
-    const handleChange = (newValue: string) => {
+    const handleChange = (newValue: string | number) => {
         onChange(newValue)
         closeDropdown()
     }
@@ -757,20 +695,13 @@ export const EnhancedSelect = ({ label, value, onChange, options }: EnhancedSele
 
 type TechFeaturesSelectProps = {
     label: string
-    selectedValues: string[]
-    onChange: (values: string[]) => void
-    options: { value: string; label: string; icon?: string }[]
+    selectedValues: number[]
+    onChange: (values: number) => void
+    options: { value: number; label: string; icon?: string }[]
 }
 
 export const TechFeaturesSelect = ({ label, selectedValues = [], onChange, options }: TechFeaturesSelectProps) => {
     const { isOpen, toggleDropdown, dropdownRef } = useDropdownState()
-
-    const handleChange = (feature: string) => {
-        const newSelection = selectedValues.includes(feature)
-            ? selectedValues.filter(f => f !== feature)
-            : [...selectedValues, feature]
-        onChange(newSelection)
-    }
 
     return (
         <div className='w-full'>
@@ -809,7 +740,7 @@ export const TechFeaturesSelect = ({ label, selectedValues = [], onChange, optio
                                         type='checkbox'
                                         className='w-4 h-4 rounded text-blue-600 accent-[#3675ff] focus:ring-blue-400 border-gray-300'
                                         checked={selectedValues.includes(option.value)}
-                                        onChange={() => handleChange(option.value)}
+                                        onChange={() => onChange(option.value)}
                                     />
                                     <div className='ml-2 flex items-center'>
                                         {option.icon && <span className='mr-2'>{option.icon}</span>}

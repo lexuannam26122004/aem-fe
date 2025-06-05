@@ -76,7 +76,6 @@ const ToastContainer = () => {
         }
     }
 
-    // Calculate cumulative top position for each toast
     const calculateTopPosition = (currentIndex: number) => {
         let totalHeight = 24 // Initial top margin
         for (let i = 0; i < currentIndex; i++) {
@@ -104,7 +103,7 @@ const ToastContainer = () => {
                         if (toast.hideDuration !== 0) {
                             setTimeout(() => {
                                 handleClose(toast.id)
-                            }, toast.hideDuration || 5000)
+                            }, toast.hideDuration || 3000)
                         }
                     }}
                 >

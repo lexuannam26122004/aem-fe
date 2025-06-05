@@ -28,7 +28,7 @@ import { useGetByIdProductQuery, useSearchProductQuery } from '@/services/Produc
 import { usePathname } from 'next/navigation'
 import Loading from '@/components/Loading'
 import ObjectEmptyState from '@/components/ObjectEmptyState'
-import { useDeleteFavoriteMutation, useGetFavoriteCountByProductQuery } from '@/services/FavoriteService'
+import { useDeleteFavoriteByProductIdMutation, useGetFavoriteCountByProductQuery } from '@/services/FavoriteService'
 import FavoriteFormModal from '@/components/FavoriteFormModal'
 import { useGetReviewByProductIdQuery } from '@/services/ReviewService'
 import { useCreateInteractiveReviewMutation } from '@/services/InteractiveReviewService'
@@ -74,7 +74,7 @@ const ProductDetail = () => {
         typeSection: 'hot_sale'
     })
 
-    const [deleteFavorite] = useDeleteFavoriteMutation()
+    const [deleteFavorite] = useDeleteFavoriteByProductIdMutation()
 
     const [createInteractiveReview] = useCreateInteractiveReviewMutation()
 

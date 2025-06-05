@@ -1,9 +1,6 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import LoginRequired from '@/components/LoginRequired'
-import UserProjectContent from './UserProjectContent'
-export default function UserOrders() {
+
+export function useAuthCheck() {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [isAuthChecked, setIsAuthChecked] = useState(false)
 
@@ -15,8 +12,5 @@ export default function UserOrders() {
         setIsAuthChecked(true)
     }, [])
 
-    if (!isAuthChecked) return null
-    if (!isAuthenticated) return <LoginRequired type='projects' />
-
-    return <UserProjectContent />
+    return { isAuthenticated, isAuthChecked }
 }

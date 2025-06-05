@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FolderPlus, X, Loader2, ChevronDown } from 'lucide-react'
+import { FolderPlus, X, Loader2, ChevronDown, LogIn } from 'lucide-react'
 import { formatCurrency } from '@/common/format'
 import { useAddProductIntoProjectMutation, useSearchProjectQuery } from '@/services/UserProjectService'
 import { IProjectGetAll } from '@/models/Project'
 import { useToast } from '@/hooks/useToast'
 import { IFavoriteItem } from '@/models/Favorite'
+import { useRouter } from 'next/navigation'
 
 interface ProjectFormModalProps {
     isOpen: boolean
@@ -28,6 +29,7 @@ export default function ProjectFormModal({
     const [selectedProjects, setSelectedProjects] = useState<any[]>([])
     const [quantity, setQuantity] = useState('1')
     const [searchTerm, setSearchTerm] = useState('')
+    const router = useRouter()
     const [showDropdown, setShowDropdown] = useState(false)
     const [filteredProjects, setFilteredProjects] = useState<IProjectGetAll[]>([])
     const [addProjectIntoProject, { isLoading: isAddingIntoProject }] = useAddProductIntoProjectMutation()
@@ -115,6 +117,73 @@ export default function ProjectFormModal({
     }
 
     if (!isOpen) return null
+
+    const token = sessionStorage.getItem('auth_token')
+
+    if (!token) {
+        return (
+            <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+                <div className='bg-white rounded-xl shadow-xl w-full max-w-md mx-4'>
+                    {/* Header */}
+                    <div className='px-6 py-4 border-b flex items-center justify-between'>
+                        <h2 className='font-bold text-[18px] text-gray-800 flex items-center'>
+                            <LogIn size={20} className='w-5 h-5 text-blue-500 mr-3' />
+                            Yêu cầu đăng nhập
+                        </h2>
+                        <button
+                            onClick={onClose}
+                            className='text-gray-500 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100'
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
+
+                    {/* Content */}
+                    <div className='p-6 space-y-6'>
+                        {/* Product Info */}
+                        <div className='bg-gray-50 rounded-lg p-4'>
+                            <h3 className='font-medium text-gray-900 mb-2'>{productName}</h3>
+                            <p className='text-blue-600 font-semibold'>
+                                Giá hiện tại: {currentPrice.toLocaleString()} VND
+                            </p>
+                        </div>
+
+                        {/* Login Message */}
+                        <div className='text-center space-y-4'>
+                            <div className='w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto'>
+                                <FolderPlus size={28} className='text-blue-500' />
+                            </div>
+                            <div>
+                                <h3 className='font-semibold text-gray-900 mb-2'>Đăng nhập để thêm vào dự án</h3>
+                                <p className='text-gray-600 text-sm leading-relaxed'>
+                                    Bạn cần đăng nhập để có thể thêm sản phẩm vào dự án và quản lý danh sách mua sắm của
+                                    mình.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className='px-6 py-4 border-t flex justify-end space-x-4'>
+                        <button
+                            onClick={onClose}
+                            className='px-6 py-2 font-medium border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100'
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            onClick={() => {
+                                router.push('/login')
+                            }}
+                            className='px-6 py-2 font-medium bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center'
+                        >
+                            <LogIn size={16} className='mr-2' />
+                            Đăng nhập
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div>

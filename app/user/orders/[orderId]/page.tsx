@@ -11,6 +11,7 @@ import Loading from '@/components/Loading'
 import EmptyState from '@/components/ObjectEmptyState'
 import { useSelector } from 'react-redux'
 import { userSelector } from '@/redux/slices/userSlice'
+import ForbiddenAccess from '@/components/ForbiddenAccess'
 
 function getStatusBgColor(status: string): string {
     if (status === 'cancelled') {
@@ -65,7 +66,7 @@ export default function OrderDetailPage() {
     const pathName = usePathname()
     const orderId = String(pathName.split('/').pop())
 
-    const { data: orderDetailResponse, isLoading } = useGetByIdOrderQuery(orderId)
+    const { data: orderDetailResponse, isLoading, error: errorOrderDetail } = useGetByIdOrderQuery(orderId)
 
     const orderDetail: IOrderDetail = orderDetailResponse?.data
 
@@ -81,6 +82,15 @@ export default function OrderDetailPage() {
             : orderDetail?.reviewTime === undefined
             ? 4
             : 0
+
+    if (
+        errorOrderDetail &&
+        typeof errorOrderDetail === 'object' &&
+        'status' in errorOrderDetail &&
+        errorOrderDetail.status === 403
+    ) {
+        return <ForbiddenAccess type='orders' />
+    }
 
     if (isLoading) {
         return <Loading />

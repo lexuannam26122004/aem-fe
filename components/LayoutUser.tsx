@@ -12,27 +12,35 @@ import { useGetCartCountQuery } from '@/services/CartService'
 import { useGetFavoriteCountQuery } from '@/services/FavoriteService'
 import { useDispatch } from 'react-redux'
 import { setCartCount, setFavoriteCount } from '@/redux/slices/userSlice'
+import { useAuthCheck } from '@/hooks/useAuthCheck'
 
 export default function MainLayout({ children }: { children: ReactNode }) {
-    const { data: cartCountResponse, isLoading: isCartCountLoading } = useGetCartCountQuery()
-    const { data: favoriteCountResponse, isLoading: isFavoriteCountLoading } = useGetFavoriteCountQuery()
+    const { isAuthenticated, isAuthChecked } = useAuthCheck()
+
+    const { data: cartCountResponse, isLoading: isCartCountLoading } = useGetCartCountQuery(undefined, {
+        skip: !isAuthenticated
+    })
+    const { data: favoriteCountResponse, isLoading: isFavoriteCountLoading } = useGetFavoriteCountQuery(undefined, {
+        skip: !isAuthenticated
+    })
+
     const dispatch = useDispatch()
 
     useEffect(() => {
         if (cartCountResponse) {
             dispatch(setCartCount(cartCountResponse.data))
         }
-        console.log('Cart count response:', cartCountResponse)
     }, [cartCountResponse])
 
     useEffect(() => {
         if (favoriteCountResponse) {
-            console.log('Favorite count response:', favoriteCountResponse)
             dispatch(setFavoriteCount(favoriteCountResponse.data))
         }
     }, [favoriteCountResponse])
 
-    if (isCartCountLoading || isFavoriteCountLoading) {
+    if (!isAuthChecked) return <MainLoader />
+
+    if (isAuthenticated && (isCartCountLoading || isFavoriteCountLoading)) {
         return <MainLoader />
     }
 
