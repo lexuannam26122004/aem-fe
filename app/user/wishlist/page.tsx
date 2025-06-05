@@ -24,12 +24,16 @@ export default function WishlistComponent() {
     const [items, setItems] = useState<IFavorite[]>([])
     const [expandedItem, setExpandedItem] = useState<number | null>(null)
     const [showEmptyState, setShowEmptyState] = useState(false)
-    const { data: favoriteResponse, isFetching: isFavoriteLoading } = useSearchFavoriteQuery(undefined, {
+    const {
+        data: favoriteResponse,
+        isLoading: isFavoriteLoading,
+        isFetching: isFavoriteFetching
+    } = useSearchFavoriteQuery(undefined, {
         refetchOnMountOrArgChange: true
     })
     const [updateNotify] = useUpdateNotifyMutation()
     const [updateExpectedPrice] = useUpdateExpectedPriceMutation()
-    const [removeFavorite] = useDeleteFavoriteMutation()
+    const [removeFavorite, { isLoading: isRemoveFavoriteLoading, originalArgs }] = useDeleteFavoriteMutation()
     const toast = useToast()
     const [createCart, { isLoading }] = useCreateCartMutation()
 
@@ -55,15 +59,18 @@ export default function WishlistComponent() {
             })
     }
 
-    const removeItem = (productId: number) => {
+    const removeItem = (id: number) => {
         const snapshot = items.map(item => ({ ...item }))
 
-        setItems(items.filter(item => item.id !== productId))
-        if (items.length <= 1) {
-            setShowEmptyState(true)
-        }
-        removeFavorite(productId)
+        removeFavorite(id)
             .unwrap()
+            .then(() => {
+                setItems(items.filter(item => item.id !== id))
+                if (items.length <= 1) {
+                    setShowEmptyState(true)
+                }
+                toast('Xóa sản phẩm khỏi danh sách yêu thích thành công!', 'success')
+            })
             .catch(() => {
                 setItems(snapshot)
                 if (snapshot.length >= 1) {
@@ -179,10 +186,16 @@ export default function WishlistComponent() {
                                             </button>
 
                                             <button
+                                                disabled={isRemoveFavoriteLoading}
                                                 className='p-2 bg-red-50 rounded-full text-red-600 hover:bg-red-100 transition-colors'
-                                                onClick={() => removeItem(item.productId)}
+                                                onClick={() => removeItem(item.id)}
                                             >
-                                                <Trash2 size={18} />
+                                                {(isFavoriteFetching || isRemoveFavoriteLoading) &&
+                                                originalArgs == item.id ? (
+                                                    <Loader2 className='animate-spin' size={18} />
+                                                ) : (
+                                                    <Trash2 size={18} />
+                                                )}
                                             </button>
 
                                             <button
@@ -211,7 +224,7 @@ export default function WishlistComponent() {
                                                     <div className='flex items-center'>
                                                         <input
                                                             type='number'
-                                                            value={item.expectedPrice}
+                                                            value={item.expectedPrice || ''}
                                                             onChange={e =>
                                                                 changeTargetPrice(item.id, parseInt(e.target.value))
                                                             }
@@ -252,18 +265,6 @@ export default function WishlistComponent() {
                                 )}
                             </div>
                         ))}
-                    </div>
-
-                    <div className='px-6 py-5 bg-gray-50 rounded-b-xl border-t border-gray-100'>
-                        <div className='flex justify-between items-center'>
-                            <span className='text-gray-500 lowercase'>
-                                {items.length} {t('COMMON.USER.PRODUCT')}
-                            </span>
-                            <button className='px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors flex items-center'>
-                                <ShoppingCart size={16} className='mr-2' />
-                                {t('COMMON.USER.ADD_ALL_TO_CART')}
-                            </button>
-                        </div>
                     </div>
                 </div>
             )}

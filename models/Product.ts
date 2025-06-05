@@ -107,6 +107,7 @@ export interface IProductShort {
 export interface IProductUpdate extends IProductCreate {}
 
 export interface IProductGetById extends IProductUpdate {
+    id: number
     reviewCount: number
     discountRate?: number
     soldCount: number

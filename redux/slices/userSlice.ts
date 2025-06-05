@@ -32,6 +32,8 @@ export const userSlice = createSlice({
         },
         clearUserInfo(state) {
             state.userInfo = null
+            state.cartCount = 0
+            state.favoriteCount = 0
             state.isAuthenticated = false
         }
     }

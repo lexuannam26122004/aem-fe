@@ -58,13 +58,15 @@ const RequestQuotePage = () => {
     const [isShowAlertDialog, setIsShowAlertDialog] = useState(false)
     const [project, setProject] = useState<IProjectGetById | null>(null)
     const [quote, setQuote] = useState<IQuoteCreateVModel | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [isQuoteEmpty, setIsQuoteEmpty] = useState(true)
 
     const pathName = usePathname()
     const toast = useToast()
 
     const id = pathName.split('/').pop() // Get the last part of the path as ID
 
-    const { data: projectResponse, isLoading: isProjectLoading, refetch } = useGetByIdProjectQuery(Number(id))
+    const { data: projectResponse, refetch } = useGetByIdProjectQuery(Number(id))
     const [updateProject, { isLoading: isUpdatingProject }] = useUpdateProjectMutation()
     const [deleteProjectProduct, { isLoading: isDeleteLoading }] = useDeleteProjectProductMutation()
     const [updateQuantity] = useUpdateProjectQuantityMutation()
@@ -86,7 +88,6 @@ const RequestQuotePage = () => {
     useEffect(() => {
         if (checkQuotedResponse?.data && quote === null) {
             setQuote(checkQuotedResponse.data)
-            console.log('checkQuotedResponse', checkQuotedResponse.data.desiredDeliveryDate)
             setForm({
                 projectId: Number(id),
                 companyName: checkQuotedResponse.data.companyName || '',
@@ -115,7 +116,9 @@ const RequestQuotePage = () => {
             doneDate: project.doneDate || ''
         })
 
+        setIsLoading(false)
         setQuoteItems(project.products)
+        setIsQuoteEmpty(project.products.length === 0)
     }, [project])
 
     const getError = (field: keyof IQuoteCreateVModel) => {
@@ -134,8 +137,6 @@ const RequestQuotePage = () => {
                 return false
         }
     }
-
-    const isQuoteEmpty = quoteItems.length === 0
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
@@ -293,7 +294,7 @@ const RequestQuotePage = () => {
         }
     }
 
-    if (isProjectLoading) {
+    if (isLoading) {
         return <Loading />
     }
 
@@ -305,7 +306,7 @@ const RequestQuotePage = () => {
                     <p className='text-gray-600 mt-1'>{t('COMMON.USER.REQUEST_QUOTE_DESCRIPTION')}</p>
                 </div>
 
-                {!isQuoteEmpty && project ? (
+                {!isQuoteEmpty ? (
                     <div className='flex flex-col lg:flex-row gap-6'>
                         {/* Main quote content */}
                         <div className='w-full lg:w-2/3'>

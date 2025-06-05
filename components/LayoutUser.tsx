@@ -22,10 +22,12 @@ export default function MainLayout({ children }: { children: ReactNode }) {
         if (cartCountResponse) {
             dispatch(setCartCount(cartCountResponse.data))
         }
+        console.log('Cart count response:', cartCountResponse)
     }, [cartCountResponse])
 
     useEffect(() => {
         if (favoriteCountResponse) {
+            console.log('Favorite count response:', favoriteCountResponse)
             dispatch(setFavoriteCount(favoriteCountResponse.data))
         }
     }, [favoriteCountResponse])

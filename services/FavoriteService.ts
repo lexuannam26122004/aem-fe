@@ -10,7 +10,8 @@ export const FavoriteApis = createApi({
     tagTypes: ['Favorite'],
     endpoints: builder => ({
         searchFavorite: builder.query<IResponse, void>({
-            query: () => ''
+            query: () => '',
+            providesTags: [{ type: 'Favorite' }]
         }),
 
         createFavorite: builder.mutation<void, IFavoriteCreate>({

@@ -1,9 +1,14 @@
 export interface IUserCreate {
     fullName: string
     email: string
+    birthday: string
     phoneNumber: string
     username: string
     password: string
+    title?: string
+    address: string
+    city: string
+    district: string
 }
 
 export interface IUserUpdate {

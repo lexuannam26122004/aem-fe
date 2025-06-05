@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
-import { setUserInfo } from '@/redux/slices/userSlice'
+import { clearUserInfo, setUserInfo } from '@/redux/slices/userSlice'
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false)
@@ -19,6 +19,11 @@ const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(false)
     const toast = useToast()
     const dispatch = useDispatch()
+
+    useEffect(() => {
+        sessionStorage.removeItem('auth_token')
+        dispatch(clearUserInfo())
+    }, [])
 
     const handleInputChange = e => {
         const { name, value, type, checked } = e.target
@@ -302,7 +307,12 @@ const LoginPage = () => {
                         <div className='mt-6 text-center'>
                             <p className='text-sm text-gray-600'>
                                 Chưa có tài khoản?{' '}
-                                <button className='text-blue-600 hover:text-blue-700 font-medium'>Đăng ký ngay</button>
+                                <button
+                                    onClick={() => router.push('/register')}
+                                    className='text-blue-600 ml-1 hover:text-blue-700 font-medium'
+                                >
+                                    Đăng ký ngay
+                                </button>
                             </p>
                         </div>
                     </div>

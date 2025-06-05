@@ -2,15 +2,14 @@ import { Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useDispatch, useSelector } from 'react-redux'
-import { clearUserInfo, userSelector } from '@/redux/slices/userSlice'
+import { useSelector } from 'react-redux'
+import { userSelector } from '@/redux/slices/userSlice'
 import { User, ShoppingBag, FolderOpen, LogOut } from 'lucide-react'
 
 const UserAvatarMenu = () => {
     const router = useRouter()
     const dropdownRef = useRef<HTMLDivElement | null>(null)
     const [isOpen, setIsOpen] = useState(false)
-    const dispatch = useDispatch()
 
     const user = useSelector(userSelector)
 
@@ -66,8 +65,6 @@ const UserAvatarMenu = () => {
 
     const handleLogout = () => {
         router.push('/login')
-        sessionStorage.removeItem('auth_token')
-        dispatch(clearUserInfo())
     }
 
     const menuItems = [

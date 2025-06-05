@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import {
     User,
     MapPin,
@@ -37,6 +37,8 @@ import {
     useUpdateCustomerAddressMutation
 } from '@/services/CustomerAddressService'
 import { ICustomerAddress, ICustomerAddressCreate, ICustomerAddressUpdate } from '@/models/CustomerAddress'
+import uploadImageToCloudinary from '@/common/uploadImageToCloudinary'
+import LoginRequired from '@/components/LoginRequired'
 
 export default function UserProfileComponent() {
     const { t } = useTranslation('common')
@@ -46,16 +48,15 @@ export default function UserProfileComponent() {
     const [fileImage, setFileImage] = useState<File | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const userInfo = useSelector(userSelector).userInfo
+    const [isLoadingSave, setIsLoadingSave] = useState(false)
     const [editingUser, setEditingUser] = useState({
-        fullName: userInfo.fullName,
-        avatarPath: userInfo.avatar,
-        email: userInfo.email,
-        phoneNumber: userInfo.phoneNumber,
-        taxCode: userInfo.taxCode,
-        companyName: userInfo.companyName
+        fullName: userInfo?.fullName || '',
+        avatar: userInfo?.avatar || '',
+        email: userInfo?.email || '',
+        phoneNumber: userInfo?.phoneNumber || '',
+        taxCode: userInfo?.taxCode || '',
+        companyName: userInfo?.companyName || ''
     })
-
-    useEffect(() => {}, [fileImage])
 
     const handleClickBox = () => {
         if (!fileInputRef?.current) {
@@ -68,7 +69,7 @@ export default function UserProfileComponent() {
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
         }
-        setEditingUser({ ...editingUser, avatarPath: '' })
+        setEditingUser({ ...editingUser, avatar: '' })
         setFileImage(null)
     }
 
@@ -92,7 +93,7 @@ export default function UserProfileComponent() {
             toast(t('COMMON.INVALID_FILE_SIZE'), 'error')
             if (fileInputRef.current) {
                 fileInputRef.current.value = ''
-                setEditingUser({ ...editingUser, avatarPath: '' })
+                setEditingUser({ ...editingUser, avatar: '' })
                 setFileImage(null)
             }
             return
@@ -101,7 +102,7 @@ export default function UserProfileComponent() {
         const reader = new FileReader()
 
         reader.onloadend = () => {
-            setEditingUser({ ...editingUser, avatarPath: reader.result as string })
+            setEditingUser({ ...editingUser, avatar: reader.result as string })
         }
 
         reader.readAsDataURL(file)
@@ -137,7 +138,7 @@ export default function UserProfileComponent() {
     const [changeDefaultCustomerAddress, { isLoading: isChangeDefaultLoading, originalArgs }] =
         useChangeDefaultCustomerAddressMutation()
     const { data: customerAddressResponse, isFetching } = useSearchCustomerAddressQuery()
-    const [updateUser, { isLoading: isLoadingSave }] = useUpdateUserMutation()
+    const [updateUser] = useUpdateUserMutation()
     const dispatch = useDispatch()
     const [triggerGetMe] = useLazyGetUserAuthMeQuery()
 
@@ -160,14 +161,32 @@ export default function UserProfileComponent() {
 
     const handleSaveProfile = async () => {
         try {
-            await updateUser(editingUser).unwrap()
+            setIsLoadingSave(true)
+
+            let avatarPath: string | undefined = undefined
+            if (fileImage) {
+                avatarPath = await uploadImageToCloudinary(fileImage)
+                if (!avatarPath) {
+                    toast(t('COMMON.UPLOAD_IMAGE_FAIL'), 'error')
+                }
+            }
+            const object = {
+                fullName: editingUser.fullName,
+                email: editingUser.email,
+                phoneNumber: editingUser.phoneNumber,
+                taxCode: editingUser.taxCode,
+                companyName: editingUser.companyName,
+                avatar: avatarPath
+            }
+            await updateUser(object).unwrap()
             const response = await triggerGetMe().unwrap()
-            await dispatch(setUserInfo(response?.data)) // Nếu thunk, có thể await được
+            await dispatch(setUserInfo(response?.data))
             toast('Cập nhật thông tin thành công', 'success')
         } catch {
             toast('Cập nhật thông tin không thành công', 'error')
         } finally {
             setIsEditing(false)
+            setIsLoadingSave(false)
         }
     }
 
@@ -200,7 +219,6 @@ export default function UserProfileComponent() {
                 .unwrap()
                 .then(() => {
                     toast('Tài khoản đã được xóa thành công', 'success')
-
                     router.push('/login')
                 })
                 .catch(() => {
@@ -259,6 +277,10 @@ export default function UserProfileComponent() {
             })
     }
 
+    if (!userInfo) {
+        return <LoginRequired type='profile' />
+    }
+
     const renderContent = () => {
         switch (activeTab) {
             case 'profile':
@@ -290,7 +312,7 @@ export default function UserProfileComponent() {
                                     fullName: userInfo.fullName,
                                     email: userInfo.email,
                                     phoneNumber: userInfo.phoneNumber,
-                                    avatarPath: userInfo.avatar,
+                                    avatar: userInfo.avatar,
                                     taxCode: userInfo.taxCode,
                                     companyName: userInfo.companyName
                                 })
@@ -312,7 +334,7 @@ export default function UserProfileComponent() {
                                     <span className='absolute inset-0 bg-gradient-to-r from-[#ffc41f] to-[#3675ff] rounded-full animate-spin [animation-duration:5s] z-0' />
                                     <span className='absolute inset-[3px] bg-white rounded-full z-2' />
                                     <img
-                                        src={editingUser.avatarPath || '/images/account.png'}
+                                        src={editingUser.avatar || '/images/account.png'}
                                         alt={userInfo.fullName}
                                         className='w-[121px] h-[121px] rounded-full object-cover relative z-10'
                                     />
@@ -344,7 +366,7 @@ export default function UserProfileComponent() {
                                 iconSize={24}
                             />
 
-                            {isEditing && editingUser.avatarPath && (
+                            {isEditing && editingUser.avatar && (
                                 <div
                                     onClick={handleDeleteImage}
                                     className='flex items-center gap-2 px-2.5 mt-5 py-1.5 rounded-[8px] border border-[--text-color-button-cancel] hover:cursor-pointer hover:border-[--background-color-button-cancel-hover] hover:bg-[--background-color-button-cancel-hover]'
@@ -458,7 +480,7 @@ export default function UserProfileComponent() {
                                             setIsEditing(false)
                                             setEditingUser({
                                                 ...editingUser,
-                                                avatarPath: userInfo.avatar
+                                                avatar: userInfo.avatar
                                             })
                                         }}
                                         className='px-6 py-[11px] font-medium border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition'
@@ -966,7 +988,7 @@ export default function UserProfileComponent() {
                             <div className='flex justify-end'>
                                 <button
                                     onClick={() => setShowDeleteConfirm(true)}
-                                    className='px-6 py-3 bg-red-600 font-medium text-white rounded-lg hover:bg-red-700 transition-colors'
+                                    className='px-6 py-3 bg-red-600 font-medium text-white rounded-lg hover:bg-red-700'
                                 >
                                     {t('COMMON.USER.PROCEED_TO_DELETE')}
                                 </button>
@@ -998,14 +1020,14 @@ export default function UserProfileComponent() {
                             <div className='flex justify-end space-x-4 mt-6'>
                                 <button
                                     onClick={() => setShowDeleteConfirm(false)}
-                                    className='px-4 py-2 bg-white font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors'
+                                    className='px-6 py-[11px] bg-white font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50'
                                 >
                                     {t('COMMON.USER.CANCEL')}
                                 </button>
 
                                 <button
                                     onClick={handleDeleteAccount}
-                                    className='px-4 py-2 bg-red-600 font-medium text-white rounded-lg hover:bg-red-700 transition-colors'
+                                    className='px-6 py-3 bg-red-600 font-medium text-white rounded-lg hover:bg-red-700'
                                 >
                                     {t('COMMON.USER.DELETE_PERMANENTLY')}
                                 </button>
@@ -1115,8 +1137,8 @@ export default function UserProfileComponent() {
 
                             <div className='px-6 py-4'>
                                 <button
-                                    onClick={() => router.push('/auth/logout')}
-                                    className='w-full px-4 py-3 font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center'
+                                    onClick={() => router.push('/login')}
+                                    className='w-full px-4 py-3 font-medium text-red-500 hover:bg-red-100 bg-red-50 hover:text-red-600 rounded-lg transition-colors flex items-center justify-center'
                                 >
                                     <LogOut size={18} className='mr-2' />
                                     {t('COMMON.USER.LOGOUT')}

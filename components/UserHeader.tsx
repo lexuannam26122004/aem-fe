@@ -36,6 +36,8 @@ const UserHeader = () => {
     const user = useSelector(userSelector)
     const pathName = usePathname()
 
+    console.log('UserHeader rendered', user)
+
     const toggleMenu = () => {
         setIsOpen(!isOpen)
     }
@@ -148,7 +150,7 @@ const UserHeader = () => {
                                     }`}
                                 >
                                     <Heart size={22} strokeWidth={1.5} />
-                                    {user.cartCount > 0 && (
+                                    {user.favoriteCount > 0 && (
                                         <motion.span
                                             className='absolute -top-0 -right-0 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center'
                                             initial={{ scale: 0.8 }}

@@ -14,7 +14,8 @@ import {
     ThumbsUp,
     ThumbsDown,
     FileText,
-    ArrowRight
+    ArrowRight,
+    Loader2
 } from 'lucide-react'
 import ImageGallery from '@/components/ImageGallery'
 import ImageGalleryThumbnail from '@/components/ImageGalleryThumbnail'
@@ -32,6 +33,9 @@ import FavoriteFormModal from '@/components/FavoriteFormModal'
 import { useGetReviewByProductIdQuery } from '@/services/ReviewService'
 import { useCreateInteractiveReviewMutation } from '@/services/InteractiveReviewService'
 import ProjectFormModal from '@/components/ProjectFormModal'
+import { useCreateCartMutation } from '@/services/CartService'
+import { ICartCreate, ICartItem } from '@/models/Cart'
+import { useToast } from '@/hooks/useToast'
 
 type ProductHotSaleProps = {
     title: string
@@ -62,6 +66,7 @@ const ProductDetail = () => {
         pageNumber: pageNumber
     })
     const { data: productResponse, isLoading: isProductLoading } = useGetByIdProductQuery(Number(productId))
+    const [createCart, { isLoading: isAddCartLoading }] = useCreateCartMutation()
 
     const { data: dataResponseFlashSale, isLoading: isLoadingResponseFlashSale } = useSearchProductQuery({
         pageSize: 6,
@@ -73,9 +78,11 @@ const ProductDetail = () => {
 
     const [createInteractiveReview] = useCreateInteractiveReviewMutation()
 
-    const { data: favoriteCountResponse, isLoading: isFavoriteCountLoading } = useGetFavoriteCountByProductQuery(
-        Number(productId)
-    )
+    const {
+        data: favoriteCountResponse,
+        isLoading: isFavoriteCountLoading,
+        refetch: refetchFavoriteCount
+    } = useGetFavoriteCountByProductQuery(Number(productId))
 
     const rating = reviewsResponse?.data?.summary?.rating || 5
     const oneStarCount = reviewsResponse?.data?.summary?.oneStarCount || 0
@@ -92,6 +99,7 @@ const ProductDetail = () => {
     }, [favoriteCountResponse])
     const product = productResponse?.data as IProductGetById
     const productsFlashSale = (dataResponseFlashSale?.data?.records as IProductSearch[]) || []
+    const toast = useToast()
 
     const handleOptionChange = (optionId: number, valueId: number) => {
         setSelectedOptions(prev => ({
@@ -188,6 +196,19 @@ const ProductDetail = () => {
                 setCopied(false)
             }, 2000)
         } catch {}
+    }
+
+    const handleAddToCart = (productId: number, selections: ICartItem[]) => {
+        const cart: ICartCreate = {
+            productId: productId,
+            quantity: 1,
+            selections: selections
+        }
+
+        createCart(cart)
+            .unwrap()
+            .then(() => toast('Thêm vào giỏ hàng thành công!', 'success'))
+            .catch(() => toast('Thêm vào giỏ hàng thất bại!', 'error'))
     }
 
     useEffect(() => {
@@ -483,8 +504,23 @@ const ProductDetail = () => {
 
                             {/* Action Buttons */}
                             <div className='flex gap-6 py-2'>
-                                <button className='flex-1 flex items-center justify-center border border-[1px] border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-lg transition-colors duration-300'>
-                                    <ShoppingBag size={18} className='inline-block mr-2' />
+                                <button
+                                    onClick={() =>
+                                        handleAddToCart(
+                                            product.id,
+                                            Object.entries(selectedOptions).map(([optionId, optionValueId]) => ({
+                                                optionId: Number(optionId),
+                                                optionValueId
+                                            }))
+                                        )
+                                    }
+                                    className='flex-1 flex items-center justify-center border border-[1px] border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-lg transition-colors duration-300'
+                                >
+                                    {isAddCartLoading ? (
+                                        <Loader2 size={18} className='inline-block mr-2 animate-spin' />
+                                    ) : (
+                                        <ShoppingBag size={18} className='inline-block mr-2' />
+                                    )}
                                     {t('COMMON.USER.ADD_TO_CART')}
                                 </button>
 
@@ -808,6 +844,7 @@ const ProductDetail = () => {
                         currentPrice={product.price}
                         onChange={() => {
                             setFavoriteCount(prev => ({ ...prev, isFavorite: true, count: prev.count + 1 }))
+                            refetchFavoriteCount()
                         }}
                     />
                 </div>
