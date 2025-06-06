@@ -5,6 +5,7 @@ export interface ICart {
     productId: number
     productName: string
     image: string
+    favoriteId: number | null
     sku: string
     isFavorite: boolean
     originalPrice: number

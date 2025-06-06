@@ -1,6 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from './api'
-import { IUser } from '@/models/User'
 import { IResponse } from '@/models/Common'
 
 export const UserAuthApis = createApi({

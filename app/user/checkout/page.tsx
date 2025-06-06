@@ -1,16 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     ShoppingBag,
-    Trash2,
     CreditCard,
     Edit2,
     Mail,
     MapPin,
     Shield,
-    CheckCircle2,
-    AlertCircle,
     Info,
     Check,
     BadgeCheck,
@@ -18,79 +15,162 @@ import {
     User2,
     PhoneCall,
     House,
-    Building
+    Building,
+    Tag,
+    ChevronRight,
+    ShoppingCart,
+    Truck,
+    Loader2
 } from 'lucide-react'
 import { formatCurrency } from '@/common/format'
 import { useTranslation } from 'react-i18next'
 import AddressManager from '@/components/AddressesModal'
 import { useCreateVnpayUrlMutation } from '@/services/PaymentService'
-import { IProductShort } from '@/models/Product'
+import { ICart } from '@/models/Cart'
+import { useSelector } from 'react-redux'
+import { productSelector } from '@/redux/slices/productSlice'
+import { ICustomerAddress } from '@/models/CustomerAddress'
+import { useGetDefaultCustomerAddressQuery } from '@/services/CustomerAddressService'
+import Loading from '@/components/Loading'
+import CouponSelector, { IDisplayCoupon, ISelectedCoupon } from './CouponSelector'
+import { useRouter } from 'next/navigation'
+import { useCreateOrderMutation } from '@/services/UserOrderService'
+import { useGetUserCouponQuery } from '@/services/UserCouponService'
+import { IOrderCreate } from '@/models/Order'
+import { useToast } from '@/hooks/useToast'
+import { useDeleteRangeCartMutation } from '@/services/CartService'
 
-const products = [
-    {
-        id: 1,
-        image: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-10.webp',
-        productName: 'Bộ Điều Khiển PLC Siemens S7-1200',
-        sku: 'SIEMENS-PLC-1214C',
-        variants: 'Nguồn cấp: AC 230V, Kết nối: Ethernet',
-        price: 5200000,
-        discountPrice: 4800000,
-        quantity: 1
-    },
-    {
-        id: 2,
-        image: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-17.webp',
-        productName: 'Biến Tần Siemens SINAMICS G120',
-        sku: 'SIEMENS-G120-075',
-        variants: 'Điện áp: 380V 3 pha, Công suất: 1.5kW',
-        price: 7200000,
-        discountPrice: 6750000,
-        quantity: 1
+const formatDiscount = (coupon: IDisplayCoupon) => {
+    if (coupon.discountType === 'percentage') {
+        return `${coupon.discountValue}%`
     }
-] as IProductShort[]
+    return `${coupon.discountValue.toLocaleString().replaceAll(',', '.')}đ`
+}
 
 const CheckoutPage = () => {
     const { t } = useTranslation('common')
     const [createVnpayUrl] = useCreateVnpayUrlMutation()
     const [typeNote, setTypeNote] = useState('info')
     const [customerNote, setCustomerNote] = useState('')
-
-    // Order summary
-    const [summary, setSummary] = useState({
-        subTotal: products.reduce((total, item) => total + item.discountPrice * item.quantity, 0),
-        discountAmount: 0,
-        discountShippingFee: 0,
-        shippingFee: 0,
-        totalAmount: 0,
-        taxes: 0
+    const products: ICart[] = useSelector(productSelector).products || []
+    const [shippingAddress, setShippingAddress] = useState<ICustomerAddress>({
+        recipient: '',
+        phone: '',
+        email: '',
+        address: '',
+        district: '',
+        city: '',
+        title: '',
+        isDefault: false
     })
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const [selectedCoupons, setSelectedCoupons] = useState<ISelectedCoupon>({})
+    const router = useRouter()
+    const toast = useToast()
 
-    // Shipping address
-    const shippingAddress = {
-        fullName: 'Nguyễn Văn A',
-        phone: '0912345678',
-        email: 'nguyenvana@example.com',
-        title: 'Nhà riêng',
-        address: '123 Đường Nguyễn Huệ',
-        district: 'Quận 1',
-        city: 'TP. Hồ Chí Minh'
+    const { data: couponsData, isLoading: isCouponsLoading } = useGetUserCouponQuery()
+    const availableCoupons: IDisplayCoupon[] = couponsData?.data || []
+
+    const handleCouponSelect = (coupon: IDisplayCoupon) => {
+        setSelectedCoupons(prev => ({
+            ...prev,
+            [coupon.couponType === 'product' ? 'productCoupon' : 'shippingCoupon']: coupon
+        }))
+
+        setSummary(prev => {
+            if (coupon.couponType === 'product') {
+                const discountAmount =
+                    coupon.discountType === 'fixed'
+                        ? coupon.discountValue
+                        : (prev.subTotal * coupon.discountValue) / 100
+
+                const maxDiscount = Math.min(discountAmount, coupon.maximumDiscount || 0, prev.subTotal)
+
+                return {
+                    ...prev,
+                    totalAmount: prev.totalAmount + prev.discountAmount - maxDiscount,
+                    discountAmount: maxDiscount
+                }
+            } else {
+                const discountShippingFee =
+                    coupon.discountType === 'fixed'
+                        ? coupon.discountValue
+                        : (prev.shippingFee * coupon.discountValue) / 100
+
+                const maxDiscount = Math.min(discountShippingFee, coupon.maximumDiscount || 0, prev.shippingFee)
+
+                return {
+                    ...prev,
+                    totalAmount: prev.totalAmount + prev.discountShippingFee - maxDiscount,
+                    discountShippingFee: maxDiscount
+                }
+            }
+        })
     }
 
-    // Discount codes
-    const [appliedDiscounts, setAppliedDiscounts] = useState([
-        {
-            id: 1,
-            code: 'WELCOME20',
-            description: 'Giảm 50.000₫ cho đơn hàng đầu tiên',
-            amount: 50000
+    const handleCouponRemove = (type: 'product' | 'shipping') => {
+        setSelectedCoupons(prev => ({
+            ...prev,
+            [type === 'product' ? 'productCoupon' : 'shippingCoupon']: undefined
+        }))
+
+        setSummary(prev => {
+            if (type === 'product') {
+                return {
+                    ...prev,
+                    discountAmount: 0,
+                    totalAmount: prev.totalAmount + prev.discountAmount
+                }
+            } else {
+                return {
+                    ...prev,
+                    discountShippingFee: 0,
+                    totalAmount: prev.totalAmount + prev.discountShippingFee
+                }
+            }
+        })
+    }
+
+    const { data: defaultAddress, isLoading: isAddressDefaultLoading } = useGetDefaultCustomerAddressQuery()
+    const [createOrder] = useCreateOrderMutation()
+    const [deleteRangeCart] = useDeleteRangeCartMutation()
+
+    useEffect(() => {
+        if (defaultAddress && defaultAddress.data) {
+            setShippingAddress(defaultAddress.data)
         }
-    ])
+    }, [defaultAddress])
 
-    const [newDiscountCode, setNewDiscountCode] = useState('')
-    const [discountError, setDiscountError] = useState('')
-    const [discountSuccess, setDiscountSuccess] = useState('')
+    const token = sessionStorage.getItem('auth_token')
 
-    // Payment methods
+    const [summary, setSummary] = useState(() => {
+        const subTotal = products.reduce((total, item) => total + item.discountPrice * item.quantity, 0)
+        const shippingFee = 30000
+        const discountAmount = 0
+        const discountShippingFee = 0
+        const taxes = subTotal * 0.1
+        const totalAmount = subTotal + shippingFee - discountAmount - discountShippingFee + taxes
+
+        return {
+            subTotal,
+            shippingFee,
+            discountAmount,
+            discountShippingFee,
+            taxes,
+            totalAmount
+        }
+    })
+
+    const [formErrors] = useState({
+        recipient: '',
+        phone: '',
+        email: '',
+        address: '',
+        district: '',
+        city: ''
+    })
+
     const paymentMethods = [
         {
             id: 'cod',
@@ -125,217 +205,387 @@ const CheckoutPage = () => {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('cod')
     const [isOpenModel, setIsOpenModal] = useState(false)
 
-    // Apply discount code
-    const handleApplyDiscount = () => {
-        if (!newDiscountCode.trim()) {
-            setDiscountError(t('COMMON.USER.EMPTY_DISCOUNT_CODE'))
-            return
-        }
-
-        // Check if code already applied
-        if (appliedDiscounts.some(discount => discount.code === newDiscountCode)) {
-            setDiscountError(t('COMMON.USER.DISCOUNT_ALREADY_APPLIED'))
-            return
-        }
-
-        // Simulate API call - in real app would check with backend
-        if (newDiscountCode === 'FREESHIP') {
-            const newDiscount = {
-                id: Date.now(),
-                code: 'FREESHIP',
-                description: 'Miễn phí vận chuyển',
-                amount: 100000
-            }
-
-            setAppliedDiscounts([...appliedDiscounts, newDiscount])
-
-            setSummary({
-                ...summary,
-                discountShippingFee: summary.discountShippingFee + 100000,
-                totalAmount: summary.totalAmount - 100000
-            })
-
-            setDiscountSuccess(t('COMMON.USER.DISCOUNT_APPLIED_SUCCESS'))
-            setDiscountError('')
-            setNewDiscountCode('')
-
-            // Clear success message after 3 seconds
-            setTimeout(() => {
-                setDiscountSuccess('')
-            }, 3000)
-        } else {
-            setDiscountError(t('COMMON.USER.INVALID_DISCOUNT_CODE'))
-        }
-    }
-
-    const handleRemoveDiscount = (discountId: number) => {
-        const discountToRemove = appliedDiscounts.find(d => d.id === discountId)
-
-        setAppliedDiscounts(appliedDiscounts.filter(discount => discount.id !== discountId))
-
-        if (discountToRemove) {
-            if (discountToRemove.code === 'WELCOME20') {
-                setSummary({
-                    ...summary,
-                    discountAmount: summary.discountAmount - discountToRemove.amount,
-                    totalAmount: summary.totalAmount + discountToRemove.amount
-                })
-            } else if (discountToRemove.code === 'FREESHIP') {
-                setSummary({
-                    ...summary,
-                    discountShippingFee: summary.discountShippingFee - discountToRemove.amount,
-                    totalAmount: summary.totalAmount + discountToRemove.amount
-                })
-            }
-        }
-    }
-
     const handlePaymentMethodChange = (methodId: string) => {
         setSelectedPaymentMethod(methodId)
     }
 
+    const hasSelectedCoupons = selectedCoupons.productCoupon || selectedCoupons.shippingCoupon
+    const selectedCount = (selectedCoupons.productCoupon ? 1 : 0) + (selectedCoupons.shippingCoupon ? 1 : 0)
+
     const handlePlaceOrder = async () => {
-        console.log('Placing order with payment method:', selectedPaymentMethod)
-        if (selectedPaymentMethod === 'vnpay') {
+        setIsLoading(true)
+        const order: IOrderCreate = {
+            customerNote,
+            shippingRecipient: shippingAddress.recipient,
+            shippingPhone: shippingAddress.phone,
+            shippingEmail: shippingAddress.email,
+            shippingAddress: shippingAddress.address,
+            shippingDistrict: shippingAddress.district,
+            shippingCity: shippingAddress.city,
+            clientIpAddress: typeof window !== 'undefined' ? window.location.hostname : '',
+            items: products.map(item => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                price: item.discountPrice,
+                discountPrice: item.discountPrice,
+                selections: item.selections.map(selection => ({
+                    optionId: selection.optionId,
+                    optionValueId: selection.optionValueId
+                }))
+            })),
+            paymentMethod: selectedPaymentMethod,
+            subTotal: summary.subTotal,
+            discountAmount: summary.discountAmount,
+            discountShippingFee: summary.discountShippingFee,
+            shippingFee: summary.shippingFee,
+            taxes: summary.taxes,
+            couponIds: Object.values(selectedCoupons)
+                .filter(Boolean)
+                .map(coupon => coupon.id)
+        }
+
+        let orderCode: string | undefined
+
+        try {
+            const res = await createOrder(order).unwrap()
+            if (res?.data) {
+                orderCode = res.data
+            }
+            await deleteRangeCart(products.map(item => item.id)).unwrap()
+        } catch (err) {
+            toast(err?.data?.detail, 'error')
+        }
+
+        if (selectedPaymentMethod === 'vnpay' && orderCode) {
             try {
                 const res = await createVnpayUrl({
-                    orderId: `ORDER_${Date.now()}`,
-                    amount: 350000 // 100,000 VND = 1,000,000 đồng sau khi *100
+                    orderCode: orderCode,
+                    amount: Math.ceil(summary.totalAmount)
                 }).unwrap()
 
                 if (res.paymentUrl) {
-                    console.log('Payment URL:', res.paymentUrl) // Debug
-                    window.location.href = res.paymentUrl
+                    router.push(res.paymentUrl)
                 }
             } catch (err) {
-                console.error('Tạo link VNPay thất bại', err)
+                toast(err?.data?.detail, 'error')
+            } finally {
+                setIsLoading(false)
             }
         }
+    }
+
+    if (isAddressDefaultLoading || isCouponsLoading) {
+        return <Loading />
     }
 
     return (
         <div className='min-h-screen'>
             <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
                 <div className='flex flex-col lg:flex-row gap-6'>
-                    {/* Main checkout content */}
                     <div className='w-full lg:w-2/3 space-y-6'>
-                        {/* Shipping address */}
-                        <div className='rounded-[15px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white'>
-                            <div className='px-6 h-[66px] flex items-center justify-between border-b border-gray-100'>
-                                <div className='flex items-center'>
-                                    <MapPin className='w-5 h-5 text-blue-600 mr-3' />
-                                    <h2 className='font-bold text-[18px] text-gray-800'>
-                                        {t('COMMON.USER.SHIPPING_ADDRESS')}
-                                    </h2>
+                        {!token ? (
+                            <div className='rounded-[15px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white'>
+                                <div className='px-6 h-[66px] flex items-center justify-between border-b border-gray-100'>
+                                    <div className='flex items-center'>
+                                        <MapPin className='w-5 h-5 text-blue-600 mr-3' />
+                                        <h2 className='font-bold text-[18px] text-gray-800'>
+                                            {t('COMMON.USER.SHIPPING_ADDRESS')}
+                                        </h2>
+                                    </div>
                                 </div>
-
-                                <button
-                                    onClick={() => {
-                                        setIsOpenModal(true)
-                                    }}
-                                    className='text-blue-600 hover:text-blue-800 flex items-center font-medium px-4 py-2 rounded-[8px] hover:bg-blue-50'
-                                >
-                                    <Edit2 className='w-4 h-4 mr-2' />
-                                    {t('COMMON.USER.CHANGE')}
-                                </button>
-                            </div>
-
-                            <div className='p-6'>
-                                <div className='bg-gray-50 rounded-[15px]'>
-                                    <div className='p-6 space-y-3.5'>
-                                        <div className='flex items-start'>
-                                            <div className='min-w-[140px] text-gray-500'>
-                                                {t('COMMON.USER.RECIPIENT')}
+                                <div className='p-6 space-y-4'>
+                                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                                        <div>
+                                            <label className='block text-sm font-medium text-gray-700 mb-1'>
+                                                {t('COMMON.USER.FULL_NAME')} *
+                                            </label>
+                                            <div className='relative'>
+                                                <input
+                                                    type='text'
+                                                    value={shippingAddress?.recipient || ''}
+                                                    onChange={e =>
+                                                        setShippingAddress({
+                                                            ...shippingAddress,
+                                                            recipient: e.target.value
+                                                        })
+                                                    }
+                                                    className={`w-full border ${
+                                                        formErrors.recipient ? 'border-red-500' : 'border-gray-300'
+                                                    } rounded-lg pl-4 pr-10 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none`}
+                                                    placeholder={t('COMMON.USER.ENTER_FULL_NAME')}
+                                                />
+                                                <User2 className='w-5 h-5 text-blue-600 absolute right-3 top-1/2 transform -translate-y-1/2' />
                                             </div>
-                                            <div className='font-medium text-gray-900 flex items-center'>
-                                                <User2 className='w-4 h-4 text-blue-600 mr-3' />
-                                                {shippingAddress.fullName}
-                                            </div>
+                                            {formErrors.recipient && (
+                                                <p className='mt-1 text-sm text-red-600'>{formErrors.recipient}</p>
+                                            )}
                                         </div>
 
-                                        <div className='flex items-start'>
-                                            <div className='min-w-[140px] text-gray-500'>{t('COMMON.USER.PHONE')}</div>
-                                            <div className='font-medium text-gray-900 flex items-center'>
-                                                <PhoneCall className='w-4 h-4 text-blue-600 mr-3' />
-                                                {shippingAddress.phone}
+                                        <div>
+                                            <label className='block text-sm font-medium text-gray-700 mb-1'>
+                                                {t('COMMON.USER.PHONE')} *
+                                            </label>
+                                            <div className='relative'>
+                                                <input
+                                                    type='tel'
+                                                    value={shippingAddress?.phone || ''}
+                                                    onChange={e =>
+                                                        setShippingAddress({
+                                                            ...shippingAddress,
+                                                            phone: e.target.value
+                                                        })
+                                                    }
+                                                    className={`w-full border ${
+                                                        formErrors.phone ? 'border-red-500' : 'border-gray-300'
+                                                    } rounded-lg pl-4 pr-10 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none`}
+                                                    placeholder={t('COMMON.USER.ENTER_PHONE')}
+                                                />
+                                                <PhoneCall className='w-5 h-5 text-blue-600 absolute right-3 top-1/2 transform -translate-y-1/2' />
                                             </div>
+                                            {formErrors.phone && (
+                                                <p className='mt-1 text-sm text-red-600'>{formErrors.phone}</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                                        <div>
+                                            <label className='block text-sm font-medium text-gray-700 mb-1'>
+                                                {t('COMMON.USER.EMAIL')} *
+                                            </label>
+                                            <div className='relative'>
+                                                <input
+                                                    type='email'
+                                                    value={shippingAddress.email}
+                                                    onChange={e =>
+                                                        setShippingAddress({
+                                                            ...shippingAddress,
+                                                            email: e.target.value
+                                                        })
+                                                    }
+                                                    className={`w-full border ${
+                                                        formErrors.email ? 'border-red-500' : 'border-gray-300'
+                                                    } rounded-lg pl-4 pr-10 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none`}
+                                                    placeholder={t('COMMON.USER.ENTER_EMAIL')}
+                                                />
+                                                <Mail className='w-5 h-5 text-blue-600 absolute right-3 top-1/2 transform -translate-y-1/2' />
+                                            </div>
+                                            {formErrors.email && (
+                                                <p className='mt-1 text-sm text-red-600'>{formErrors.email}</p>
+                                            )}
                                         </div>
 
-                                        <div className='flex items-start'>
-                                            <div className='min-w-[140px] text-gray-500'>
+                                        <div>
+                                            <label className='block text-sm font-medium text-gray-700 mb-1'>
                                                 {t('COMMON.USER.ADDRESS_TITLE')}
-                                            </div>
-                                            <div className='font-medium text-gray-900 flex items-center'>
-                                                <Building className='w-4 h-4 text-blue-600 mr-3' />
-                                                {shippingAddress.title}
-                                            </div>
-                                        </div>
-
-                                        <div className='flex items-start'>
-                                            <div className='min-w-[140px] text-gray-500'>{t('COMMON.USER.EMAIL')}</div>
-                                            <div className='font-medium text-gray-900 flex items-center'>
-                                                <Mail className='w-4 h-4 text-blue-600 mr-3' />
-                                                {shippingAddress.email}
-                                            </div>
-                                        </div>
-
-                                        <div className='flex items-start'>
-                                            <div className='min-w-[140px] text-gray-500'>
-                                                {t('COMMON.USER.ADDRESS')}
-                                            </div>
-                                            <div className=''>
-                                                <p className='font-medium text-gray-900 flex items-center'>
-                                                    <House className='w-4 h-4 text-blue-600 mr-3' />
-                                                    {shippingAddress.address}, {shippingAddress.district},{' '}
-                                                    {shippingAddress.city}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {typeNote === 'info' ? (
-                                    <div className='mt-6 bg-blue-50 flex justify-between items-center gap-2 rounded-lg pl-4 pr-3 py-[11px] border-l-4 border-blue-600'>
-                                        <div className='flex items-center overflow-hidden gap-3'>
-                                            <p className='font-bold text-gray-800 whitespace-nowrap'>
-                                                {t('COMMON.PURCHASE_ORDER.NOTES')}:
-                                            </p>
-                                            <p className='text-gray-800 italic'>
-                                                {customerNote.length ? customerNote : t('COMMON.USER.EMPTY')}
-                                            </p>
-                                        </div>
-
-                                        <button
-                                            className='p-2 rounded-full text-blue-600 hover:bg-blue-100'
-                                            onClick={() => setTypeNote(prev => (prev === 'info' ? 'edit' : 'info'))}
-                                        >
-                                            <Edit2 className='w-4 h-4' />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className='mt-6'>
-                                        <label className='block text-sm font-medium text-gray-700 mb-1'>
-                                            {t('COMMON.PURCHASE_ORDER.NOTES')}
-                                        </label>
-                                        <div className='relative'>
+                                            </label>
                                             <input
                                                 type='text'
-                                                value={customerNote}
-                                                onChange={e => setCustomerNote(e.target.value)}
-                                                className={`w-full border border-gray-300 rounded-lg pl-4 pr-11 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none`}
-                                                placeholder={t('COMMON.USER.EMPTY')}
+                                                value={shippingAddress.title}
+                                                onChange={e =>
+                                                    setShippingAddress({ ...shippingAddress, title: e.target.value })
+                                                }
+                                                className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500'
+                                                placeholder='Văn phòng, Nhà riêng, Kho hàng...'
                                             />
+                                        </div>
+                                    </div>
+
+                                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                                        <div>
+                                            <label className='block text-sm font-medium text-gray-700 mb-1'>
+                                                {t('COMMON.USER.ADDRESS')} *
+                                            </label>
+                                            <div className='relative'>
+                                                <input
+                                                    type='text'
+                                                    value={shippingAddress.address}
+                                                    onChange={e =>
+                                                        setShippingAddress({
+                                                            ...shippingAddress,
+                                                            address: e.target.value
+                                                        })
+                                                    }
+                                                    className={`w-full border ${
+                                                        formErrors.address ? 'border-red-500' : 'border-gray-300'
+                                                    } rounded-lg pl-4 pr-10 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none`}
+                                                    placeholder={t('COMMON.USER.ENTER_ADDRESS')}
+                                                />
+                                                <House className='w-5 h-5 text-blue-600 absolute right-3 top-1/2 transform -translate-y-1/2' />
+                                            </div>
+                                            {formErrors.address && (
+                                                <p className='mt-1 text-sm text-red-600'>{formErrors.address}</p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <label className='block text-sm font-medium text-gray-700 mb-1'>
+                                                {t('COMMON.USER.DISTRICT')} *
+                                            </label>
+                                            <input
+                                                type='text'
+                                                value={shippingAddress.district}
+                                                onChange={e =>
+                                                    setShippingAddress({ ...shippingAddress, district: e.target.value })
+                                                }
+                                                className={`w-full border ${
+                                                    formErrors.district ? 'border-red-500' : 'border-gray-300'
+                                                } rounded-lg px-4 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none`}
+                                                placeholder={t('COMMON.USER.ENTER_DISTRICT')}
+                                            />
+                                            {formErrors.district && (
+                                                <p className='mt-1 text-sm text-red-600'>{formErrors.district}</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6 md:items-center'>
+                                        <div>
+                                            <label className='block text-sm font-medium text-gray-700 mb-1'>
+                                                {t('COMMON.USER.CITY')} *
+                                            </label>
+                                            <input
+                                                type='text'
+                                                value={shippingAddress.city}
+                                                onChange={e =>
+                                                    setShippingAddress({ ...shippingAddress, city: e.target.value })
+                                                }
+                                                className={`w-full border ${
+                                                    formErrors.city ? 'border-red-500' : 'border-gray-300'
+                                                } rounded-lg px-4 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none`}
+                                                placeholder={t('COMMON.USER.ENTER_CITY')}
+                                            />
+                                            {formErrors.city && (
+                                                <p className='mt-1 text-sm text-red-600'>{formErrors.city}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className='rounded-[15px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white'>
+                                <div className='px-6 h-[66px] flex items-center justify-between border-b border-gray-100'>
+                                    <div className='flex items-center'>
+                                        <MapPin className='w-5 h-5 text-blue-600 mr-3' />
+                                        <h2 className='font-bold text-[18px] text-gray-800'>
+                                            {t('COMMON.USER.SHIPPING_ADDRESS')}
+                                        </h2>
+                                    </div>
+
+                                    <button
+                                        onClick={() => {
+                                            setIsOpenModal(true)
+                                        }}
+                                        className='text-blue-600 hover:text-blue-800 flex items-center font-medium px-4 py-2 rounded-[8px] hover:bg-blue-50'
+                                    >
+                                        <Edit2 className='w-4 h-4 mr-2' />
+                                        {t('COMMON.USER.CHANGE')}
+                                    </button>
+                                </div>
+
+                                <div className='p-6'>
+                                    <div className='bg-gray-50 rounded-[15px]'>
+                                        <div className='p-6 space-y-3.5'>
+                                            <div className='flex items-start'>
+                                                <div className='min-w-[140px] text-gray-500'>
+                                                    {t('COMMON.USER.RECIPIENT')}
+                                                </div>
+                                                <div className='font-medium text-gray-900 flex items-center'>
+                                                    <User2 className='w-4 h-4 text-blue-600 mr-3' />
+                                                    {shippingAddress.recipient}
+                                                </div>
+                                            </div>
+
+                                            <div className='flex items-start'>
+                                                <div className='min-w-[140px] text-gray-500'>
+                                                    {t('COMMON.USER.PHONE')}
+                                                </div>
+                                                <div className='font-medium text-gray-900 flex items-center'>
+                                                    <PhoneCall className='w-4 h-4 text-blue-600 mr-3' />
+                                                    {shippingAddress.phone}
+                                                </div>
+                                            </div>
+
+                                            <div className='flex items-start'>
+                                                <div className='min-w-[140px] text-gray-500'>
+                                                    {t('COMMON.USER.ADDRESS_TITLE')}
+                                                </div>
+                                                <div className='font-medium text-gray-900 flex items-center'>
+                                                    <Building className='w-4 h-4 text-blue-600 mr-3' />
+                                                    {shippingAddress.title}
+                                                </div>
+                                            </div>
+
+                                            <div className='flex items-start'>
+                                                <div className='min-w-[140px] text-gray-500'>
+                                                    {t('COMMON.USER.EMAIL')}
+                                                </div>
+                                                <div className='font-medium text-gray-900 flex items-center'>
+                                                    <Mail className='w-4 h-4 text-blue-600 mr-3' />
+                                                    {shippingAddress.email}
+                                                </div>
+                                            </div>
+
+                                            <div className='flex items-start'>
+                                                <div className='min-w-[140px] text-gray-500'>
+                                                    {t('COMMON.USER.ADDRESS')}
+                                                </div>
+                                                <div className=''>
+                                                    <p className='font-medium text-gray-900 flex items-center'>
+                                                        <House className='w-4 h-4 text-blue-600 mr-3' />
+                                                        {shippingAddress.address}, {shippingAddress.district},{' '}
+                                                        {shippingAddress.city}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {typeNote === 'info' ? (
+                                        <div className='mt-6 bg-blue-50 flex justify-between items-center gap-2 rounded-lg pl-4 pr-3 py-[11px] border-l-4 border-blue-600'>
+                                            <div className='flex items-center overflow-hidden gap-3'>
+                                                <p className='font-bold text-gray-800 whitespace-nowrap'>
+                                                    {t('COMMON.PURCHASE_ORDER.NOTES')}:
+                                                </p>
+                                                <p className='text-gray-800 italic'>
+                                                    {customerNote.length ? customerNote : t('COMMON.USER.EMPTY')}
+                                                </p>
+                                            </div>
 
                                             <button
-                                                className='p-2 rounded-full text-blue-600 hover:bg-blue-100 absolute right-3 top-1/2 transform -translate-y-1/2'
+                                                className='p-2 rounded-full text-blue-600 hover:bg-blue-100'
                                                 onClick={() => setTypeNote(prev => (prev === 'info' ? 'edit' : 'info'))}
                                             >
                                                 <Edit2 className='w-4 h-4' />
                                             </button>
                                         </div>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <div className='mt-6 bg-gray-50 rounded-lg p-4'>
+                                            <label className='block font-bold text-black mb-3'>
+                                                {t('COMMON.PURCHASE_ORDER.NOTES')}
+                                            </label>
+                                            <div className='space-y-3'>
+                                                <textarea
+                                                    value={customerNote}
+                                                    onChange={e => setCustomerNote(e.target.value)}
+                                                    className='w-full bg-white border-0 rounded-lg px-4 py-3 focus:ring-blue-500 outline-none resize-none transition-all shadow-[0_4px_16px_rgba(0,0,0,0.1)]'
+                                                    placeholder='Nhập ghi chú cho đơn hàng...'
+                                                    rows={3}
+                                                />
+                                                <div className='flex justify-end'>
+                                                    <button
+                                                        className='px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2'
+                                                        onClick={() => setTypeNote('info')}
+                                                    >
+                                                        <Check className='w-4 h-4' />
+                                                        {t('COMMON.USER.SAVE')}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Order items */}
                         <div className='rounded-[15px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white'>
@@ -353,26 +603,31 @@ const CheckoutPage = () => {
                                         className='flex items-center gap-4 py-3 px-4 rounded-[12px] bg-gray-50 hover:bg-gray-100 transition-colors justify-between'
                                     >
                                         <div className='flex items-center'>
-                                            <img
-                                                src={item.image}
-                                                className='w-[62px] h-[62px] rounded-[10px] border border-gray-200 object-cover'
-                                            />
-                                            <div className='ml-5 space-y-1'>
+                                            <div className='flex-shrink-0'>
+                                                <div className='relative'>
+                                                    <img
+                                                        src={item.image}
+                                                        className='w-[70px] h-[70px] rounded-[10px] border border-gray-200 object-cover'
+                                                        alt={item.productName}
+                                                    />
+                                                    {item.discountRate > 0 && (
+                                                        <div className='absolute -top-[10px] -right-[10px] bg-red-500 text-white text-xs font-bold rounded-full w-[35px] h-[35px] flex items-center justify-center'>
+                                                            -{item.discountRate}%
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className='space-y-1 ml-5'>
                                                 <p className='font-medium text-md text-gray-900'>{item.productName}</p>
-                                                {/* <p className='text-gray-500 text-sm'>
-                                                    SKU: <span className='text-black font-medium ml-1'>{item.sku}</span>
-                                                </p> */}
-                                                <p className='text-gray-500 text-sm'>
-                                                    {t('COMMON.USER.PRODUCT_VARIANT')}:{' '}
-                                                    <span className='text-black font-medium ml-1'>{item.variants}</span>
-                                                </p>
+                                                <p className='text-gray-500 text-sm'>SKU: {item.sku}</p>
+                                                <p className='text-black text-sm'>{item.variants}</p>
                                             </div>
                                         </div>
                                         <div className='text-right'>
                                             <div className='flex items-center gap-2'>
-                                                {item.discountPrice < item.price && (
+                                                {item.discountPrice < item.originalPrice && (
                                                     <p className='line-through text-gray-400'>
-                                                        {formatCurrency(item.price)}
+                                                        {formatCurrency(item.originalPrice)}
                                                     </p>
                                                 )}
                                                 <p className='font-medium text-[#3675ff]'>
@@ -485,7 +740,7 @@ const CheckoutPage = () => {
                                             <p className='text-gray-600'>{t('COMMON.ORDER.DISCOUNT_SHIPPING_FEE')}</p>
                                             <p className='font-medium text-[#ff5630]'>
                                                 {summary.discountShippingFee && summary.discountShippingFee >= 0
-                                                    ? '- '
+                                                    ? '-'
                                                     : ''}
                                                 {formatCurrency(summary.discountShippingFee || 0)}
                                             </p>
@@ -494,7 +749,7 @@ const CheckoutPage = () => {
                                         <div className='flex justify-between'>
                                             <p className='text-gray-600'>{t('COMMON.ORDER.DISCOUNT_AMOUNT')}</p>
                                             <p className='font-medium text-[#ff5630]'>
-                                                {summary.discountAmount && summary.discountAmount >= 0 ? '- ' : ''}
+                                                {summary.discountAmount && summary.discountAmount >= 0 ? '-' : ''}
                                                 {formatCurrency(summary.discountAmount || 0)}
                                             </p>
                                         </div>
@@ -517,83 +772,87 @@ const CheckoutPage = () => {
                                 </div>
 
                                 <div className='mt-6'>
-                                    <label className='block text-sm font-medium text-gray-700 mb-3'>
-                                        {t('COMMON.USER.DISCOUNT_CODE')}
-                                    </label>
-                                    <div className='flex'>
-                                        <input
-                                            type='text'
-                                            onChange={e => setNewDiscountCode(e.target.value)}
-                                            className='flex-1 border border-gray-300 rounded-l-lg px-4 py-[11px] focus:ring-blue-500 focus:border-blue-500 outline-none'
-                                            placeholder={t('COMMON.USER.ENTER_DISCOUNT_CODE')}
-                                        />
-                                        <button
-                                            className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-[11px] rounded-r-lg font-medium transition'
-                                            onClick={handleApplyDiscount}
-                                        >
-                                            {t('COMMON.USER.APPLY')}
-                                        </button>
-                                    </div>
-
-                                    {discountError && (
-                                        <div className='mt-2 text-red-600 text-sm flex items-center'>
-                                            <AlertCircle className='w-4 h-4 mr-1' />
-                                            {discountError}
-                                        </div>
-                                    )}
-
-                                    {discountSuccess && (
-                                        <div className='mt-2 text-green-600 text-sm flex items-center'>
-                                            <CheckCircle2 className='w-4 h-4 mr-1' />
-                                            {discountSuccess}
-                                        </div>
-                                    )}
-
-                                    {/* Applied discount codes */}
-                                    {appliedDiscounts.length > 0 && (
-                                        <div className='mt-3 space-y-3'>
-                                            {appliedDiscounts.map(discount => (
-                                                <div
-                                                    key={discount.id}
-                                                    className='bg-blue-50 rounded-lg p-4 flex justify-between items-center'
-                                                >
-                                                    <div>
-                                                        <div className='flex items-center'>
-                                                            <CheckCircle2 className='w-4 h-4 text-green-600 mr-1.5' />
-                                                            <span className='font-medium text-gray-800'>
-                                                                {discount.code}
-                                                            </span>
-                                                        </div>
-                                                        <p className='text-sm text-gray-600 mt-1'>
-                                                            {discount.description}
-                                                        </p>
-                                                    </div>
-
-                                                    <button
-                                                        className='p-2 bg-red-50 rounded-full text-red-600 hover:bg-red-100 transition-colors'
-                                                        onClick={() => handleRemoveDiscount(discount.id)}
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
+                                    <div
+                                        className='bg-white border border-blue-100 rounded-lg cursor-pointer hover:border-blue-300 hover:shadow-sm'
+                                        onClick={() => setIsModalOpen(true)}
+                                    >
+                                        <div className='flex items-center justify-between p-4'>
+                                            <div className='flex items-center gap-4'>
+                                                <div className='w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center'>
+                                                    <Tag className='w-5 h-5 text-blue-600' />
                                                 </div>
-                                            ))}
+                                                <div>
+                                                    <div className='font-medium text-gray-800 text-sm'>Mã giảm giá</div>
+                                                    <div className='text-xs text-blue-600 mt-[1px]'>
+                                                        {hasSelectedCoupons
+                                                            ? `${selectedCount} mã đã chọn`
+                                                            : 'Chọn mã giảm giá'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <ChevronRight className='w-4 h-4 text-gray-400' />
                                         </div>
-                                    )}
+
+                                        {hasSelectedCoupons && (
+                                            <div className='px-4 pb-4 space-y-3'>
+                                                {selectedCoupons.productCoupon && (
+                                                    <div className='flex items-center justify-between bg-green-50 border border-green-100 rounded-md py-3 px-4'>
+                                                        <div className='flex items-center gap-4'>
+                                                            <ShoppingCart className='w-5 h-5 text-green-600' />
+                                                            <div>
+                                                                <div className='font-medium text-green-700 text-sm'>
+                                                                    {selectedCoupons.productCoupon.couponCode}
+                                                                </div>
+                                                                <div className='text-xs text-green-600 mt-[2px]'>
+                                                                    Giảm {formatDiscount(selectedCoupons.productCoupon)}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {selectedCoupons.shippingCoupon && (
+                                                    <div className='flex items-center justify-between bg-blue-50 border border-blue-100 rounded-md py-3 px-4'>
+                                                        <div className='flex items-center gap-4'>
+                                                            <Truck className='w-5 h-5 text-blue-600' />
+                                                            <div>
+                                                                <div className='font-medium text-blue-700 text-sm'>
+                                                                    {selectedCoupons.shippingCoupon.couponCode}
+                                                                </div>
+                                                                <div className='text-xs text-blue-600 mt-[2px]'>
+                                                                    Giảm{' '}
+                                                                    {formatDiscount(selectedCoupons.shippingCoupon)}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className='mt-6'>
                                     <button
+                                        disabled={isLoading}
                                         onClick={handlePlaceOrder}
-                                        className='w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium flex items-center justify-center transition'
+                                        className='w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-medium flex items-center justify-center transition'
                                     >
-                                        <CreditCard className='w-5 h-5 mr-2' />
+                                        {isLoading ? (
+                                            <Loader2 className='animate-spin w-5 h-5 mr-2' />
+                                        ) : (
+                                            <CreditCard className='w-5 h-5 mr-2' />
+                                        )}
+
                                         {t('COMMON.USER.PLACE_ORDER')}
                                     </button>
                                 </div>
 
-                                <div className='mt-5 text-center'>
-                                    <p className='text-md text-gray-600 whitespace-pre-line'>
-                                        {t('COMMON.USER.PLACE_ORDER_CONSENT')}
+                                <div className='text-center mt-5'>
+                                    <p className='text-sm text-gray-500'>
+                                        Bằng việc đăng nhập, bạn đồng ý với{' '}
+                                        <button className='text-blue-600 hover:underline'>Điều khoản dịch vụ</button> và{' '}
+                                        <button className='text-blue-600 hover:underline'>Chính sách bảo mật</button>
                                     </p>
                                 </div>
                             </div>
@@ -658,6 +917,16 @@ const CheckoutPage = () => {
             </div>
 
             <AddressManager isOpen={isOpenModel} onClose={() => setIsOpenModal(false)} />
+
+            <CouponSelector
+                isModalOpen={isModalOpen}
+                setIsModalOpen={() => setIsModalOpen(false)}
+                coupons={availableCoupons}
+                selectedCoupons={selectedCoupons}
+                onCouponSelect={handleCouponSelect}
+                onCouponRemove={handleCouponRemove}
+                orderValue={summary.subTotal}
+            />
         </div>
     )
 }

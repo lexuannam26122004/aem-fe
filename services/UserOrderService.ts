@@ -22,7 +22,7 @@ export const UserOrderApis = createApi({
                 return queryString ? `?${queryString}` : ''
             }
         }),
-        createOrder: builder.mutation<void, IOrderCreate>({
+        createOrder: builder.mutation<IResponse, IOrderCreate>({
             query: body => ({
                 url: ``,
                 method: 'POST',

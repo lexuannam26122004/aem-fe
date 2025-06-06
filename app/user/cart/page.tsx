@@ -26,6 +26,8 @@ import Loading from '@/components/Loading'
 import { useDeleteFavoriteMutation } from '@/services/FavoriteService'
 import FavoriteFormModal from '@/components/FavoriteFormModal'
 import { debounce } from 'lodash'
+import { useDispatch } from 'react-redux'
+import { setProducts } from '@/redux/slices/productSlice'
 
 const CartPage = () => {
     const { t } = useTranslation('common')
@@ -35,10 +37,10 @@ const CartPage = () => {
     const [showEmptyState, setShowEmptyState] = useState(false)
     const [summary, setSummary] = useState({
         subTotal: 0,
-        shippingFee: 0,
         totalAmount: 0,
         taxes: 0
     })
+    const dispatch = useDispatch()
 
     const { data: flashSaleResponse, isLoading: isLoadingResponseFlashSale } = useSearchProductQuery({
         pageSize: 8,
@@ -70,14 +72,17 @@ const CartPage = () => {
 
     const calculateSummary = () => {
         const selectedItems = carts.filter(item => item.isSelected)
+        dispatch(setProducts(selectedItems))
         const subTotal = selectedItems.reduce((total, item) => {
             return total + item.discountPrice * item.quantity
         }, 0)
+        const taxes = subTotal * 0.1
 
         setSummary({
             ...summary,
             subTotal,
-            totalAmount: subTotal + summary.shippingFee + summary.taxes
+            taxes,
+            totalAmount: subTotal + taxes
         })
     }
 
@@ -88,7 +93,7 @@ const CartPage = () => {
                 .catch(() => {
                     setCarts(snapshot)
                 })
-        }, 800)
+        }, 0)
     ).current
 
     const handleQuantityChange = (id: number, newQuantity: number) => {
@@ -119,7 +124,7 @@ const CartPage = () => {
         const item = snapshot.find(item => item.id === id)
         if (item.isFavorite) {
             setCarts(prevCart => prevCart.map(item => (item.id === id ? { ...item, isFavorite: false } : item)))
-            deleteFavorite(item.productId)
+            deleteFavorite(item.favoriteId)
                 .unwrap()
                 .catch(() => setCarts(snapshot)) // Rollback on error
         } else {
@@ -143,7 +148,6 @@ const CartPage = () => {
         if (selectedCount === 0) {
             setSummary({
                 subTotal: 0,
-                shippingFee: 0,
                 taxes: 0,
                 totalAmount: 0
             })
@@ -327,11 +331,6 @@ const CartPage = () => {
                                                     {t('COMMON.USER.SUBTOTAL', { count: selectedCount })}
                                                 </span>
                                                 <span className='font-medium'>{formatCurrency(summary.subTotal)}</span>
-                                            </div>
-
-                                            <div className='flex justify-between'>
-                                                <p className='text-gray-600'>{t('COMMON.ORDER.SHIPPING_FEE')}</p>
-                                                <p className='font-medium'>{formatCurrency(summary.shippingFee)}</p>
                                             </div>
 
                                             <div className='flex justify-between'>

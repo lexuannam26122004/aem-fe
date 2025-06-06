@@ -1,8 +1,31 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { MapPin, Edit, User2, PhoneCall, Mail, House, Building, CheckCircle, Trash2, X } from 'lucide-react'
+import { useState } from 'react'
+import {
+    MapPin,
+    Edit,
+    User2,
+    PhoneCall,
+    Mail,
+    House,
+    Building,
+    CheckCircle,
+    Trash2,
+    X,
+    Loader2,
+    Save
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import {
+    useChangeDefaultCustomerAddressMutation,
+    useCreateCustomerAddressMutation,
+    useDeleteCustomerAddressMutation,
+    useSearchCustomerAddressQuery,
+    useUpdateCustomerAddressMutation
+} from '@/services/CustomerAddressService'
+import { ICustomerAddress, ICustomerAddressCreate, ICustomerAddressUpdate } from '@/models/CustomerAddress'
+import { useToast } from '@/hooks/useToast'
+import Loading from './Loading'
 
 interface AddressManagerProps {
     isOpen: boolean
@@ -11,38 +34,11 @@ interface AddressManagerProps {
 
 export default function AddressManager({ isOpen, onClose }: AddressManagerProps) {
     const { t } = useTranslation('common')
-
-    const [userData, setUserData] = useState({
-        addresses: [
-            {
-                id: 1,
-                title: 'Nhà riêng',
-                fullName: 'Nguyễn Văn A',
-                phone: '0987654321',
-                email: 'nguyenvana@example.com',
-                address: '123 Đường ABC',
-                district: 'Quận 1',
-                city: 'TP. Hồ Chí Minh',
-                isDefault: true
-            },
-            {
-                id: 2,
-                title: 'Văn phòng',
-                fullName: 'Nguyễn Văn A',
-                phone: '0987654322',
-                email: 'nguyenvana@example.com',
-                address: '456 Đường XYZ',
-                district: 'Quận 7',
-                city: 'TP. Hồ Chí Minh',
-                isDefault: false
-            }
-        ]
-    })
-
-    const [editingAddress, setEditingAddress] = useState<AddressType | null>(null)
+    const toast = useToast()
+    const [editingAddress, setEditingAddress] = useState<ICustomerAddress | null>(null)
     const [isAddingAddress, setIsAddingAddress] = useState(false)
     const [formErrors, setFormErrors] = useState({
-        fullName: '',
+        recipient: '',
         phone: '',
         title: '',
         email: '',
@@ -51,119 +47,64 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
         city: ''
     })
 
-    const [notification, setNotification] = useState({
-        show: false,
-        type: '',
-        message: ''
-    })
-    useEffect(() => {}, [notification])
+    const [createCustomerAddress, { isLoading: isCreateLoading }] = useCreateCustomerAddressMutation()
+    const [updateCustomerAddress, { isLoading: isUpdateLoading }] = useUpdateCustomerAddressMutation()
+    const [deleteCustomerAddress, { isLoading: isDeleteLoading, originalArgs: originalDeleteArgs }] =
+        useDeleteCustomerAddressMutation()
+    const [changeDefaultCustomerAddress, { isLoading: isChangeDefaultLoading, originalArgs }] =
+        useChangeDefaultCustomerAddressMutation()
+    const { data: customerAddressResponse, isFetching, isLoading } = useSearchCustomerAddressQuery()
 
-    type AddressType = {
-        id?: number
-        fullName: string
-        phone: string
-        email: string
-        title: string
-        address: string
-        district: string
-        city: string
-        isDefault: boolean
-    }
+    const addresses = (customerAddressResponse?.data as ICustomerAddress[]) || []
 
-    // Hiển thị thông báo
-    const showNotification = (type: string, message: string) => {
-        setNotification({
-            show: true,
-            type,
-            message
-        })
-
-        // Ẩn thông báo sau 3 giây
-        setTimeout(() => {
-            setNotification({ show: false, type: '', message: '' })
-        }, 3000)
-    }
-
-    // Xử lý lưu địa chỉ
-    const handleSaveAddress = (address: AddressType) => {
-        if (isAddingAddress) {
-            const newAddress = {
-                ...address,
-                id: userData.addresses.length + 1
-            }
-
-            const addresses = [...userData.addresses, newAddress]
-
-            setUserData({
-                ...userData,
-                addresses: [...userData.addresses, newAddress]
+    const handleCreateAddress = (address: ICustomerAddressCreate) => {
+        createCustomerAddress(address)
+            .unwrap()
+            .then(() => {
+                setEditingAddress(null)
+                setIsAddingAddress(false)
+                toast('Địa chỉ đã được thêm thành công', 'success')
             })
-
-            if (newAddress.isDefault) {
-                setUserData({
-                    ...userData,
-                    addresses: addresses.map(addr => ({
-                        ...addr,
-                        isDefault: addr.id === newAddress.id
-                    }))
-                })
-            } else {
-                setUserData({
-                    ...userData,
-                    addresses: addresses
-                })
-            }
-
-            showNotification('success', 'Địa chỉ đã được thêm thành công')
-        } else {
-            if (!address.id) return
-
-            const addresses = userData.addresses.map(addr =>
-                addr.id === address.id ? { ...address, id: address.id ?? addr.id } : addr
-            )
-
-            if (address.isDefault) {
-                setUserData({
-                    ...userData,
-                    addresses: addresses.map(addr => ({
-                        ...addr,
-                        isDefault: addr.id === address.id
-                    }))
-                })
-            } else {
-                setUserData({
-                    ...userData,
-                    addresses: addresses
-                })
-            }
-
-            showNotification('success', 'Địa chỉ đã được cập nhật thành công')
-        }
-
-        setEditingAddress(null)
-        setIsAddingAddress(false)
+            .catch(error => {
+                const errorMessage = error.data?.detail || 'Thêm địa chỉ không thành công'
+                toast(errorMessage, 'error')
+            })
     }
 
-    // Xử lý xóa địa chỉ
-    const handleDeleteAddress = (id: number) => {
-        setUserData({
-            ...userData,
-            addresses: userData.addresses.filter(addr => addr.id !== id)
-        })
+    const handleUpdateAddress = (id: number, address: ICustomerAddressUpdate) => {
+        updateCustomerAddress({ id, body: address })
+            .unwrap()
+            .then(() => {
+                setEditingAddress(null)
+                setIsAddingAddress(false)
+                toast('Địa chỉ đã được cập nhật thành công', 'success')
+            })
+            .catch(error => {
+                const errorMessage = error.data?.detail || 'Cập nhật địa chỉ không thành công'
+                toast(errorMessage, 'error')
+            })
+    }
 
-        showNotification('success', 'Địa chỉ đã được xóa thành công')
+    const handleDeleteAddress = (id: number) => {
+        deleteCustomerAddress(id)
+            .unwrap()
+            .then(() => toast('Địa chỉ đã được xóa thành công', 'success'))
+            .catch(error => {
+                const errorMessage = error.data?.detail || 'Xóa địa chỉ không thành công'
+                toast(errorMessage, 'error')
+            })
     }
 
     const handleSetDefaultAddress = (id: number) => {
-        setUserData({
-            ...userData,
-            addresses: userData.addresses.map(addr => ({
-                ...addr,
-                isDefault: addr.id === id
-            }))
-        })
-
-        showNotification('success', 'Đã đặt địa chỉ mặc định')
+        changeDefaultCustomerAddress(id)
+            .unwrap()
+            .then(() => {
+                toast('Địa chỉ đã được đặt làm mặc định', 'success')
+            })
+            .catch(error => {
+                const errorMessage = error.data?.detail || 'Đặt địa chỉ mặc định không thành công'
+                toast(errorMessage, 'error')
+            })
     }
 
     const closeModal = () => {
@@ -171,7 +112,7 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
         setEditingAddress(null)
         setIsAddingAddress(false)
         setFormErrors({
-            fullName: '',
+            recipient: '',
             phone: '',
             email: '',
             title: '',
@@ -179,6 +120,10 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
             district: '',
             city: ''
         })
+    }
+
+    if (isLoading) {
+        return <Loading />
     }
 
     return (
@@ -191,7 +136,7 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                 <MapPin size={20} className='w-5 h-5 text-blue-600 mr-3' color='#3675ff' />
                                 {t('COMMON.USER.DELIVERY_ADDRESSES')}
                                 <span className='ml-3 px-2 py-0.5 bg-blue-100 text-blue-700 text-sm rounded-full'>
-                                    {userData.addresses.length}
+                                    {addresses.length}
                                 </span>
                             </h2>
 
@@ -201,7 +146,7 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                         setIsAddingAddress(true)
                                         setEditingAddress({
                                             title: '',
-                                            fullName: '',
+                                            recipient: '',
                                             phone: '',
                                             email: '',
                                             address: '',
@@ -235,19 +180,19 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                         <div className='relative'>
                                             <input
                                                 type='text'
-                                                value={editingAddress.fullName}
+                                                value={editingAddress.recipient}
                                                 onChange={e =>
-                                                    setEditingAddress({ ...editingAddress, fullName: e.target.value })
+                                                    setEditingAddress({ ...editingAddress, recipient: e.target.value })
                                                 }
                                                 className={`w-full border ${
-                                                    formErrors.fullName ? 'border-red-500' : 'border-gray-300'
+                                                    formErrors.recipient ? 'border-red-500' : 'border-gray-300'
                                                 } rounded-lg pl-4 pr-10 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none`}
                                                 placeholder={t('COMMON.USER.ENTER_FULL_NAME')}
                                             />
                                             <User2 className='w-5 h-5 text-blue-600 absolute right-3 top-1/2 transform -translate-y-1/2' />
                                         </div>
-                                        {formErrors.fullName && (
-                                            <p className='mt-1 text-sm text-red-600'>{formErrors.fullName}</p>
+                                        {formErrors.recipient && (
+                                            <p className='mt-1 text-sm text-red-600'>{formErrors.recipient}</p>
                                         )}
                                     </div>
 
@@ -408,7 +353,7 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                         onClick={() => {
                                             setEditingAddress(null)
                                             setFormErrors({
-                                                fullName: '',
+                                                recipient: '',
                                                 phone: '',
                                                 email: '',
                                                 title: '',
@@ -423,16 +368,37 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                         {t('COMMON.USER.CANCEL')}
                                     </button>
                                     <button
-                                        onClick={() => handleSaveAddress(editingAddress)}
-                                        className='px-6 py-[11px] font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition'
+                                        disabled={isCreateLoading || isUpdateLoading || isFetching}
+                                        onClick={() => {
+                                            if (isAddingAddress) {
+                                                handleCreateAddress(editingAddress)
+                                            } else {
+                                                handleUpdateAddress(editingAddress.id, {
+                                                    recipient: editingAddress.recipient,
+                                                    phone: editingAddress.phone,
+                                                    email: editingAddress.email,
+                                                    title: editingAddress.title,
+                                                    address: editingAddress.address,
+                                                    district: editingAddress.district,
+                                                    city: editingAddress.city,
+                                                    isDefault: editingAddress.isDefault
+                                                })
+                                            }
+                                        }}
+                                        className='px-6 py-[11px] font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center'
                                     >
+                                        {isCreateLoading || isUpdateLoading || isFetching ? (
+                                            <Loader2 size={16} className='mr-2 animate-spin' />
+                                        ) : (
+                                            <Save size={16} className='mr-2' />
+                                        )}
                                         {t('COMMON.USER.SAVE')}
                                     </button>
                                 </div>
                             </div>
-                        ) : userData.addresses.length > 0 ? (
-                            <div className='p-6 space-y-6 overflow-y-auto '>
-                                {userData.addresses.map(address => (
+                        ) : addresses.length > 0 ? (
+                            <div className='p-6 space-y-6 overflow-y-auto'>
+                                {addresses.map(address => (
                                     <div key={address.id} className='bg-gray-50 rounded-[15px] relative'>
                                         <div className='p-6 space-y-3.5'>
                                             <div className='flex items-start'>
@@ -441,7 +407,7 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                                 </div>
                                                 <div className='font-medium text-gray-900 flex items-center'>
                                                     <User2 className='w-4 h-4 text-blue-600 mr-3' />
-                                                    {address.fullName}
+                                                    {address.recipient}
                                                 </div>
                                             </div>
 
@@ -492,10 +458,19 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                             {!address.isDefault ? (
                                                 <button
                                                     onClick={() => handleSetDefaultAddress(address.id)}
+                                                    disabled={
+                                                        isFetching ||
+                                                        (isChangeDefaultLoading && address.id === originalArgs)
+                                                    }
                                                     className='p-2 bg-green-50 rounded-full text-green-600 hover:bg-green-100 transition-colors'
                                                     title={t('COMMON.USER.SET_AS_DEFAULT')}
                                                 >
-                                                    <CheckCircle size={18} />
+                                                    {isFetching ||
+                                                    (isChangeDefaultLoading && address.id === originalArgs) ? (
+                                                        <Loader2 size={18} className='animate-spin' />
+                                                    ) : (
+                                                        <CheckCircle size={18} />
+                                                    )}
                                                 </button>
                                             ) : (
                                                 <span className='px-3 flex items-center bg-green-50 text-green-600 text-sm font-medium rounded-full'>
@@ -516,7 +491,11 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                                 className='p-2 bg-red-50 rounded-full text-red-600 hover:bg-red-100 transition-colors'
                                                 title={t('COMMON.USER.DELETE')}
                                             >
-                                                <Trash2 size={18} />
+                                                {isDeleteLoading && address.id === originalDeleteArgs ? (
+                                                    <Loader2 size={18} className='animate-spin' />
+                                                ) : (
+                                                    <Trash2 size={18} />
+                                                )}
                                             </button>
                                         </div>
                                     </div>

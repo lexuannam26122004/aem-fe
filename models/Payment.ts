@@ -1,5 +1,5 @@
 export interface IPaymentRequest {
-    orderId: string
+    orderCode: string
     amount: number
 }
 

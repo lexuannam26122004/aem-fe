@@ -6,11 +6,16 @@ import { createBaseQuery } from './api'
 export const CustomerAddressApis = createApi({
     reducerPath: 'CustomerAddressApis',
     baseQuery: createBaseQuery('user/customer-addresses'),
-    tagTypes: ['CustomerAddress'],
+    tagTypes: ['CustomerAddress', 'CustomerAddressDefault'],
     endpoints: builder => ({
         searchCustomerAddress: builder.query<IResponse, void>({
             query: () => '',
             providesTags: [{ type: 'CustomerAddress' }]
+        }),
+
+        getDefaultCustomerAddress: builder.query<IResponse, void>({
+            query: () => 'get-default',
+            providesTags: [{ type: 'CustomerAddressDefault' }]
         }),
 
         createCustomerAddress: builder.mutation<void, ICustomerAddressCreate>({
@@ -48,7 +53,7 @@ export const CustomerAddressApis = createApi({
                 url: `${id}/change-default`,
                 method: 'PUT'
             }),
-            invalidatesTags: ['CustomerAddress']
+            invalidatesTags: ['CustomerAddress', 'CustomerAddressDefault']
         })
     })
 })
@@ -58,6 +63,7 @@ export const {
     useCreateCustomerAddressMutation,
     useUpdateCustomerAddressMutation,
     useGetByIdCustomerAddressQuery,
+    useGetDefaultCustomerAddressQuery,
     useDeleteCustomerAddressMutation,
     useChangeDefaultCustomerAddressMutation
 } = CustomerAddressApis

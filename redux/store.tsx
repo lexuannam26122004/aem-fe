@@ -27,11 +27,13 @@ import { CustomerAddressApis } from '@/services/CustomerAddressService'
 import { UserOrderApis } from '@/services/UserOrderService'
 import { UserProjectApis } from '@/services/UserProjectService'
 import { UserQuoteApis } from '@/services/UserQuoteService'
+import { productSlice } from './slices/productSlice'
+import { UserCouponApis } from '@/services/UserCouponService'
 
 const persistConfig = {
     key: 'root',
     storage,
-    whitelist: ['user'] // chỉ persist state 'user'
+    whitelist: ['user', 'products']
 }
 const rootReducer = combineReducers({
     [userSlice.name]: userSlice.reducer,
@@ -58,7 +60,9 @@ const rootReducer = combineReducers({
     [CustomerAddressApis.reducerPath]: CustomerAddressApis.reducer,
     [UserOrderApis.reducerPath]: UserOrderApis.reducer,
     [UserProjectApis.reducerPath]: UserProjectApis.reducer,
-    [UserQuoteApis.reducerPath]: UserQuoteApis.reducer
+    [UserQuoteApis.reducerPath]: UserQuoteApis.reducer,
+    [productSlice.name]: productSlice.reducer,
+    [UserCouponApis.reducerPath]: UserCouponApis.reducer
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
@@ -90,7 +94,8 @@ export const store = configureStore({
             CustomerAddressApis.middleware,
             UserOrderApis.middleware,
             UserProjectApis.middleware,
-            UserQuoteApis.middleware
+            UserQuoteApis.middleware,
+            UserCouponApis.middleware
         ) as any
 })
 

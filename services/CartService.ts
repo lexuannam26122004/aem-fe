@@ -55,6 +55,15 @@ export const CartApis = createApi({
                 method: 'DELETE'
             }),
             invalidatesTags: ['Cart']
+        }),
+
+        deleteRangeCart: builder.mutation<void, number[]>({
+            query: body => ({
+                url: 'remove-range',
+                body: { ids: body },
+                method: 'DELETE'
+            }),
+            invalidatesTags: ['Cart']
         })
     })
 })
@@ -66,5 +75,6 @@ export const {
     useGetByIdCartQuery,
     useGetCartCountQuery,
     useDeleteCartMutation,
+    useDeleteRangeCartMutation,
     useUpdateCartQuantityMutation
 } = CartApis

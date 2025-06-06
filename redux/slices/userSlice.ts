@@ -30,7 +30,7 @@ export const userSlice = createSlice({
         setFavoriteCount(state, action: PayloadAction<number>) {
             state.favoriteCount = action.payload
         },
-        clearUserInfo(state) {
+        clearUser(state) {
             state.userInfo = null
             state.cartCount = 0
             state.favoriteCount = 0
@@ -39,7 +39,7 @@ export const userSlice = createSlice({
     }
 })
 
-export const { setUserInfo, clearUserInfo, setCartCount, setFavoriteCount } = userSlice.actions
+export const { setUserInfo, clearUser, setCartCount, setFavoriteCount } = userSlice.actions
 
 export const userSelector = (state: RootState) => state.user
 
