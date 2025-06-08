@@ -36,6 +36,9 @@ import ProjectFormModal from '@/components/ProjectFormModal'
 import { useCreateCartMutation } from '@/services/CartService'
 import { ICartCreate, ICartItem } from '@/models/Cart'
 import { useToast } from '@/hooks/useToast'
+import { useAuthCheck } from '@/hooks/useAuthCheck'
+import { useDispatch } from 'react-redux'
+import { addToCart, generateLocalCartId } from '@/redux/slices/cartSlice'
 
 type ProductHotSaleProps = {
     title: string
@@ -56,6 +59,7 @@ const ProductDetail = () => {
     const [reviews, setReviews] = useState([])
     const [favoriteCount, setFavoriteCount] = useState({ isFavorite: false, count: 0 })
     const [selectedOptions, setSelectedOptions] = useState({} as Record<number, number>)
+    const { isAuthenticated, isAuthChecked } = useAuthCheck()
 
     const {
         data: reviewsResponse,
@@ -100,6 +104,7 @@ const ProductDetail = () => {
     const product = productResponse?.data as IProductGetById
     const productsFlashSale = (dataResponseFlashSale?.data?.records as IProductSearch[]) || []
     const toast = useToast()
+    const dispatch = useDispatch()
 
     const handleOptionChange = (optionId: number, valueId: number) => {
         setSelectedOptions(prev => ({
@@ -198,13 +203,54 @@ const ProductDetail = () => {
         } catch {}
     }
 
+    const handleAddToCartUnAuth = async (product: IProductGetById) => {
+        await dispatch(
+            addToCart({
+                id: generateLocalCartId(
+                    product.id,
+                    Object.entries(selectedOptions).map(([optionId, optionValueId]) => ({
+                        optionId: Number(optionId),
+                        optionValueId: optionValueId
+                    }))
+                ),
+                productId: product.id,
+                productName: product.productName,
+                image: product.images.filter(image => image.isPrimary)[0]?.url || '',
+                sku: product.sku || '',
+                originalPrice: product.price,
+                discountRate: product.discountRate,
+                discountPrice: product.discountPrice,
+                favoriteId: null,
+                isFavorite: false,
+                isSelected: false,
+                variants:
+                    product.variants
+                        ?.map(variant =>
+                            variant.options
+                                .map(op => {
+                                    const selectedValue = op.values.find(val => val.id === selectedOptions[op.id])
+                                    return `${op.optionName}: ${selectedValue?.value}`
+                                })
+                                .join(', ')
+                        )
+                        .join(', ') || '',
+                quantity: 1,
+                selections: Object.entries(selectedOptions).map(([optionId, optionValueId]) => ({
+                    optionId: Number(optionId),
+                    optionValueId: optionValueId
+                }))
+            })
+        )
+
+        toast('Thêm vào giỏ hàng thành công!', 'success')
+    }
+
     const handleAddToCart = (productId: number, selections: ICartItem[]) => {
         const cart: ICartCreate = {
             productId: productId,
             quantity: 1,
             selections: selections
         }
-
         createCart(cart)
             .unwrap()
             .then(() => toast('Thêm vào giỏ hàng thành công!', 'success'))
@@ -506,13 +552,15 @@ const ProductDetail = () => {
                             <div className='flex gap-6 py-2'>
                                 <button
                                     onClick={() =>
-                                        handleAddToCart(
-                                            product.id,
-                                            Object.entries(selectedOptions).map(([optionId, optionValueId]) => ({
-                                                optionId: Number(optionId),
-                                                optionValueId
-                                            }))
-                                        )
+                                        isAuthChecked && !isAuthenticated
+                                            ? handleAddToCartUnAuth(product)
+                                            : handleAddToCart(
+                                                  product.id,
+                                                  Object.entries(selectedOptions).map(([optionId, optionValueId]) => ({
+                                                      optionId: Number(optionId),
+                                                      optionValueId
+                                                  }))
+                                              )
                                     }
                                     className='flex-1 flex items-center justify-center border border-[1px] border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-lg transition-colors duration-300'
                                 >

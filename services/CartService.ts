@@ -69,7 +69,7 @@ export const CartApis = createApi({
 })
 
 export const {
-    useSearchCartQuery,
+    useLazySearchCartQuery,
     useCreateCartMutation,
     useUpdateCartMutation,
     useGetByIdCartQuery,

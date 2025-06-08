@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
     MapPin,
     Edit,
@@ -20,12 +20,13 @@ import {
     useChangeDefaultCustomerAddressMutation,
     useCreateCustomerAddressMutation,
     useDeleteCustomerAddressMutation,
-    useSearchCustomerAddressQuery,
+    useLazySearchCustomerAddressQuery,
     useUpdateCustomerAddressMutation
 } from '@/services/CustomerAddressService'
 import { ICustomerAddress, ICustomerAddressCreate, ICustomerAddressUpdate } from '@/models/CustomerAddress'
 import { useToast } from '@/hooks/useToast'
 import Loading from './Loading'
+import { useAuthCheck } from '@/hooks/useAuthCheck'
 
 interface AddressManagerProps {
     isOpen: boolean
@@ -46,6 +47,8 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
         district: '',
         city: ''
     })
+    const [shippingAddress, setShippingAddress] = useState<ICustomerAddress[] | null>(null)
+    const { isAuthChecked, isAuthenticated } = useAuthCheck()
 
     const [createCustomerAddress, { isLoading: isCreateLoading }] = useCreateCustomerAddressMutation()
     const [updateCustomerAddress, { isLoading: isUpdateLoading }] = useUpdateCustomerAddressMutation()
@@ -53,9 +56,21 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
         useDeleteCustomerAddressMutation()
     const [changeDefaultCustomerAddress, { isLoading: isChangeDefaultLoading, originalArgs }] =
         useChangeDefaultCustomerAddressMutation()
-    const { data: customerAddressResponse, isFetching, isLoading } = useSearchCustomerAddressQuery()
 
-    const addresses = (customerAddressResponse?.data as ICustomerAddress[]) || []
+    const [trigger, { isFetching, isLoading }] = useLazySearchCustomerAddressQuery()
+
+    useEffect(() => {
+        if (isAuthChecked && isAuthenticated) {
+            trigger()
+                .unwrap()
+                .then(data => {
+                    setShippingAddress(data.data)
+                })
+                .catch(() => {
+                    setShippingAddress(null)
+                })
+        }
+    }, [isAuthChecked, isAuthenticated])
 
     const handleCreateAddress = (address: ICustomerAddressCreate) => {
         createCustomerAddress(address)
@@ -136,7 +151,7 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                 <MapPin size={20} className='w-5 h-5 text-blue-600 mr-3' color='#3675ff' />
                                 {t('COMMON.USER.DELIVERY_ADDRESSES')}
                                 <span className='ml-3 px-2 py-0.5 bg-blue-100 text-blue-700 text-sm rounded-full'>
-                                    {addresses.length}
+                                    {shippingAddress.length}
                                 </span>
                             </h2>
 
@@ -396,9 +411,9 @@ export default function AddressManager({ isOpen, onClose }: AddressManagerProps)
                                     </button>
                                 </div>
                             </div>
-                        ) : addresses.length > 0 ? (
+                        ) : shippingAddress.length > 0 ? (
                             <div className='p-6 space-y-6 overflow-y-auto'>
-                                {addresses.map(address => (
+                                {shippingAddress.map(address => (
                                     <div key={address.id} className='bg-gray-50 rounded-[15px] relative'>
                                         <div className='p-6 space-y-3.5'>
                                             <div className='flex items-start'>

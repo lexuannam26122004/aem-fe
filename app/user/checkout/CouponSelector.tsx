@@ -159,12 +159,12 @@ const CouponSelector: React.FC<CouponSelectorProps> = ({
 
                             {/* No Coupons */}
                             {productCoupons.length === 0 && shippingCoupons.length === 0 && (
-                                <div className='p-8 text-center text-gray-500'>
-                                    <div className='w-16 h-16 bg-gray-50 rounded-lg flex items-center justify-center mx-auto mb-3'>
-                                        <Search className='w-6 h-6 text-gray-400' />
+                                <div className='p-8 text-center'>
+                                    <div className='w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mx-auto mb-3'>
+                                        <Search className='w-6 h-6 text-blue-500' />
                                     </div>
-                                    <div className='font-medium mb-1 text-sm'>Không tìm thấy mã giảm giá</div>
-                                    <div className='text-xs text-gray-400'>
+                                    <div className='font-medium mb-1 text-gray-800'>Không tìm thấy mã giảm giá</div>
+                                    <div className='text-sm text-gray-400'>
                                         Thử từ khóa khác hoặc kiểm tra điều kiện áp dụng
                                     </div>
                                 </div>

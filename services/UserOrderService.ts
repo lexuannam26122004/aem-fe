@@ -29,6 +29,9 @@ export const UserOrderApis = createApi({
                 body: body
             })
         }),
+        searchByOrderCode: builder.query<IResponse, string>({
+            query: code => `search-by-order-code/${code}`
+        }),
         deleteOrder: builder.mutation<void, number>({
             query: id => ({
                 url: `${id}`,
@@ -66,6 +69,8 @@ export const {
     useSearchOrderQuery,
     useCreateOrderMutation,
     useDeleteOrderMutation,
+    useSearchByOrderCodeQuery,
+    useLazySearchByOrderCodeQuery,
     useGetByIdOrderQuery,
     useExportOrderQuery,
     useGetCountTypeQuery

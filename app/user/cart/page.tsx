@@ -20,14 +20,16 @@ import EmptyItem from '@/components/EmptyItem'
 import { IProductSearch } from '@/models/Product'
 import ProductCard from '../ProductCard'
 import { useSearchProductQuery } from '@/services/ProductService'
-import { useDeleteCartMutation, useSearchCartQuery, useUpdateCartQuantityMutation } from '@/services/CartService'
+import { useDeleteCartMutation, useLazySearchCartQuery, useUpdateCartQuantityMutation } from '@/services/CartService'
 import { ICart } from '@/models/Cart'
 import Loading from '@/components/Loading'
 import { useDeleteFavoriteMutation } from '@/services/FavoriteService'
 import FavoriteFormModal from '@/components/FavoriteFormModal'
 import { debounce } from 'lodash'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setProducts } from '@/redux/slices/productSlice'
+import { useAuthCheck } from '@/hooks/useAuthCheck'
+import { cartSelector, removeFromCart } from '@/redux/slices/cartSlice'
 
 const CartPage = () => {
     const { t } = useTranslation('common')
@@ -40,6 +42,7 @@ const CartPage = () => {
         totalAmount: 0,
         taxes: 0
     })
+    const { isAuthenticated, isAuthChecked } = useAuthCheck()
     const dispatch = useDispatch()
 
     const { data: flashSaleResponse, isLoading: isLoadingResponseFlashSale } = useSearchProductQuery({
@@ -47,20 +50,33 @@ const CartPage = () => {
         pageNumber: 1,
         typeSection: 'hot_sale'
     })
-    const { data: cartResponse, isFetching: isLoadingResponseCart } = useSearchCartQuery(undefined, {
-        refetchOnMountOrArgChange: true
-    })
+
+    const [triggerSearch, { isFetching: isLoadingResponseCart }] = useLazySearchCartQuery()
+
+    const cartData = useSelector(cartSelector).carts || []
+
+    useEffect(() => {
+        if (isAuthChecked && !isAuthenticated) {
+            setCarts(cartData)
+        }
+
+        if (isAuthChecked && isAuthenticated) {
+            triggerSearch()
+                .unwrap()
+                .then(data => {
+                    setCarts(data.data)
+                    setShowEmptyState(data.data.length === 0)
+                })
+                .catch(() => {
+                    setCarts([])
+                    setShowEmptyState(true)
+                })
+        }
+    }, [isAuthChecked, isAuthenticated, cartData])
 
     const productsFlashSale = Array.isArray(flashSaleResponse?.data.records)
         ? (flashSaleResponse?.data.records as IProductSearch[])
         : []
-
-    useEffect(() => {
-        if (Array.isArray(cartResponse?.data) && cartResponse?.data?.length > 0) {
-            setCarts(cartResponse.data)
-            setShowEmptyState(cartResponse.data.length === 0)
-        }
-    }, [cartResponse])
 
     const [deleteFavorite] = useDeleteFavoriteMutation()
     const [deleteCard] = useDeleteCartMutation()
@@ -117,6 +133,10 @@ const CartPage = () => {
         deleteCard(id)
             .unwrap()
             .catch(() => setCarts(snapshot))
+    }
+
+    const handleRemoveItemUnAuth = (item: ICart) => {
+        dispatch(removeFromCart({ id: item.id }))
     }
 
     const handleUpdateFavorite = (id: number) => {
@@ -287,24 +307,30 @@ const CartPage = () => {
                                                     </div>
                                                 </div>
 
-                                                <div className='flex items-center space-x-4 justify-end mt-3 sm:mt-0'>
+                                                <div className='flex items-center gap-4 justify-end mt-3 sm:mt-0'>
                                                     <button
                                                         className='p-2 bg-red-50 rounded-full text-red-600 hover:bg-red-100 transition-colors'
-                                                        onClick={() => handleRemoveItem(item.id)}
+                                                        onClick={() =>
+                                                            isAuthChecked && !isAuthenticated
+                                                                ? handleRemoveItemUnAuth(item)
+                                                                : handleRemoveItem(item.id)
+                                                        }
                                                     >
                                                         <Trash2 size={18} />
                                                     </button>
 
-                                                    <button
-                                                        className='p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors'
-                                                        onClick={() => handleUpdateFavorite(item.id)}
-                                                    >
-                                                        <Heart
-                                                            size={18}
-                                                            fill={item.isFavorite ? '#3675ff' : 'transparent'}
-                                                            color='#3675ff'
-                                                        />
-                                                    </button>
+                                                    {!(isAuthChecked && !isAuthenticated) && (
+                                                        <button
+                                                            className='p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors'
+                                                            onClick={() => handleUpdateFavorite(item.id)}
+                                                        >
+                                                            <Heart
+                                                                size={18}
+                                                                fill={item.isFavorite ? '#3675ff' : 'transparent'}
+                                                                color='#3675ff'
+                                                            />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}

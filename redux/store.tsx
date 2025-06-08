@@ -29,11 +29,12 @@ import { UserProjectApis } from '@/services/UserProjectService'
 import { UserQuoteApis } from '@/services/UserQuoteService'
 import { productSlice } from './slices/productSlice'
 import { UserCouponApis } from '@/services/UserCouponService'
+import { cartSlice } from './slices/cartSlice'
 
 const persistConfig = {
     key: 'root',
     storage,
-    whitelist: ['user', 'products']
+    whitelist: ['user', 'products', 'carts']
 }
 const rootReducer = combineReducers({
     [userSlice.name]: userSlice.reducer,
@@ -62,6 +63,7 @@ const rootReducer = combineReducers({
     [UserProjectApis.reducerPath]: UserProjectApis.reducer,
     [UserQuoteApis.reducerPath]: UserQuoteApis.reducer,
     [productSlice.name]: productSlice.reducer,
+    [cartSlice.name]: cartSlice.reducer,
     [UserCouponApis.reducerPath]: UserCouponApis.reducer
 })
 

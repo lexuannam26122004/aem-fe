@@ -1,61 +1,28 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-    Search,
-    Filter,
-    Clock,
-    Package,
-    Truck,
-    MessageSquare,
-    ExternalLink,
-    ShoppingBag,
-    Briefcase
-} from 'lucide-react'
-import InfiniteScroll from 'react-infinite-scroll-component'
+import { Search, Clock, Package, Truck, MessageSquare, ExternalLink, ShoppingBag, Briefcase } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useSearchOrderQuery } from '@/services/UserOrderService'
 import { formatCurrency, formatDate, formatTime } from '@/common/format'
-import { IUserOrderFilter, IUserOrderGetAll } from '@/models/Order'
-import Loading from '@/components/Loading'
-import { debounce } from 'lodash'
+import { IUserOrderGetAll } from '@/models/Order'
 import EmptyItem from '@/components/EmptyItem'
-
-const ORDER_STATUSES = ['pending', 'processing', 'shipping', 'delivered', 'cancelled', 'returned']
+import { useLazySearchByOrderCodeQuery } from '@/services/UserOrderService'
 
 export default function UserOrderContent() {
     const { t } = useTranslation('common')
     const router = useRouter()
+    const [searchKeyword, setSearchKeyword] = useState<string>('')
+    const [order, setOrder] = useState<IUserOrderGetAll | undefined>(undefined)
+    const [showEmptyState, setShowEmptyState] = useState(true)
 
-    const [orders, setOrders] = useState<IUserOrderGetAll[]>([])
-    const [hasMore, setHasMore] = useState(true)
-    const [showEmptyState, setShowEmptyState] = useState(false)
-    const [isLoading, setIsLoading] = useState(true)
-    const [isFilterOpen, setIsFilterOpen] = useState(false)
-
-    const [filter, setFilter] = useState<IUserOrderFilter>({
-        pageSize: 10,
-        pageNumber: 1,
-        status: undefined
-    })
-
-    const { data: orderData, refetch } = useSearchOrderQuery(filter, {
-        refetchOnMountOrArgChange: true
-    })
+    const [triggerSearch, { data: orderData, isFetching }] = useLazySearchByOrderCodeQuery()
 
     useEffect(() => {
-        refetch()
-    }, [filter])
-
-    useEffect(() => {
-        if (orderData?.data?.records) {
-            const newOrders = orderData.data.records
-            setOrders(prev => (filter.pageNumber === 1 ? newOrders : [...prev, ...newOrders]))
-            setHasMore(newOrders.length >= 10)
-            setShowEmptyState(newOrders.length === 0)
+        if (orderData && orderData.data) {
+            setOrder(orderData.data)
+            setShowEmptyState(false)
         }
-        setIsLoading(false)
     }, [orderData])
 
     const getStatusDetails = (status: string) => {
@@ -73,33 +40,6 @@ export default function UserOrderContent() {
         }
     }
 
-    const handleChangeTab = (tab?: string) => {
-        setFilter({
-            ...filter,
-            status: tab,
-            pageNumber: 1
-        })
-        setOrders([])
-    }
-
-    const debouncedSetFilter = useCallback(
-        debounce(value => {
-            setOrders([])
-            setFilter({
-                ...filter,
-                pageNumber: 1,
-                orderCode: value
-            })
-        }, 100),
-        []
-    )
-
-    const handleSearchKeyword = (value: string) => {
-        debouncedSetFilter(value)
-    }
-
-    if (isLoading && filter.pageNumber === 1) return <Loading />
-
     return (
         <div className='min-h-screen'>
             <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -112,58 +52,51 @@ export default function UserOrderContent() {
 
                 {/* Search & Filter */}
                 <div className='flex flex-col md:flex-row md:items-center justify-between gap-5 mb-6'>
-                    <div className='relative w-full sm:max-w-xs'>
+                    <div className='relative w-full sm:max-w-lg'>
                         <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
                             <Search className='h-5 w-5 text-gray-400' />
                         </div>
                         <input
                             type='text'
-                            onChange={e => handleSearchKeyword(e.target.value.trim())}
-                            className='pl-10 w-full sm:w-[400px] border border-gray-300 rounded-lg py-3 outline-none focus:ring-blue-500 focus:border-blue-500'
+                            value={searchKeyword || ''}
+                            onChange={e => setSearchKeyword(e.target.value.trim())}
+                            className='pl-10 w-full border border-gray-300 rounded-lg py-3 pr-[105px] outline-none focus:ring-blue-500 focus:border-blue-500'
                             placeholder={t('COMMON.USER.SEARCH_ORDER_PLACEHOLDER')}
                         />
+                        <button
+                            onClick={() => triggerSearch(searchKeyword)}
+                            className='absolute inset-y-0 bg-blue-600 text-white font-medium rounded-tr-lg rounded-br-lg px-4 right-0 top-0'
+                        >
+                            Tìm kiếm
+                        </button>
                     </div>
-
-                    <button
-                        onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className='px-6 py-3 bg-white border border-[#3675ff] text-[#3675ff] rounded-lg hover:bg-blue-50 transition flex items-center font-medium'
-                    >
-                        <Filter className='h-5 w-5 mr-2' />
-                        {t('COMMON.USER.FILTER')}
-                    </button>
                 </div>
 
-                {/* Status Tabs */}
-                {isFilterOpen && (
-                    <div className='mb-6 bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-3'>
-                        <button
-                            onClick={() => handleChangeTab(undefined)}
-                            className={`px-5 py-2.5 rounded-lg text-base font-medium ${
-                                !filter.status
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            {t('COMMON.ORDER.ALL')}
-                        </button>
-                        {ORDER_STATUSES.map(stt => (
-                            <button
-                                key={stt}
-                                onClick={() => handleChangeTab(stt)}
-                                className={`px-5 py-2.5 rounded-lg text-base font-medium ${
-                                    filter.status === stt
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
-                            >
-                                {t(`COMMON.ORDER.${stt.toUpperCase()}`)}
-                            </button>
-                        ))}
-                    </div>
-                )}
-
                 {/* No orders */}
-                {showEmptyState ? (
+                {isFetching ? (
+                    <div className='flex items-center justify-center p-20'>
+                        <div className='rounded-[15px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white p-12 max-w-md w-full text-center'>
+                            <div className='relative w-16 h-16 mx-auto mb-6'>
+                                <div className='absolute inset-0 rounded-full border-4 border-blue-100'></div>
+                                <div className='absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 animate-spin'></div>
+                                <div className='absolute inset-2 rounded-full border-2 border-transparent border-t-blue-400 animate-spin animate-reverse'></div>
+                            </div>
+                            <h2 className='text-xl font-bold text-gray-900 mb-3'>Đang xử lý</h2>
+                            <p className='text-gray-600'>Vui lòng chờ trong giây lát...</p>
+                            <div className='flex justify-center space-x-1 mt-6'>
+                                <div className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'></div>
+                                <div
+                                    className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'
+                                    style={{ animationDelay: '0.1s' }}
+                                ></div>
+                                <div
+                                    className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'
+                                    style={{ animationDelay: '0.2s' }}
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                ) : showEmptyState ? (
                     <EmptyItem
                         icon={<Briefcase className='w-10 h-10 text-blue-600' />}
                         title={t('COMMON.USER.ORDER_EMPTY')}
@@ -172,15 +105,9 @@ export default function UserOrderContent() {
                         onClick={() => router.push('/products')}
                     />
                 ) : (
-                    <InfiniteScroll
-                        dataLength={orders.length}
-                        style={{ overflow: 'visible' }}
-                        next={() => setFilter({ ...filter, pageNumber: filter.pageNumber + 1 })}
-                        hasMore={hasMore}
-                        loader={<Loading />}
-                    >
-                        <div className='space-y-6'>
-                            {orders.map(order => {
+                    <div className='space-y-6'>
+                        {order &&
+                            (() => {
                                 const statusDetails = getStatusDetails(order.orderStatus)
                                 return (
                                     <div key={order.id} className='bg-white rounded-[12px] shadow overflow-hidden'>
@@ -277,14 +204,14 @@ export default function UserOrderContent() {
                                                 <span>{t('COMMON.USER.CONTACT_SUPPORT')}</span>
                                             </button>
                                             <button
-                                                onClick={() => router.push(`orders/${order.orderCode}`)}
+                                                onClick={() => router.push(`/user/orders/${order.orderCode}`)}
                                                 className='btn-primary'
                                             >
                                                 <ShoppingBag className='w-4 h-4' />
                                                 <span>{t('COMMON.USER.BUY_AGAIN')}</span>
                                             </button>
                                             <button
-                                                onClick={() => router.push(`orders/${order.orderCode}`)}
+                                                onClick={() => router.push(`/user/orders/${order.orderCode}`)}
                                                 className='btn-primary'
                                             >
                                                 <ExternalLink className='w-4 h-4' />
@@ -293,9 +220,8 @@ export default function UserOrderContent() {
                                         </div>
                                     </div>
                                 )
-                            })}
-                        </div>
-                    </InfiniteScroll>
+                            })()}
+                    </div>
                 )}
             </div>
         </div>

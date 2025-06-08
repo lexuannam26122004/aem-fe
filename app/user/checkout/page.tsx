@@ -27,10 +27,10 @@ import { useTranslation } from 'react-i18next'
 import AddressManager from '@/components/AddressesModal'
 import { useCreateVnpayUrlMutation } from '@/services/PaymentService'
 import { ICart } from '@/models/Cart'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { productSelector } from '@/redux/slices/productSlice'
 import { ICustomerAddress } from '@/models/CustomerAddress'
-import { useGetDefaultCustomerAddressQuery } from '@/services/CustomerAddressService'
+import { useLazyGetDefaultCustomerAddressQuery } from '@/services/CustomerAddressService'
 import Loading from '@/components/Loading'
 import CouponSelector, { IDisplayCoupon, ISelectedCoupon } from './CouponSelector'
 import { useRouter } from 'next/navigation'
@@ -39,6 +39,8 @@ import { useGetUserCouponQuery } from '@/services/UserCouponService'
 import { IOrderCreate } from '@/models/Order'
 import { useToast } from '@/hooks/useToast'
 import { useDeleteRangeCartMutation } from '@/services/CartService'
+import { useAuthCheck } from '@/hooks/useAuthCheck'
+import { removeFromCart } from '@/redux/slices/cartSlice'
 
 const formatDiscount = (coupon: IDisplayCoupon) => {
     if (coupon.discountType === 'percentage') {
@@ -65,7 +67,10 @@ const CheckoutPage = () => {
     })
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [isSubmit, setIsSubmit] = useState(false)
     const [selectedCoupons, setSelectedCoupons] = useState<ISelectedCoupon>({})
+    const { isAuthChecked, isAuthenticated } = useAuthCheck()
+    const dispatch = useDispatch()
     const router = useRouter()
     const toast = useToast()
 
@@ -132,17 +137,23 @@ const CheckoutPage = () => {
         })
     }
 
-    const { data: defaultAddress, isLoading: isAddressDefaultLoading } = useGetDefaultCustomerAddressQuery()
+    const [triggerAddressDefault, { isLoading: isAddressDefaultLoading }] = useLazyGetDefaultCustomerAddressQuery()
+
     const [createOrder] = useCreateOrderMutation()
     const [deleteRangeCart] = useDeleteRangeCartMutation()
 
     useEffect(() => {
-        if (defaultAddress && defaultAddress.data) {
-            setShippingAddress(defaultAddress.data)
+        if (isAuthChecked && isAuthenticated) {
+            triggerAddressDefault()
+                .unwrap()
+                .then(data => {
+                    setShippingAddress(data.data)
+                })
+                .catch(() => {
+                    setShippingAddress(null)
+                })
         }
-    }, [defaultAddress])
-
-    const token = sessionStorage.getItem('auth_token')
+    }, [isAuthChecked, isAuthenticated])
 
     const [summary, setSummary] = useState(() => {
         const subTotal = products.reduce((total, item) => total + item.discountPrice * item.quantity, 0)
@@ -162,7 +173,7 @@ const CheckoutPage = () => {
         }
     })
 
-    const [formErrors] = useState({
+    const [formErrors, setFormErrors] = useState({
         recipient: '',
         phone: '',
         email: '',
@@ -212,7 +223,125 @@ const CheckoutPage = () => {
     const hasSelectedCoupons = selectedCoupons.productCoupon || selectedCoupons.shippingCoupon
     const selectedCount = (selectedCoupons.productCoupon ? 1 : 0) + (selectedCoupons.shippingCoupon ? 1 : 0)
 
+    const checkValidation = () => {
+        const errors = {
+            recipient: '',
+            phone: '',
+            email: '',
+            address: '',
+            district: '',
+            city: ''
+        }
+
+        if (!shippingAddress.recipient) {
+            errors.recipient = 'Vui lòng nhập họ tên người nhận'
+        }
+
+        if (!shippingAddress.email.trim()) {
+            errors.email = 'Vui lòng nhập email'
+        } else if (!/\S+@\S+\.\S+/.test(shippingAddress.email)) {
+            errors.email = 'Email không hợp lệ'
+        }
+
+        if (!shippingAddress.phone.trim()) {
+            errors.phone = 'Vui lòng nhập số điện thoại'
+        } else if (!/^\d{10,11}$/.test(shippingAddress.phone.replace(/\s/g, ''))) {
+            errors.phone = 'Số điện thoại không hợp lệ'
+        }
+
+        if (!shippingAddress.address) {
+            errors.address = 'Vui lòng nhập địa chỉ'
+        }
+
+        if (!shippingAddress.district) {
+            errors.district = 'Vui lòng nhập quận/huyện'
+        }
+
+        if (!shippingAddress.city) {
+            errors.city = 'Vui lòng nhập thành phố/tỉnh'
+        }
+
+        setFormErrors(errors)
+        return Object.values(errors).every(val => val === '')
+    }
+
+    useEffect(() => {
+        if (!isSubmit) {
+            return
+        }
+        if (!shippingAddress.email.trim()) {
+            setFormErrors(prev => ({ ...prev, email: 'Vui lòng nhập email' }))
+        } else if (!/\S+@\S+\.\S+/.test(shippingAddress.email)) {
+            setFormErrors(prev => ({ ...prev, email: 'Email không hợp lệ' }))
+        } else {
+            setFormErrors(prev => ({ ...prev, email: '' }))
+        }
+    }, [shippingAddress.email])
+
+    useEffect(() => {
+        if (!isSubmit) {
+            return
+        }
+        if (!shippingAddress.phone.trim()) {
+            setFormErrors(prev => ({ ...prev, phone: 'Vui lòng nhập số điện thoại' }))
+        } else if (!/^\d{10,11}$/.test(shippingAddress.phone.replace(/\s/g, ''))) {
+            setFormErrors(prev => ({ ...prev, phone: 'Số điện thoại không hợp lệ' }))
+        } else {
+            setFormErrors(prev => ({ ...prev, phone: '' }))
+        }
+    }, [shippingAddress.phone])
+
+    useEffect(() => {
+        if (!isSubmit) {
+            return
+        }
+        if (!shippingAddress.recipient) {
+            setFormErrors(prev => ({ ...prev, recipient: 'Vui lòng nhập họ tên người nhận' }))
+        } else {
+            setFormErrors(prev => ({ ...prev, recipient: '' }))
+        }
+    }, [shippingAddress.recipient])
+
+    useEffect(() => {
+        if (!isSubmit) {
+            return
+        }
+        if (!shippingAddress.address) {
+            setFormErrors(prev => ({ ...prev, address: 'Vui lòng nhập địa chỉ' }))
+        } else {
+            setFormErrors(prev => ({ ...prev, address: '' }))
+        }
+    }, [shippingAddress.address])
+
+    useEffect(() => {
+        if (!isSubmit) {
+            return
+        }
+        if (!shippingAddress.district) {
+            setFormErrors(prev => ({ ...prev, district: 'Vui lòng nhập quận/huyện' }))
+        } else {
+            setFormErrors(prev => ({ ...prev, district: '' }))
+        }
+    }, [shippingAddress.district])
+
+    useEffect(() => {
+        if (!isSubmit) {
+            return
+        }
+        if (!shippingAddress.city) {
+            setFormErrors(prev => ({ ...prev, city: 'Vui lòng nhập thành phố/tỉnh' }))
+        } else {
+            setFormErrors(prev => ({ ...prev, city: '' }))
+        }
+    }, [shippingAddress.city])
+
     const handlePlaceOrder = async () => {
+        setIsSubmit(true)
+
+        if (!checkValidation()) {
+            return
+        }
+
         setIsLoading(true)
         const order: IOrderCreate = {
             customerNote,
@@ -251,12 +380,23 @@ const CheckoutPage = () => {
             if (res?.data) {
                 orderCode = res.data
             }
-            await deleteRangeCart(products.map(item => item.id)).unwrap()
+            try {
+                if (isAuthenticated) {
+                    await deleteRangeCart(products.map(item => item.id)).unwrap()
+                } else {
+                    products.forEach(x => dispatch(removeFromCart({ id: x.id })))
+                }
+            } catch {}
         } catch (err) {
             toast(err?.data?.detail, 'error')
         }
 
-        if (selectedPaymentMethod === 'vnpay' && orderCode) {
+        if (!orderCode) {
+            setIsLoading(false)
+            return
+        }
+
+        if (selectedPaymentMethod === 'vnpay') {
             try {
                 const res = await createVnpayUrl({
                     orderCode: orderCode,
@@ -271,7 +411,16 @@ const CheckoutPage = () => {
             } finally {
                 setIsLoading(false)
             }
+        } else if (selectedPaymentMethod === 'cod') {
+            toast(t('COMMON.USER.ORDER_PLACED_SUCCESS'), 'success')
+            router.push('/user/orders')
+            setIsLoading(false)
+        } else {
+            toast(t('COMMON.USER.PAYMENT_METHOD_NOT_SUPPORTED'), 'error')
+            setIsLoading(false)
         }
+
+        setIsSubmit(false)
     }
 
     if (isAddressDefaultLoading || isCouponsLoading) {
@@ -283,7 +432,7 @@ const CheckoutPage = () => {
             <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
                 <div className='flex flex-col lg:flex-row gap-6'>
                     <div className='w-full lg:w-2/3 space-y-6'>
-                        {!token ? (
+                        {!isAuthenticated ? (
                             <div className='rounded-[15px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white'>
                                 <div className='px-6 h-[66px] flex items-center justify-between border-b border-gray-100'>
                                     <div className='flex items-center'>
@@ -653,61 +802,80 @@ const CheckoutPage = () => {
 
                             <div className='p-6'>
                                 <div className='space-y-5'>
-                                    {paymentMethods.map(method => (
-                                        <div
-                                            key={method.id}
-                                            className={`group relative rounded-xl transition-all duration-300 ${
-                                                selectedPaymentMethod === method.id
-                                                    ? 'bg-white shadow-md border-0'
-                                                    : 'bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:shadow'
-                                            }`}
-                                        >
+                                    {paymentMethods.map(method => {
+                                        const cursor = method.name === 'MoMo' ? 'cursor-not-allowed' : 'cursor-pointer'
+                                        const hoverBorder =
+                                            method.name === 'MoMo'
+                                                ? 'group-hover:border-gray-300'
+                                                : 'group-hover:border-blue-400'
+
+                                        return (
                                             <div
-                                                className='p-5 cursor-pointer'
-                                                onClick={() => handlePaymentMethodChange(method.id)}
+                                                key={method.id}
+                                                className={`group relative rounded-xl transition-all duration-300 ${
+                                                    selectedPaymentMethod === method.id
+                                                        ? 'bg-white shadow-md border-0'
+                                                        : 'bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:shadow'
+                                                }`}
                                             >
-                                                <div className='flex items-center'>
-                                                    <div
-                                                        className={`w-6 h-6 flex-shrink-0 rounded-full border ${
-                                                            selectedPaymentMethod === method.id
-                                                                ? 'border-blue-600 bg-blue-600'
-                                                                : 'border-gray-300 group-hover:border-blue-400'
-                                                        } flex items-center justify-center`}
-                                                    >
-                                                        {selectedPaymentMethod === method.id && (
-                                                            <Check className='w-4 h-4 text-white' />
-                                                        )}
+                                                <div
+                                                    className={`p-5 ${cursor}`}
+                                                    onClick={() => {
+                                                        if (method.name !== 'MoMo') handlePaymentMethodChange(method.id)
+                                                    }}
+                                                >
+                                                    <div className='flex items-center'>
+                                                        <div
+                                                            className={`w-6 h-6 flex-shrink-0 rounded-full border ${
+                                                                selectedPaymentMethod === method.id
+                                                                    ? 'border-blue-600 bg-blue-600'
+                                                                    : `border-gray-300 ${hoverBorder}`
+                                                            } flex items-center justify-center`}
+                                                        >
+                                                            {selectedPaymentMethod === method.id && (
+                                                                <Check className='w-4 h-4 text-white' />
+                                                            )}
+                                                        </div>
+
+                                                        <div className='ml-4 bg-white rounded-lg shadow-sm'>
+                                                            {method.logo}
+                                                        </div>
+
+                                                        <div className='ml-4 flex-grow'>
+                                                            <label className='font-medium text-gray-800 cursor-pointer'>
+                                                                {method.name}
+                                                                {method.name == 'MoMo' && (
+                                                                    <span className='ml-2 italic text-red-500'>
+                                                                        (Chưa hỗ trợ)
+                                                                    </span>
+                                                                )}
+                                                            </label>
+                                                            <p className='text-gray-500 text-sm'>
+                                                                {method.description}
+                                                            </p>
+                                                        </div>
                                                     </div>
 
-                                                    <div className='ml-4 bg-white rounded-lg shadow-sm'>
-                                                        {method.logo}
-                                                    </div>
-
-                                                    <div className='ml-4 flex-grow'>
-                                                        <label className='font-medium text-gray-800 block'>
-                                                            {method.name}
-                                                        </label>
-                                                        <p className='text-gray-500 text-sm'>{method.description}</p>
-                                                    </div>
+                                                    {selectedPaymentMethod === method.id && (
+                                                        <div className='mt-4 pl-10'>
+                                                            <div className='bg-blue-50 py-3 px-4 rounded-lg border border-blue-100'>
+                                                                <div className='flex items-center'>
+                                                                    <Info className='w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0' />
+                                                                    <p className='text-gray-700'>
+                                                                        {method.additionalInfo}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {selectedPaymentMethod === method.id && (
-                                                    <div className='mt-4 pl-10'>
-                                                        <div className='bg-blue-50 py-3 px-4 rounded-lg border border-blue-100'>
-                                                            <div className='flex items-center'>
-                                                                <Info className='w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0' />
-                                                                <p className='text-gray-700'>{method.additionalInfo}</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    <div className='absolute inset-0 border-2 border-blue-500 rounded-xl pointer-events-none'></div>
                                                 )}
                                             </div>
-
-                                            {selectedPaymentMethod === method.id && (
-                                                <div className='absolute inset-0 border-2 border-blue-500 rounded-xl pointer-events-none'></div>
-                                            )}
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             </div>
                         </div>

@@ -3,46 +3,50 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { CheckCircle, XCircle, Home, ShoppingBag, Receipt, CreditCard, Calendar, Building } from 'lucide-react'
+import { useUpdatePaidTimeMutation } from '@/services/PaymentService'
 
 export default function VnpayReturn() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const [paymentData, setPaymentData] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
+    const [updatePaidTime] = useUpdatePaidTimeMutation()
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            const responseCode = searchParams.get('vnp_ResponseCode')
-            const orderId = searchParams.get('vnp_TxnRef')
-            const amount = searchParams.get('vnp_Amount')
-            const bankCode = searchParams.get('vnp_BankCode')
-            const payDate = searchParams.get('vnp_PayDate')
-            const transactionNo = searchParams.get('vnp_TransactionNo')
+        const responseCode = searchParams.get('vnp_ResponseCode')
+        const orderId = searchParams.get('vnp_TxnRef')
+        const amount = searchParams.get('vnp_Amount')
+        const bankCode = searchParams.get('vnp_BankCode')
+        const payDate = searchParams.get('vnp_PayDate')
+        const transactionNo = searchParams.get('vnp_TransactionNo')
 
-            setPaymentData({
-                responseCode,
-                orderId,
-                amount: amount ? (parseInt(amount) / 100).toLocaleString('vi-VN') : null,
-                bankCode,
-                payDate: payDate ? formatPayDate(payDate) : null,
-                transactionNo,
-                isSuccess: responseCode === '00'
+        if (responseCode === '00') {
+            updatePaidTime({
+                orderCode: searchParams.get('vnp_OrderInfo')?.split(' ').pop(),
+                time: formatPayDate(payDate) || new Date().toISOString()
             })
-            setIsLoading(false)
-        }, 1500)
+        }
 
-        return () => clearTimeout(timer)
+        setPaymentData({
+            responseCode,
+            orderId,
+            amount: amount ? (parseInt(amount) / 100).toLocaleString('vi-VN') : null,
+            bankCode,
+            payDate: payDate ? formatPayDate(payDate) : null,
+            transactionNo,
+            isSuccess: responseCode === '00'
+        })
+
+        const timeoutId = setTimeout(() => setIsLoading(false), 1500)
+
+        return () => clearTimeout(timeoutId)
     }, [searchParams])
 
-    const formatPayDate = dateStr => {
-        if (!dateStr || dateStr.length !== 14) return null
-        const year = dateStr.substring(0, 4)
-        const month = dateStr.substring(4, 6)
-        const day = dateStr.substring(6, 8)
-        const hour = dateStr.substring(8, 10)
-        const minute = dateStr.substring(10, 12)
-        return `${day}/${month}/${year} ${hour}:${minute}`
-    }
+    const formatPayDate = (payDate: string) =>
+        `${payDate.slice(0, 4)}-${payDate.slice(4, 6)}-${payDate.slice(6, 8)} ${payDate.slice(8, 10)}:${payDate.slice(
+            10,
+            12
+        )}:${payDate.slice(12, 14)}`
 
     const getStatusMessage = code => {
         const messages = {
@@ -63,46 +67,47 @@ export default function VnpayReturn() {
     }
 
     if (isLoading) {
-        return (
-            <div className='bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4'>
-                <div className='bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-12 max-w-md w-full text-center'>
-                    <div className='relative w-16 h-16 mx-auto mb-6'>
-                        <div className='absolute inset-0 rounded-full border-4 border-blue-100'></div>
-                        <div className='absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 animate-spin'></div>
-                        <div className='absolute inset-2 rounded-full border-2 border-transparent border-t-blue-400 animate-spin animate-reverse'></div>
-                    </div>
-                    <h2 className='text-xl font-bold text-gray-900 mb-3'>Đang xử lý kết quả</h2>
-                    <p className='text-gray-600'>Vui lòng chờ trong giây lát...</p>
-                    <div className='flex justify-center space-x-1 mt-6'>
-                        <div className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'></div>
-                        <div
-                            className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'
-                            style={{ animationDelay: '0.1s' }}
-                        ></div>
-                        <div
-                            className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'
-                            style={{ animationDelay: '0.2s' }}
-                        ></div>
-                    </div>
+        ;<div className='flex items-center justify-center p-20'>
+            <div className='rounded-[15px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white p-12 max-w-md w-full text-center'>
+                <div className='relative w-16 h-16 mx-auto mb-6'>
+                    <div className='absolute inset-0 rounded-full border-4 border-blue-100'></div>
+                    <div className='absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 animate-spin'></div>
+                    <div className='absolute inset-2 rounded-full border-2 border-transparent border-t-blue-400 animate-spin animate-reverse'></div>
+                </div>
+                <h2 className='text-xl font-bold text-gray-900 mb-3'>Đang xử lý</h2>
+                <p className='text-gray-600'>Vui lòng chờ trong giây lát...</p>
+                <div className='flex justify-center space-x-1 mt-6'>
+                    <div className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'></div>
+                    <div
+                        className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'
+                        style={{ animationDelay: '0.1s' }}
+                    ></div>
+                    <div
+                        className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'
+                        style={{ animationDelay: '0.2s' }}
+                    ></div>
                 </div>
             </div>
-        )
+        </div>
     }
 
     if (!paymentData) {
         return (
-            <div className='bg-gradient-to-br from-slate-50 via-red-50 to-rose-100 flex items-center justify-center p-4'>
-                <div className='bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-12 max-w-md w-full text-center'>
-                    <div className='w-20 h-20 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-6'>
-                        <XCircle className='w-10 h-10 text-red-600' />
+            <div className='max-w-3xl py-12 mx-auto'>
+                <div className='rounded-[15px] relative px-8 py-10 text-center overflow-hidden w-full shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-[var(--background-color-item)]'>
+                    <div
+                        className={`w-[85px] h-[85px] relative mb-6 mx-auto rounded-full flex items-center justify-center bg-gradient-to-br from-red-100 to-red-200 shadow-lg`}
+                    >
+                        <XCircle className='w-[45px] h-[45px] text-red-600' />
                     </div>
-                    <h2 className='text-xl font-bold text-gray-900 mb-3'>Có lỗi xảy ra</h2>
+                    <h2 className='text-[22px] font-bold mb-4 text-black'>Có lỗi xảy ra</h2>
                     <p className='text-gray-600 mb-8'>Không thể xử lý thông tin thanh toán</p>
                     <button
-                        onClick={() => router.push('/')}
-                        className='w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl'
+                        onClick={() => router.push('/user')}
+                        className='group bg-gradient-to-r mx-auto from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform shadow-lg flex items-center justify-center space-x-3'
                     >
-                        Về trang chủ
+                        <Home className='w-5 h-5 transition-transform' />
+                        <span>Về trang chủ</span>
                     </button>
                 </div>
             </div>
@@ -122,23 +127,20 @@ export default function VnpayReturn() {
                             <div className='absolute bottom-0 left-0 w-24 h-24 bg-purple-500 rounded-full transform -translate-x-12 translate-y-12'></div>
                         </div>
 
-                        {/* Status Icon */}
-                        <div className='relative mb-8'>
-                            <div
-                                className={`w-[85px] h-[85px] mx-auto rounded-full flex items-center justify-center ${
-                                    paymentData.isSuccess
-                                        ? 'bg-gradient-to-br from-emerald-100 to-emerald-200'
-                                        : 'bg-gradient-to-br from-red-100 to-red-200'
-                                } shadow-lg`}
-                            >
-                                {paymentData.isSuccess ? (
-                                    <CheckCircle className='w-[45px] h-[45px] text-emerald-600' />
-                                ) : (
-                                    <XCircle className='w-[45px] h-[45px] text-red-600' />
-                                )}
-                            </div>
+                        <div
+                            className={`w-[85px] h-[85px] relative mb-8 mx-auto rounded-full flex items-center justify-center ${
+                                paymentData.isSuccess
+                                    ? 'bg-gradient-to-br from-emerald-100 to-emerald-200'
+                                    : 'bg-gradient-to-br from-red-100 to-red-200'
+                            } shadow-lg`}
+                        >
                             {paymentData.isSuccess && (
                                 <div className='absolute inset-0 rounded-full border-4 border-emerald-200 animate-ping'></div>
+                            )}
+                            {paymentData.isSuccess ? (
+                                <CheckCircle className='w-[45px] h-[45px] text-emerald-600' />
+                            ) : (
+                                <XCircle className='w-[45px] h-[45px] text-red-600' />
                             )}
                         </div>
 

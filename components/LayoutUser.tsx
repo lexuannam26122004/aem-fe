@@ -10,9 +10,10 @@ import UserHeader from './UserHeader'
 import MainLoader from './MainLoader'
 import { useGetCartCountQuery } from '@/services/CartService'
 import { useGetFavoriteCountQuery } from '@/services/FavoriteService'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { clearUser, setCartCount, setFavoriteCount } from '@/redux/slices/userSlice'
 import { useAuthCheck } from '@/hooks/useAuthCheck'
+import { cartSelector } from '@/redux/slices/cartSlice'
 
 export default function MainLayout({ children }: { children: ReactNode }) {
     const { isAuthenticated, isAuthChecked } = useAuthCheck()
@@ -23,18 +24,27 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     const { data: favoriteCountResponse, isLoading: isFavoriteCountLoading } = useGetFavoriteCountQuery(undefined, {
         skip: !isAuthenticated
     })
+    const carts = useSelector(cartSelector)?.carts || []
 
     const dispatch = useDispatch()
 
-    if (!isAuthenticated && isAuthChecked) {
-        dispatch(clearUser())
-    }
+    useEffect(() => {
+        if (!isAuthenticated && isAuthChecked) {
+            dispatch(clearUser())
+        }
+    }, [isAuthenticated, isAuthChecked, dispatch])
 
     useEffect(() => {
         if (cartCountResponse) {
             dispatch(setCartCount(cartCountResponse.data))
         }
     }, [cartCountResponse])
+
+    useEffect(() => {
+        if (carts.length > 0) {
+            dispatch(setCartCount(carts.length))
+        }
+    }, [carts.length, dispatch])
 
     useEffect(() => {
         if (favoriteCountResponse) {

@@ -12,8 +12,15 @@ export const PaymentApis = createApi({
                 method: 'POST',
                 body
             })
+        }),
+        updatePaidTime: builder.mutation<void, { orderCode: string; time: string }>({
+            query: ({ orderCode, time }) => ({
+                url: `/update-paid-time`,
+                method: 'PUT',
+                body: { orderCode, time }
+            })
         })
     })
 })
 
-export const { useCreateVnpayUrlMutation } = PaymentApis
+export const { useCreateVnpayUrlMutation, useUpdatePaidTimeMutation } = PaymentApis

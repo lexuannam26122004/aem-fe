@@ -8,6 +8,7 @@ import { IProjectGetAll } from '@/models/Project'
 import { useToast } from '@/hooks/useToast'
 import { IFavoriteItem } from '@/models/Favorite'
 import { useRouter } from 'next/navigation'
+import { useAuthCheck } from '@/hooks/useAuthCheck'
 
 interface ProjectFormModalProps {
     isOpen: boolean
@@ -32,14 +33,20 @@ export default function ProjectFormModal({
     const router = useRouter()
     const [showDropdown, setShowDropdown] = useState(false)
     const [filteredProjects, setFilteredProjects] = useState<IProjectGetAll[]>([])
+    const { isAuthChecked, isAuthenticated } = useAuthCheck()
     const [addProjectIntoProject, { isLoading: isAddingIntoProject }] = useAddProductIntoProjectMutation()
 
     const toast = useToast()
 
-    const { data: projectResponse } = useSearchProjectQuery({
-        pageSize: 100,
-        pageNumber: 1
-    })
+    const { data: projectResponse } = useSearchProjectQuery(
+        {
+            pageSize: 100,
+            pageNumber: 1
+        },
+        {
+            skip: (isAuthChecked && !isAuthenticated) || !isOpen
+        }
+    )
     const projectData = (projectResponse?.data?.records as IProjectGetAll[]) || []
 
     useEffect(() => {

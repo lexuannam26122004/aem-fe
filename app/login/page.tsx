@@ -5,7 +5,7 @@ import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
-import { clearUser, setUserInfo } from '@/redux/slices/userSlice'
+import { clearCartCount, clearUser, setUserInfo } from '@/redux/slices/userSlice'
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false)
@@ -23,6 +23,7 @@ const LoginPage = () => {
     useEffect(() => {
         sessionStorage.removeItem('auth_token')
         dispatch(clearUser())
+        dispatch(clearCartCount())
     }, [])
 
     const handleInputChange = e => {

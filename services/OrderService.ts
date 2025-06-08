@@ -40,7 +40,7 @@ export const OrderApis = createApi({
                 method: 'DELETE'
             })
         }),
-        getByIdOrder: builder.query<IResponse, number>({
+        getByIdOrder: builder.query<IResponse, string>({
             query: id => `${id}`
         }),
         exportOrder: builder.query<IResponse, IOrderFilter>({

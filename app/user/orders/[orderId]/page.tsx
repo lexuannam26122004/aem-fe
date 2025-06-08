@@ -1,17 +1,19 @@
 'use client'
 
 import React from 'react'
-import { Truck, Package, NotepadText, Banknote, Star, Clock } from 'lucide-react'
+import { Truck, Package, NotepadText, Banknote, Star, Clock, CreditCard } from 'lucide-react'
 import { IOrderDetail } from '@/models/Order'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/common/format'
 import { useGetByIdOrderQuery } from '@/services/UserOrderService'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Loading from '@/components/Loading'
 import EmptyState from '@/components/ObjectEmptyState'
 import { useSelector } from 'react-redux'
 import { userSelector } from '@/redux/slices/userSlice'
 import ForbiddenAccess from '@/components/ForbiddenAccess'
+import { useToast } from '@/hooks/useToast'
+import { useCreateVnpayUrlMutation } from '@/services/PaymentService'
 
 function getStatusBgColor(status: string): string {
     if (status === 'cancelled') {
@@ -64,7 +66,10 @@ function getStatusTextColor(status: string): string {
 export default function OrderDetailPage() {
     const { t } = useTranslation('common')
     const pathName = usePathname()
+    const router = useRouter()
+    const toast = useToast()
     const orderId = String(pathName.split('/').pop())
+    const [createVnpayUrl] = useCreateVnpayUrlMutation()
 
     const { data: orderDetailResponse, isLoading, error: errorOrderDetail } = useGetByIdOrderQuery(orderId)
 
@@ -72,16 +77,15 @@ export default function OrderDetailPage() {
 
     const user = useSelector(userSelector).userInfo
 
-    const step =
-        orderDetail?.paymentTime === undefined
-            ? 1
-            : orderDetail?.carrierDeliveryTime === undefined
-            ? 2
-            : orderDetail?.deliveryTime === undefined
-            ? 3
-            : orderDetail?.reviewTime === undefined
-            ? 4
-            : 0
+    const step = !orderDetail?.paymentTime
+        ? 1
+        : !orderDetail?.carrierDeliveryTime
+        ? 2
+        : !orderDetail?.deliveryTime
+        ? 3
+        : !orderDetail?.reviewTime
+        ? 4
+        : 0
 
     if (
         errorOrderDetail &&
@@ -90,6 +94,21 @@ export default function OrderDetailPage() {
         errorOrderDetail.status === 403
     ) {
         return <ForbiddenAccess type='orders' />
+    }
+
+    const handleCheckoutVnPay = async () => {
+        try {
+            const res = await createVnpayUrl({
+                orderCode: orderId,
+                amount: Math.ceil(orderDetail.totalAmount)
+            }).unwrap()
+
+            if (res.paymentUrl) {
+                router.push(res.paymentUrl)
+            }
+        } catch (err) {
+            toast(err?.data?.detail, 'error')
+        }
     }
 
     if (isLoading) {
@@ -386,30 +405,32 @@ export default function OrderDetailPage() {
 
                             <div className='order-1 md:order-2 w-full md:w-1/3 h-fit rounded-[15px] shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-[var(--background-color-item)] p-6 h-fit'>
                                 {/* CUSTOMER INFO */}
-                                <div>
-                                    <p className='text-[18px] font-bold text-[var(--text-color)] flex items-center'>
-                                        {t('COMMON.ORDER.CUSTOMER_INFO')}
-                                    </p>
+                                {user && (
+                                    <>
+                                        <p className='text-[18px] font-bold text-[var(--text-color)] flex items-center'>
+                                            {t('COMMON.ORDER.CUSTOMER_INFO')}
+                                        </p>
 
-                                    <div className='mt-6 flex items-center gap-5'>
-                                        <img
-                                            src={user.avatar || '/images/account.png'}
-                                            className='w-[50px] h-[50px] rounded-full object-cover'
-                                            alt='Avatar'
-                                        />
+                                        <div className='mt-6 flex items-center gap-5'>
+                                            <img
+                                                src={user?.avatar || '/images/account.png'}
+                                                className='w-[50px] h-[50px] rounded-full object-cover'
+                                                alt='Avatar'
+                                            />
 
-                                        <div className='flex flex-col gap-[4px]'>
-                                            <p className='font-bold text-[var(--text-color)]'>{user.fullName}</p>
-                                            <p className='text-[var(--label-title-color)]'>{user.email}</p>
+                                            <div className='flex flex-col gap-[4px]'>
+                                                <p className='font-bold text-[var(--text-color)]'>{user?.fullName}</p>
+                                                <p className='text-[var(--label-title-color)]'>{user?.email}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
+                                        <div className='border-b border-dashed border-[var(--border-color)] mb-6 -mx-6' />
+                                    </>
+                                )}
 
                                 {/* DELIVERY */}
                                 {(orderDetail.shipBy || orderDetail.speedyDelivery || orderDetail.trackingCode) && (
                                     <>
-                                        <div className='border-t border-dashed border-[var(--border-color)] mt-6 -mx-6'></div>
-                                        <div className='mt-6'>
+                                        <div className='mb-6'>
                                             <p className='text-[18px] font-bold text-[var(--text-color)] flex items-center'>
                                                 {t('COMMON.ORDER.DELIVERY')}
                                             </p>
@@ -461,13 +482,13 @@ export default function OrderDetailPage() {
                                                 )}
                                             </div>
                                         </div>
+
+                                        <div className='border-t border-dashed border-[var(--border-color)] mt-4 -mx-6'></div>
                                     </>
                                 )}
 
-                                <div className='border-t border-dashed border-[var(--border-color)] mt-4 -mx-6'></div>
-
                                 {/* SHIPPING */}
-                                <div className='mt-6'>
+                                <div className='mb-6'>
                                     <p className='text-[18px] font-bold text-[var(--text-color)] flex items-center'>
                                         {t('COMMON.ORDER.SHIPPING')}
                                     </p>
@@ -555,27 +576,44 @@ export default function OrderDetailPage() {
                                     )}
 
                                     {orderDetail.paymentMethod === 'vnpay' && (
-                                        <div className='mt-5 flex items-center gap-5 ml-auto'>
-                                            <img src='/images/vnpay.svg' className='w-[60px] h-[10px]' />
-                                            <div>
-                                                <p className='text-[15px] font-bold text-[var(--text-color)]'>
-                                                    {t('COMMON.ORDER.PAY_VIA')} VnPay
-                                                </p>
-                                                <p className='text-[15px] text-[var(--label-title-color)]'>
-                                                    {orderDetail.paymentTime
-                                                        ? new Date(orderDetail.paymentTime).toLocaleDateString(
-                                                              'vi-VN',
-                                                              {
-                                                                  year: 'numeric',
-                                                                  month: '2-digit',
-                                                                  day: '2-digit',
-                                                                  hour: '2-digit',
-                                                                  minute: '2-digit'
-                                                              }
-                                                          )
-                                                        : t('COMMON.PURCHASE_ORDER.UNPAID')}
-                                                </p>
+                                        <div>
+                                            <div className='mt-5 flex items-center gap-5 ml-auto'>
+                                                <div className='bg-white rounded-lg shadow-sm'>
+                                                    <img
+                                                        src='/images/vnpay.svg'
+                                                        className='w-16 h-12 px-1 rounded-[8px] shadow-[0_4px_16px_rgba(0,0,0,0.1)]'
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <p className='text-[15px] font-bold text-[var(--text-color)]'>
+                                                        {t('COMMON.ORDER.PAY_VIA')} VnPay
+                                                    </p>
+                                                    <p className='text-[15px] text-[var(--label-title-color)]'>
+                                                        {orderDetail.paymentTime
+                                                            ? new Date(orderDetail.paymentTime).toLocaleDateString(
+                                                                  'vi-VN',
+                                                                  {
+                                                                      year: 'numeric',
+                                                                      month: '2-digit',
+                                                                      day: '2-digit',
+                                                                      hour: '2-digit',
+                                                                      minute: '2-digit'
+                                                                  }
+                                                              )
+                                                            : t('COMMON.PURCHASE_ORDER.UNPAID')}
+                                                    </p>
+                                                </div>
                                             </div>
+
+                                            {!orderDetail.paymentTime && (
+                                                <button
+                                                    onClick={handleCheckoutVnPay}
+                                                    className='w-full mt-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-medium flex items-center justify-center transition'
+                                                >
+                                                    <CreditCard className='w-5 h-5 mr-2' />
+                                                    Thực hiện thanh toán
+                                                </button>
+                                            )}
                                         </div>
                                     )}
 

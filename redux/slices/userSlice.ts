@@ -32,14 +32,16 @@ export const userSlice = createSlice({
         },
         clearUser(state) {
             state.userInfo = null
-            state.cartCount = 0
             state.favoriteCount = 0
             state.isAuthenticated = false
+        },
+        clearCartCount(state) {
+            state.cartCount = 0
         }
     }
 })
 
-export const { setUserInfo, clearUser, setCartCount, setFavoriteCount } = userSlice.actions
+export const { setUserInfo, clearUser, clearCartCount, setCartCount, setFavoriteCount } = userSlice.actions
 
 export const userSelector = (state: RootState) => state.user
 
