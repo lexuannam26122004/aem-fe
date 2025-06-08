@@ -14,16 +14,32 @@ export default function UserOrderContent() {
     const router = useRouter()
     const [searchKeyword, setSearchKeyword] = useState<string>('')
     const [order, setOrder] = useState<IUserOrderGetAll | undefined>(undefined)
-    const [showEmptyState, setShowEmptyState] = useState(true)
+    const [showEmptyState, setShowEmptyState] = useState<boolean | null>(null)
+    const [isFetching, setIsFetching] = useState<boolean>(false)
 
-    const [triggerSearch, { data: orderData, isFetching }] = useLazySearchByOrderCodeQuery()
+    const [triggerSearch, { isFetching: isFetchingSearch }] = useLazySearchByOrderCodeQuery()
+
+    const handleSearch = async () => {
+        if (searchKeyword.trim() === '') {
+            setShowEmptyState(true)
+            setOrder(undefined)
+            return
+        }
+        await triggerSearch(searchKeyword.trim())
+            .unwrap()
+            .then(res => {
+                setOrder(res.data)
+                setShowEmptyState(!res.data)
+            })
+            .catch(() => {
+                setShowEmptyState(true)
+                setOrder(undefined)
+            })
+    }
 
     useEffect(() => {
-        if (orderData && orderData.data) {
-            setOrder(orderData.data)
-            setShowEmptyState(false)
-        }
-    }, [orderData])
+        setIsFetching(isFetchingSearch)
+    }, [isFetchingSearch])
 
     const getStatusDetails = (status: string) => {
         const statusMap = {
@@ -64,7 +80,7 @@ export default function UserOrderContent() {
                             placeholder={t('COMMON.USER.SEARCH_ORDER_PLACEHOLDER')}
                         />
                         <button
-                            onClick={() => triggerSearch(searchKeyword)}
+                            onClick={handleSearch}
                             className='absolute inset-y-0 bg-blue-600 text-white font-medium rounded-tr-lg rounded-br-lg px-4 right-0 top-0'
                         >
                             Tìm kiếm
@@ -96,11 +112,19 @@ export default function UserOrderContent() {
                             </div>
                         </div>
                     </div>
-                ) : showEmptyState ? (
+                ) : showEmptyState === null ? (
                     <EmptyItem
                         icon={<Briefcase className='w-10 h-10 text-blue-600' />}
                         title={t('COMMON.USER.ORDER_EMPTY')}
                         description={t('COMMON.USER.ORDER_EMPTY_MESSAGE')}
+                        buttonText={t('COMMON.USER.SHOP_NOW')}
+                        onClick={() => router.push('/products')}
+                    />
+                ) : showEmptyState === true ? (
+                    <EmptyItem
+                        icon={<Briefcase className='w-10 h-10 text-blue-600' />}
+                        title={t('COMMON.USER.ORDER_EMPTY')}
+                        description={'Không tìm thấy đơn hàng nào với mã bạn nhập.'}
                         buttonText={t('COMMON.USER.SHOP_NOW')}
                         onClick={() => router.push('/products')}
                     />

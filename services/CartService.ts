@@ -73,7 +73,7 @@ export const {
     useCreateCartMutation,
     useUpdateCartMutation,
     useGetByIdCartQuery,
-    useGetCartCountQuery,
+    useLazyGetCartCountQuery,
     useDeleteCartMutation,
     useDeleteRangeCartMutation,
     useUpdateCartQuantityMutation

@@ -534,7 +534,7 @@ const CheckoutPage = () => {
                                                 onChange={e =>
                                                     setShippingAddress({ ...shippingAddress, title: e.target.value })
                                                 }
-                                                className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500'
+                                                className='w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none'
                                                 placeholder='Văn phòng, Nhà riêng, Kho hàng...'
                                             />
                                         </div>

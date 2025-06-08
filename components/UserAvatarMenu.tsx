@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, FileSearch } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { userSelector } from '@/redux/slices/userSlice'
@@ -67,12 +67,23 @@ const UserAvatarMenu = () => {
         router.push('/login')
     }
 
+    const handleSearchOrder = () => {
+        router.push('/user/orders/find')
+    }
+
     const menuItems = [
         {
             id: 'account',
             label: 'Tài khoản',
             icon: <User className='w-5 h-5' />,
             onClick: handleAccount,
+            isDivider: false
+        },
+        {
+            id: 'search-order',
+            label: 'Tìm kiếm đơn hàng',
+            icon: <FileSearch className='w-5 h-5' />,
+            onClick: handleSearchOrder,
             isDivider: false
         },
         {

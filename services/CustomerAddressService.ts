@@ -59,6 +59,7 @@ export const CustomerAddressApis = createApi({
 })
 
 export const {
+    useSearchCustomerAddressQuery,
     useLazySearchCustomerAddressQuery,
     useCreateCustomerAddressMutation,
     useUpdateCustomerAddressMutation,

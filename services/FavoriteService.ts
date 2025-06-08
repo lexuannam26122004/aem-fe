@@ -90,7 +90,7 @@ export const {
     useSearchFavoriteQuery,
     useCreateFavoriteMutation,
     useUpdateFavoriteMutation,
-    useGetFavoriteCountQuery,
+    useLazyGetFavoriteCountQuery,
     useGetByIdFavoriteQuery,
     useUpdateNotifyMutation,
     useGetFavoriteCountByProductQuery,
