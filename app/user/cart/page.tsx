@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { formatCurrency } from '@/common/format'
 import { useTranslation } from 'react-i18next'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import EmptyItem from '@/components/EmptyItem'
 import { IProductSearch } from '@/models/Product'
 import ProductCard from '../ProductCard'
