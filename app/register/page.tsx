@@ -137,7 +137,7 @@ const RegisterPage = () => {
                 router.push('/login')
             })
             .catch(error => {
-                toast('Đăng ký thất bại! Vui lòng kiểm tra lại thông tin.', 'error')
+                toast(error?.data?.detail, 'error')
                 console.error('Registration failed:', error)
             })
         // setIsSubmit(false)

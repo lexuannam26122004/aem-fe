@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { formatCurrency } from '@/common/format'
 import { useTranslation } from 'react-i18next'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import EmptyItem from '@/components/EmptyItem'
 import { IProductSearch } from '@/models/Product'
 import ProductCard from '../ProductCard'
@@ -44,6 +44,8 @@ const CartPage = () => {
     })
     const { isAuthenticated, isAuthChecked } = useAuthCheck()
     const dispatch = useDispatch()
+    const searchParams = useSearchParams()
+    const isFromBuyNow = searchParams.get('from-buy') === 'true'
 
     const { data: flashSaleResponse, isLoading: isLoadingResponseFlashSale } = useSearchProductQuery({
         pageSize: 8,
@@ -57,22 +59,39 @@ const CartPage = () => {
 
     useEffect(() => {
         if (isAuthChecked && !isAuthenticated) {
-            setCarts(cartData)
+            if (isFromBuyNow) {
+                const updatedCarts = cartData.map((item, index) => ({
+                    ...item,
+                    isSelected: index === 0
+                }))
+                setCarts(updatedCarts)
+            } else {
+                setCarts(cartData)
+            }
         }
 
         if (isAuthChecked && isAuthenticated) {
             triggerSearch()
                 .unwrap()
-                .then(data => {
-                    setCarts(data.data)
-                    setShowEmptyState(data.data.length === 0)
+                .then(res => {
+                    if (isFromBuyNow) {
+                        const updatedData = res?.data?.map((item, index) => ({
+                            ...item,
+                            isSelected: index === 0
+                        }))
+                        setCarts(updatedData)
+                        setShowEmptyState(updatedData.length === 0)
+                    } else {
+                        setCarts(res?.data || [])
+                        setShowEmptyState(res?.data?.length === 0)
+                    }
                 })
                 .catch(() => {
                     setCarts([])
                     setShowEmptyState(true)
                 })
         }
-    }, [isAuthChecked, isAuthenticated])
+    }, [isAuthChecked, isAuthenticated, cartData])
 
     const productsFlashSale = Array.isArray(flashSaleResponse?.data.records)
         ? (flashSaleResponse?.data.records as IProductSearch[])

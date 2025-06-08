@@ -413,7 +413,8 @@ const CheckoutPage = () => {
             }
         } else if (selectedPaymentMethod === 'cod') {
             toast(t('COMMON.USER.ORDER_PLACED_SUCCESS'), 'success')
-            router.push('/user/orders')
+            if (isAuthenticated) router.push('/user/orders')
+            else router.push('/user/orders/find')
             setIsLoading(false)
         } else {
             toast(t('COMMON.USER.PAYMENT_METHOD_NOT_SUPPORTED'), 'error')

@@ -25,7 +25,7 @@ import EnhancedPagination from '@/components/EnhancedPagination'
 import ProductCard from '../../ProductCard'
 import { IProductGetById, IProductSearch } from '@/models/Product'
 import { useGetByIdProductQuery, useSearchProductQuery } from '@/services/ProductService'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Loading from '@/components/Loading'
 import ObjectEmptyState from '@/components/ObjectEmptyState'
 import { useDeleteFavoriteByProductIdMutation, useGetFavoriteCountByProductQuery } from '@/services/FavoriteService'
@@ -104,6 +104,7 @@ const ProductDetail = () => {
     const product = productResponse?.data as IProductGetById
     const productsFlashSale = (dataResponseFlashSale?.data?.records as IProductSearch[]) || []
     const toast = useToast()
+    const router = useRouter()
     const dispatch = useDispatch()
 
     const handleOptionChange = (optionId: number, valueId: number) => {
@@ -245,6 +246,47 @@ const ProductDetail = () => {
         toast('Thêm vào giỏ hàng thành công!', 'success')
     }
 
+    const handleBuyNowUnAuth = async (product: IProductGetById) => {
+        await dispatch(
+            addToCart({
+                id: generateLocalCartId(
+                    product.id,
+                    Object.entries(selectedOptions).map(([optionId, optionValueId]) => ({
+                        optionId: Number(optionId),
+                        optionValueId: optionValueId
+                    }))
+                ),
+                productId: product.id,
+                productName: product.productName,
+                image: product.images.filter(image => image.isPrimary)[0]?.url || '',
+                sku: product.sku || '',
+                originalPrice: product.price,
+                discountRate: product.discountRate,
+                discountPrice: product.discountPrice,
+                favoriteId: null,
+                isFavorite: false,
+                isSelected: false,
+                variants:
+                    product.variants
+                        ?.map(variant =>
+                            variant.options
+                                .map(op => {
+                                    const selectedValue = op.values.find(val => val.id === selectedOptions[op.id])
+                                    return `${op.optionName}: ${selectedValue?.value}`
+                                })
+                                .join(', ')
+                        )
+                        .join(', ') || '',
+                quantity: 1,
+                selections: Object.entries(selectedOptions).map(([optionId, optionValueId]) => ({
+                    optionId: Number(optionId),
+                    optionValueId: optionValueId
+                }))
+            })
+        )
+        router.push('/user/cart?from-buy=true')
+    }
+
     const handleAddToCart = (productId: number, selections: ICartItem[]) => {
         const cart: ICartCreate = {
             productId: productId,
@@ -255,6 +297,18 @@ const ProductDetail = () => {
             .unwrap()
             .then(() => toast('Thêm vào giỏ hàng thành công!', 'success'))
             .catch(() => toast('Thêm vào giỏ hàng thất bại!', 'error'))
+    }
+
+    const handleBuyNow = (productId: number, selections: ICartItem[]) => {
+        const cart: ICartCreate = {
+            productId: productId,
+            quantity: 1,
+            selections: selections
+        }
+
+        createCart(cart)
+            .unwrap()
+            .then(() => router.push('/user/cart?from-buy=true'))
     }
 
     useEffect(() => {
@@ -572,7 +626,20 @@ const ProductDetail = () => {
                                     {t('COMMON.USER.ADD_TO_CART')}
                                 </button>
 
-                                <button className='flex-1 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300'>
+                                <button
+                                    onClick={() =>
+                                        isAuthChecked && !isAuthenticated
+                                            ? handleBuyNowUnAuth(product)
+                                            : handleBuyNow(
+                                                  product.id,
+                                                  Object.entries(selectedOptions).map(([optionId, optionValueId]) => ({
+                                                      optionId: Number(optionId),
+                                                      optionValueId
+                                                  }))
+                                              )
+                                    }
+                                    className='flex-1 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300'
+                                >
                                     <ShoppingCart size={18} className='inline-block mr-2' />
                                     {t('COMMON.USER.BUY_NOW')}
                                 </button>
@@ -820,7 +887,10 @@ const ProductDetail = () => {
 
                                                         <div className='flex items-center gap-8 pt-1'>
                                                             <button
-                                                                onClick={() => handleLikeDislike(review.id, 'like')}
+                                                                onClick={() => {
+                                                                    if (isAuthenticated)
+                                                                        handleLikeDislike(review.id, 'like')
+                                                                }}
                                                                 className='flex items-center hover:scale-105 gap-2 text-green-500 hover:text-green-600 transition-colors'
                                                             >
                                                                 <ThumbsUp
@@ -834,7 +904,10 @@ const ProductDetail = () => {
                                                                 </span>
                                                             </button>
                                                             <button
-                                                                onClick={() => handleLikeDislike(review.id, 'dislike')}
+                                                                onClick={() => {
+                                                                    if (isAuthenticated)
+                                                                        handleLikeDislike(review.id, 'dislike')
+                                                                }}
                                                                 className='flex items-center hover:scale-105 gap-2 text-red-500 hover:text-red-600 transition-colors'
                                                             >
                                                                 <ThumbsDown

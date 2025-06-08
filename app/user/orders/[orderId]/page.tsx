@@ -411,7 +411,7 @@ export default function OrderDetailPage() {
                                             {t('COMMON.ORDER.CUSTOMER_INFO')}
                                         </p>
 
-                                        <div className='mt-6 flex items-center gap-5'>
+                                        <div className='my-6 flex items-center gap-5'>
                                             <img
                                                 src={user?.avatar || '/images/account.png'}
                                                 className='w-[50px] h-[50px] rounded-full object-cover'
@@ -483,7 +483,7 @@ export default function OrderDetailPage() {
                                             </div>
                                         </div>
 
-                                        <div className='border-t border-dashed border-[var(--border-color)] mt-4 -mx-6'></div>
+                                        <div className='border-t border-dashed border-[var(--border-color)] mb-6 -mx-6'></div>
                                     </>
                                 )}
 
@@ -526,7 +526,7 @@ export default function OrderDetailPage() {
                                                     {t('COMMON.ORDER.ADDRESS')}
                                                 </p>
                                             </div>
-                                            <div className='flex-1 py-2'>
+                                            <div className='flex-1 pt-2'>
                                                 <p className='text-[15px] text-[var(--text-color)] text-left'>
                                                     {orderDetail.shippingAddress +
                                                         ', ' +
@@ -539,7 +539,7 @@ export default function OrderDetailPage() {
                                     </div>
                                 </div>
 
-                                <div className='border-t border-dashed border-[var(--border-color)] mt-4 -mx-6'></div>
+                                <div className='border-t border-dashed border-[var(--border-color)] -mx-6'></div>
 
                                 {/* PAYMENT */}
                                 <div className='mt-6'>

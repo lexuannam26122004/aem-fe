@@ -156,7 +156,7 @@ const UserAvatarMenu = () => {
                 {/* Dropdown menu */}
                 {isOpen && (
                     <div
-                        className='absolute top-full right-0 mt-2 min-w-48 bg-white border border-blue-100 rounded-xl shadow-lg z-50 overflow-hidden'
+                        className='absolute top-full right-0 mt-2 min-w-52 w-full bg-white border border-blue-100 rounded-xl shadow-lg z-50 overflow-hidden'
                         style={{
                             animation: 'fadeIn 100ms ease-out'
                         }}

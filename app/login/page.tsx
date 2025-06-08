@@ -63,7 +63,7 @@ const LoginPage = () => {
             const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.message || 'Đăng nhập thất bại')
+                throw new Error(data.detail || 'Đăng nhập thất bại')
             }
 
             const token = data?.data?.auth_token
@@ -90,9 +90,9 @@ const LoginPage = () => {
 
             toast('Đăng nhập thành công!', 'success')
             router.push('/user')
-        } catch (error: any) {
-            toast(error.message || 'Có lỗi xảy ra', 'error')
+        } catch (error) {
             console.error('Login error:', error)
+            toast('Tên đăng nhập hoặc mật khẩu không chính xác!', 'error')
         } finally {
             setIsLoading(false)
         }

@@ -1,5 +1,6 @@
 'use client'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -7,6 +8,7 @@ export default function Banner() {
     const { t } = useTranslation('common')
     const [currentSlide, setCurrentSlide] = useState(0)
     const [isAnimating, setIsAnimating] = useState(false)
+    const router = useRouter()
 
     const slides = [
         {
@@ -125,7 +127,12 @@ export default function Banner() {
 
                             {/* Interactive buttons with tech design */}
                             <div className='flex justify-center space-x-6 z-30 animate-fadeIn'>
-                                <button className='bg-blue-600 z-30 hover:bg-blue-700 text-white px-6 py-[11px] rounded-lg font-medium transition-all duration-300 transform animate-fadeIn'>
+                                <button
+                                    onClick={() => {
+                                        router.push('/user/#flash-sale')
+                                    }}
+                                    className='bg-blue-600 z-30 hover:bg-blue-700 text-white px-6 py-[11px] rounded-lg font-medium transition-all duration-300 transform animate-fadeIn'
+                                >
                                     {slide.cta}
                                 </button>
 
