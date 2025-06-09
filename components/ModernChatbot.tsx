@@ -13,7 +13,7 @@ const ModernChatbot = ({ isOpen, onClose }) => {
 
     const userInfo = useSelector(userSelector).userInfo
 
-    const OPENROUTER_API_KEY = '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'
+    const OPENROUTER_API_KEY = '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'
 
     const createSystemPrompt = () => {
         return `Bạn là trợ lý AI chuyên nghiệp của cửa hàng thiết bị tự động hóa ShopFinity. 
