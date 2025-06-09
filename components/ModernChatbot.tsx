@@ -13,7 +13,7 @@ const ModernChatbot = ({ isOpen, onClose }) => {
 
     const userInfo = useSelector(userSelector).userInfo
 
-    const OPENROUTER_API_KEY = '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'
+    const OPENROUTER_API_KEY = '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'
 
     const createSystemPrompt = () => {
         return `Bạn là trợ lý AI chuyên nghiệp của cửa hàng thiết bị tự động hóa ShopFinity. 
@@ -114,7 +114,7 @@ PHONG CÁCH: Chuyên nghiệp, thân thiện, tập trung vào giải pháp kỹ
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: 'meta-llama/llama-3.3-8b-instruct:free',
+                    model: 'opengvlab/internvl3-14b:free',
                     messages: messagesToSend,
                     temperature: 0.7,
                     max_tokens: 500
