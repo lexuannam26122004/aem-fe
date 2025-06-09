@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, ChevronDown, Filter, ArrowRight, ChevronLeft, ChevronRight, Zap } from 'lucide-react'
+import { Search, ChevronDown, Filter, ChevronLeft, ChevronRight, Zap } from 'lucide-react'
 import Banner from './Banner'
 import ProductCard from './ProductCard'
 import { IProductFilter, IProductSearch } from '@/models/Product'
