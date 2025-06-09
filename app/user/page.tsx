@@ -8,7 +8,7 @@ import { IProductFilter, IProductSearch } from '@/models/Product'
 import EmptyItem from '@/components/EmptyItem'
 import EnhancedPagination from '@/components/EnhancedPagination'
 import { useTranslation } from 'react-i18next'
-import { useSearchProductQuery } from '@/services/ProductService'
+import { useGetRecommendedProductsQuery, useSearchProductQuery } from '@/services/ProductService'
 import Loading from '@/components/Loading'
 import { useSearchCategoryQuery } from '@/services/CategoryService'
 import { useSearchBrandQuery } from '@/services/BrandService'
@@ -53,10 +53,12 @@ export default function AutomationShop() {
     })
 
     const { data: popularResponse, isLoading: isLoadingPopular } = useSearchProductQuery({
-        pageSize: 5,
+        pageSize: 20,
         pageNumber: 1,
         typeSection: 'popular'
     })
+
+    const { data: recommendedResponse, isLoading: isLoadingRecommended } = useGetRecommendedProductsQuery()
 
     const totalRecords = dataResponseAll?.data.totalRecords || 0
 
@@ -73,6 +75,9 @@ export default function AutomationShop() {
         : []
     const productsPopular = Array.isArray(popularResponse?.data.records)
         ? (popularResponse?.data.records as IProductSearch[])
+        : []
+    const productsRecommended = Array.isArray(recommendedResponse?.data.records)
+        ? (recommendedResponse?.data.records as IProductSearch[])
         : []
 
     const DROPDOWN_OPTIONS = {
@@ -253,21 +258,58 @@ export default function AutomationShop() {
         viewAll?: boolean
     }
 
-    const ProductSection = ({ title, products, viewAll = false }: ProductHotSaleProps) => {
+    const ProductSection = ({ title, products }: ProductHotSaleProps) => {
+        const [currentPage, setCurrentPage] = useState(0)
+        const [currentIndex, setCurrentIndex] = useState(0)
+        products = products.slice(0, 20)
+        const totalPages = Math.min(Math.floor((products.length - 1) / 2), 10)
+
+        const nextPage = () => {
+            if (currentPage + 1 >= totalPages) {
+                return
+            }
+            setCurrentIndex(prev => prev + 2)
+            setCurrentPage(prev => prev + 1)
+        }
+
+        const prevPage = () => {
+            setCurrentIndex(prev => Math.max(prev - 2, 0))
+            setCurrentPage(prev => Math.max(prev - 1, 0))
+        }
+
+        const currentProducts = products.slice(currentIndex, Math.min(currentIndex + 4, 20))
+
+        const isLastPage = currentPage === totalPages - 1
+        const isFirstPage = currentPage === 0
+
         return (
             <div>
-                <div className='flex justify-between items-center mb-6'>
-                    <h2 className='text-xl font-bold text-gray-800'>{title}</h2>
-                    {viewAll && (
-                        <button className='text-blue-600 flex items-center hover:text-blue-800'>
-                            Xem tất cả <ArrowRight size={16} className='ml-1' />
-                        </button>
-                    )}
-                </div>
-                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
-                    {products.slice(0, 4).map((product, index) => (
-                        <ProductCard product={product} key={index} />
-                    ))}
+                <h2 className='text-xl font-bold text-gray-800 mb-6'>{title}</h2>
+                <div className='relative z-10 text-white'>
+                    {/* Product grid */}
+                    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+                        {currentProducts.map((product, index) => (
+                            <ProductCard key={index} product={product} />
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={prevPage}
+                        disabled={isFirstPage}
+                        className='absolute left-0 top-1/2 -translate-y-1/2 bg-gray-600 bg-opacity-25 hover:bg-opacity-40 text-white pr-2 pl-1 py-2 rounded-r-lg shadow-lg backdrop-blur-sm transition-all border-t border-r border-b border-white border-opacity-30 disabled:cursor-not-allowed'
+                        aria-label='Previous page'
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
+
+                    <button
+                        onClick={nextPage}
+                        disabled={isLastPage}
+                        className='absolute right-0 top-1/2 -translate-y-1/2 bg-gray-600 bg-opacity-25 hover:bg-opacity-40 text-white pr-1 pl-2 py-2 rounded-l-lg shadow-lg backdrop-blur-sm transition-all border-t border-l border-b border-white border-opacity-30 disabled:cursor-not-allowed'
+                        aria-label='Next page'
+                    >
+                        <ChevronRight size={24} />
+                    </button>
                 </div>
             </div>
         )
@@ -299,6 +341,7 @@ export default function AutomationShop() {
         isLoadingPopular ||
         isLoadingCategory ||
         isLoadingBrand ||
+        isLoadingRecommended ||
         isLoadingFeature
     ) {
         return <Loading />
@@ -314,7 +357,7 @@ export default function AutomationShop() {
             <ProductHotSale title='Flash Sales' products={productsFlashSale} viewAll={true} />
 
             {/* Sản phẩm đề xuất */}
-            <ProductSection title='Sản phẩm đề xuất' products={productsPopular} viewAll={true} />
+            <ProductSection title='Sản phẩm đề xuất' products={productsRecommended} viewAll={true} />
 
             {/* Tất cả sản phẩm với bộ lọc */}
             <div className='mt-6'>

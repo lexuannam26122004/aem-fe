@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, ChevronDown, Filter } from 'lucide-react'
+import { Search, ChevronDown, Filter, ChevronUp } from 'lucide-react'
 import ProductCard from '../ProductCard'
 import { IProductFilter, IProductSearch } from '@/models/Product'
 import EmptyItem from '@/components/EmptyItem'
@@ -15,19 +15,31 @@ import { useSearchFeatureQuery } from '@/services/FeatureService'
 import { IFeature } from '@/models/Feature'
 import { IBrand } from '@/models/Brand'
 import { ICategory } from '@/models/Category'
+import { useSearchParams } from 'next/navigation'
 
 export default function AutomationShop() {
     const { t } = useTranslation('common')
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-    const [showScrollTop, setShowScrollTop] = useState(false)
+    const searchParams = useSearchParams()
+    const keyword = searchParams.get('keyword') || ''
+    const [isFilterOpen, setIsFilterOpen] = useState(false)
     const [filterProductSearch, setFilterProductSearch] = useState<IProductFilter>({
         pageSize: 12,
-        pageNumber: 1
+        pageNumber: 1,
+        keyword: keyword
     })
+
+    useEffect(() => {
+        setFilterProductSearch(prev => ({
+            ...prev,
+            keyword: keyword || ''
+        }))
+    }, [keyword])
 
     const {
         data: dataResponseAll,
         isLoading: isLoadingResponseAll,
+        isFetching,
         refetch
     } = useSearchProductQuery(filterProductSearch)
 
@@ -87,16 +99,6 @@ export default function AutomationShop() {
     ]
 
     useEffect(() => {
-        const handleScroll = () => {
-            const scrollPosition = window.scrollY
-            setShowScrollTop(scrollPosition > 300)
-        }
-
-        window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
-
-    useEffect(() => {
         refetch()
     }, [filterProductSearch])
 
@@ -140,6 +142,10 @@ export default function AutomationShop() {
             featureIds: undefined,
             sortBy: undefined
         })
+    }
+
+    const toggleFilter = () => {
+        setIsFilterOpen(!isFilterOpen)
     }
 
     if (isLoadingResponseAll || isLoadingCategory || isLoadingBrand || isLoadingFeature) {
@@ -323,106 +329,156 @@ export default function AutomationShop() {
                     {/* Product list */}
                     <div className='flex-1'>
                         {/* Sorting and view options */}
-                        <div className='mb-6 bg-white rounded-[15px] shadow-lg border border-blue-100'>
-                            <div className='h-[65px] flex items-center rounded-t-[14px] border-b border-blue-100 pl-6'>
+                        <div className='mb-6 bg-white rounded-[15px] shadow-[0_4px_16px_rgba(0,0,0,0.1)] border border-blue-100'>
+                            <div
+                                className={`h-[65px] rounded-t-[14px] pl-6 flex justify-between items-center ${
+                                    isFilterOpen ? 'border-b border-blue-100' : 'border-none -mb-[0.5px] -mt-[0.5px]'
+                                }`}
+                            >
                                 <h2 className='text-black font-bold text-lg flex items-center'>
                                     <Search className='mr-3 text-blue-600' size={20} />
                                     Tìm kiếm và Sắp xếp
                                 </h2>
-                            </div>
-
-                            <div className='p-6 grid grid-cols-1 md:grid-cols-3 gap-6'>
-                                <TechFeaturesSelect
-                                    label='Tính năng nổi bật:'
-                                    selectedValues={filterProductSearch.featureIds || []}
-                                    onChange={value => {
-                                        setFilterProductSearch({
-                                            ...filterProductSearch,
-                                            pageNumber: 1,
-                                            featureIds:
-                                                filterProductSearch.featureIds &&
-                                                filterProductSearch.featureIds.includes(value)
-                                                    ? filterProductSearch.featureIds.filter(id => id !== value)
-                                                    : filterProductSearch.featureIds
-                                                    ? [...filterProductSearch.featureIds, value]
-                                                    : [value]
-                                        })
-                                    }}
-                                    options={DROPDOWN_OPTIONS.techFeatures}
-                                />
-
-                                <EnhancedSelect
-                                    label='Sắp xếp theo:'
-                                    value={filterProductSearch.sortBy || ''}
-                                    onChange={value =>
-                                        setFilterProductSearch({
-                                            ...filterProductSearch,
-                                            pageNumber: 1,
-                                            sortBy: String(value)
-                                        })
-                                    }
-                                    options={DROPDOWN_OPTIONS.sort}
-                                />
-
-                                <EnhancedSelect
-                                    label='Tình trạng hàng:'
-                                    value={filterProductSearch.stockStatus || ''}
-                                    onChange={value =>
-                                        setFilterProductSearch({
-                                            ...filterProductSearch,
-                                            pageNumber: 1,
-                                            stockStatus: String(value)
-                                        })
-                                    }
-                                    options={DROPDOWN_OPTIONS.availability}
-                                />
-                            </div>
-
-                            {/* Results summary - Giữ nguyên phần này */}
-                            <div className='px-6 py-5 flex items-center justify-between border-t border-blue-100'>
-                                <span className='text-gray-700 font-medium text-sm flex items-center'>
-                                    <svg
-                                        xmlns='http://www.w3.org/2000/svg'
-                                        className='h-4 w-4 mr-2 text-blue-500'
-                                        fill='none'
-                                        viewBox='0 0 24 24'
-                                        stroke='currentColor'
-                                    >
-                                        <path
-                                            strokeLinecap='round'
-                                            strokeLinejoin='round'
-                                            strokeWidth={2}
-                                            d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
-                                        />
-                                    </svg>
-                                    Hiển thị {products.length} sản phẩm
-                                </span>
 
                                 <button
-                                    onClick={handleResetFilters}
-                                    className='text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center transition-colors'
+                                    onClick={toggleFilter}
+                                    className={`flex items-center px-4 py-2 mr-6 rounded-lg transition-all duration-200 ${
+                                        isFilterOpen
+                                            ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                    }`}
                                 >
-                                    <svg
-                                        xmlns='http://www.w3.org/2000/svg'
-                                        className='h-4 w-4 mr-2'
-                                        fill='none'
-                                        viewBox='0 0 24 24'
-                                        stroke='currentColor'
-                                    >
-                                        <path
-                                            strokeLinecap='round'
-                                            strokeLinejoin='round'
-                                            strokeWidth={2}
-                                            d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
-                                        />
-                                    </svg>
-                                    Khôi phục mặc định
+                                    <Filter className='mr-2' size={16} />
+                                    <span className='text-sm font-medium mr-2'>
+                                        {isFilterOpen ? 'Ẩn bộ lọc' : 'Hiện bộ lọc'}
+                                    </span>
+                                    {isFilterOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                 </button>
                             </div>
+
+                            {
+                                <div
+                                    className={`transition-all duration-300 ease-in-out ${
+                                        isFilterOpen ? 'h-auto opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
+                                    }`}
+                                >
+                                    <div className='p-6 grid grid-cols-1 md:grid-cols-3 gap-6'>
+                                        <TechFeaturesSelect
+                                            label='Tính năng nổi bật:'
+                                            selectedValues={filterProductSearch.featureIds || []}
+                                            onChange={value => {
+                                                setFilterProductSearch({
+                                                    ...filterProductSearch,
+                                                    pageNumber: 1,
+                                                    featureIds:
+                                                        filterProductSearch.featureIds &&
+                                                        filterProductSearch.featureIds.includes(value)
+                                                            ? filterProductSearch.featureIds.filter(id => id !== value)
+                                                            : filterProductSearch.featureIds
+                                                            ? [...filterProductSearch.featureIds, value]
+                                                            : [value]
+                                                })
+                                            }}
+                                            options={DROPDOWN_OPTIONS.techFeatures}
+                                        />
+
+                                        <EnhancedSelect
+                                            label='Sắp xếp theo:'
+                                            value={filterProductSearch.sortBy || ''}
+                                            onChange={value =>
+                                                setFilterProductSearch({
+                                                    ...filterProductSearch,
+                                                    pageNumber: 1,
+                                                    sortBy: String(value)
+                                                })
+                                            }
+                                            options={DROPDOWN_OPTIONS.sort}
+                                        />
+
+                                        <EnhancedSelect
+                                            label='Tình trạng hàng:'
+                                            value={filterProductSearch.stockStatus || ''}
+                                            onChange={value =>
+                                                setFilterProductSearch({
+                                                    ...filterProductSearch,
+                                                    pageNumber: 1,
+                                                    stockStatus: String(value)
+                                                })
+                                            }
+                                            options={DROPDOWN_OPTIONS.availability}
+                                        />
+                                    </div>
+
+                                    {/* Results summary - Giữ nguyên phần này */}
+                                    <div className='px-6 py-5 flex items-center justify-between border-t border-blue-100'>
+                                        <span className='text-gray-700 font-medium text-sm flex items-center'>
+                                            <svg
+                                                xmlns='http://www.w3.org/2000/svg'
+                                                className='h-4 w-4 mr-2 text-blue-500'
+                                                fill='none'
+                                                viewBox='0 0 24 24'
+                                                stroke='currentColor'
+                                            >
+                                                <path
+                                                    strokeLinecap='round'
+                                                    strokeLinejoin='round'
+                                                    strokeWidth={2}
+                                                    d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
+                                                />
+                                            </svg>
+                                            Hiển thị {products.length} sản phẩm
+                                        </span>
+
+                                        <button
+                                            onClick={handleResetFilters}
+                                            className='text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center transition-colors'
+                                        >
+                                            <svg
+                                                xmlns='http://www.w3.org/2000/svg'
+                                                className='h-4 w-4 mr-2'
+                                                fill='none'
+                                                viewBox='0 0 24 24'
+                                                stroke='currentColor'
+                                            >
+                                                <path
+                                                    strokeLinecap='round'
+                                                    strokeLinejoin='round'
+                                                    strokeWidth={2}
+                                                    d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
+                                                />
+                                            </svg>
+                                            Khôi phục mặc định
+                                        </button>
+                                    </div>
+                                </div>
+                            }
                         </div>
 
                         {/* Product grid/list */}
-                        {products.length > 0 ? (
+                        {isFetching ? (
+                            <div className='flex items-center justify-center p-12'>
+                                <div className='rounded-[15px] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.1)] bg-white p-12 max-w-md w-full text-center'>
+                                    <div className='relative w-16 h-16 mx-auto mb-6'>
+                                        <div className='absolute inset-0 rounded-full border-4 border-blue-100'></div>
+                                        <div className='absolute inset-0 rounded-full border-4 border-transparent border-t-blue-600 animate-spin'></div>
+                                        <div className='absolute inset-2 rounded-full border-2 border-transparent border-t-blue-400 animate-spin animate-reverse'></div>
+                                    </div>
+                                    <h2 className='text-xl font-bold text-gray-900 mb-3'>Đang xử lý</h2>
+                                    <p className='text-gray-600'>Vui lòng chờ trong giây lát...</p>
+                                    <div className='flex justify-center space-x-1 mt-6'>
+                                        <div className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'></div>
+                                        <div
+                                            className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'
+                                            style={{ animationDelay: '0.1s' }}
+                                        ></div>
+                                        <div
+                                            className='w-2 h-2 bg-blue-400 rounded-full animate-bounce'
+                                            style={{ animationDelay: '0.2s' }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : products.length > 0 ? (
                             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
                                 {products.map((product, index) => (
                                     <ProductCard product={product} key={index} />
@@ -453,142 +509,6 @@ export default function AutomationShop() {
                     </div>
                 </div>
             </div>
-
-            {/* Quick access floating buttons - Premium Design */}
-            <div className='fixed right-6 bottom-6 z-50 flex flex-col gap-4'>
-                {/* Scroll to top button - Uses useState to track scroll position */}
-                {showScrollTop && (
-                    <button
-                        className='bg-gradient-to-r from-indigo-500 to-violet-500 text-white p-3 rounded-full shadow-[0_4px_20px_rgba(99,102,241,0.3)] hover:shadow-[0_6px_24px_rgba(99,102,241,0.4)] transition-all duration-300 group relative animate-fadeIn'
-                        onClick={() => {
-                            window.scrollTo({ top: 0, behavior: 'smooth' })
-                        }}
-                        aria-label='Lên đầu trang'
-                    >
-                        <div className='absolute inset-0 rounded-full bg-gradient-to-r from-violet-400 to-indigo-400 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300 -z-10'></div>
-                        <svg className='w-5 h-5' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                            <path
-                                d='M12 19V5M12 5L5 12M12 5L19 12'
-                                stroke='currentColor'
-                                strokeWidth='2'
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                            />
-                        </svg>
-                        <div className='absolute -left-3 transform -translate-x-full -translate-y-1/2 top-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 origin-right scale-90 group-hover:scale-100 pointer-events-none'>
-                            <div className='flex items-center'>
-                                <div className='bg-violet-100 text-violet-600 text-xs font-medium px-3 py-2 rounded-lg shadow-lg mr-2 whitespace-nowrap'>
-                                    Lên đầu trang
-                                    <div className='absolute w-2 h-2 bg-violet-500 top-1/2 -right-[6px] transform rotate-45 -translate-y-1/2'></div>
-                                </div>
-                            </div>
-                        </div>
-                    </button>
-                )}
-
-                {/* Chatbot button */}
-                <button
-                    className='bg-gradient-to-r from-blue-600 to-blue-500 text-white p-3 rounded-full shadow-[0_4px_20px_rgba(59,130,246,0.3)] hover:shadow-[0_6px_24px_rgba(59,130,246,0.4)] transition-all duration-300 group relative'
-                    aria-label='Chat với bot tư vấn'
-                >
-                    <div className='absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300 -z-10'></div>
-                    <div className='absolute -right-0.5 -top-0.5 w-3 h-3'>
-                        <span className='absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping'></span>
-                        <span className='relative inline-flex rounded-full h-3 w-3 bg-gradient-to-r from-red-500 to-pink-500'></span>
-                    </div>
-                    <svg className='w-5 h-5' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                        <path
-                            d='M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22Z'
-                            stroke='currentColor'
-                            strokeWidth='2'
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                        />
-                        <path d='M8 12H8.01' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-                        <path d='M12 12H12.01' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-                        <path d='M16 12H16.01' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-                    </svg>
-                    <div className='absolute -left-3 transform -translate-x-full -translate-y-1/2 top-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 origin-right scale-90 group-hover:scale-100 pointer-events-none'>
-                        <div className='flex items-center'>
-                            <div className='bg-blue-100 text-blue-600 text-xs font-medium px-3 py-2 rounded-lg shadow-lg mr-2 whitespace-nowrap'>
-                                Chat với chuyên viên
-                                <div className='absolute w-2 h-2 bg-blue-500 top-1/2 -right-[6px] transform rotate-45 -translate-y-1/2'></div>
-                            </div>
-                        </div>
-                    </div>
-                </button>
-
-                {/* Zalo button */}
-                <button
-                    className='bg-[#028fe3] text-white p-1 flex items-center rounded-full shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)] transition-all duration-300 group relative'
-                    aria-label='Liên hệ qua Zalo'
-                >
-                    <div className='absolute inset-0 rounded-full bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300 -z-10'></div>
-
-                    <img src='/images/zalo_icon.png' className='w-9 h-9 object-cover' />
-
-                    <div className='absolute -left-3 transform -translate-x-full -translate-y-1/2 top-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 origin-right scale-90 group-hover:scale-100 pointer-events-none'>
-                        <div className='flex items-center'>
-                            <div className='bg-cyan-50 text-blue-400 text-xs font-medium px-3 py-2 rounded-lg shadow-lg mr-2 whitespace-nowrap'>
-                                Chat Zalo
-                                <div className='absolute w-2 h-2 bg-blue-400 top-1/2 -right-[6px] transform rotate-45 -translate-y-1/2'></div>
-                            </div>
-                        </div>
-                    </div>
-                </button>
-
-                {/* Call button */}
-                <button
-                    className='bg-gradient-to-r from-green-500 to-emerald-400 text-white p-3 rounded-full shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)] transition-all duration-300 group relative'
-                    aria-label='Gọi điện tư vấn'
-                >
-                    <div className='absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400 to-green-400 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300 -z-10'></div>
-                    <svg className='w-5 h-5' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                        <path
-                            d='M22 16.92V19.92C22.0011 20.1985 21.9441 20.4742 21.8325 20.7294C21.7209 20.9845 21.5573 21.2136 21.3521 21.4019C21.1468 21.5901 20.9046 21.7335 20.6407 21.8227C20.3769 21.9119 20.0974 21.9451 19.82 21.92C16.7428 21.5856 13.787 20.5341 11.19 18.85C8.77382 17.3147 6.72533 15.2662 5.18999 12.85C3.49997 10.2412 2.44824 7.27099 2.11999 4.18002C2.09494 3.90363 2.12781 3.62456 2.21643 3.3616C2.30506 3.09864 2.44756 2.85679 2.63476 2.65172C2.82196 2.44665 3.0498 2.28281 3.30379 2.17062C3.55777 2.05843 3.83233 2.00036 4.10999 2.00002H7.10999C7.5953 1.99538 8.06579 2.16723 8.43376 2.48363C8.80173 2.80003 9.04207 3.23864 9.10999 3.72002C9.2341 4.68008 9.47141 5.62274 9.81999 6.53002C9.94454 6.88805 9.97366 7.27598 9.90433 7.65126C9.83501 8.02654 9.67042 8.37278 9.41999 8.65002L8.20999 9.86002C9.6624 12.3392 11.6608 14.3376 14.14 15.79L15.35 14.58C15.6272 14.3296 15.9735 14.165 16.3487 14.0957C16.724 14.0263 17.1119 14.0555 17.47 14.18C18.3773 14.5286 19.3199 14.7659 20.28 14.89C20.7657 14.9585 21.2074 15.2032 21.5238 15.5775C21.8401 15.9518 22.0086 16.4296 22 16.92Z'
-                            stroke='currentColor'
-                            strokeWidth='2'
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                        />
-                    </svg>
-                    <div className='absolute -left-3 transform -translate-x-full -translate-y-1/2 top-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 origin-right scale-90 group-hover:scale-100 pointer-events-none'>
-                        <div className='flex items-center'>
-                            <div className='bg-green-100 text-green-600 text-xs font-medium px-3 py-2 rounded-lg shadow-lg mr-2 whitespace-nowrap'>
-                                0833 367 548
-                                <div className='absolute w-2 h-2 bg-green-500 top-1/2 -right-[6px] transform rotate-45 -translate-y-1/2'></div>
-                            </div>
-                        </div>
-                    </div>
-                </button>
-            </div>
-
-            {/* Add refined animations */}
-            <style jsx global>{`
-                @keyframes fadeIn {
-                    from {
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                .animate-fadeIn {
-                    animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-                }
-                @keyframes ping {
-                    75%,
-                    100% {
-                        transform: scale(1.5);
-                        opacity: 0;
-                    }
-                }
-                .animate-ping {
-                    animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-                }
-            `}</style>
         </div>
     )
 }

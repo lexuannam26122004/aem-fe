@@ -43,6 +43,12 @@ export const ProductApis = createApi({
                 body: body
             })
         }),
+        getProductName: builder.query<IResponse, void>({
+            query: () => 'get-product-name'
+        }),
+        getRecommendedProducts: builder.query<IResponse, void>({
+            query: () => 'get-recommended'
+        }),
         updateProduct: builder.mutation<void, { id: number; data: IProductUpdate }>({
             query: ({ id, data }) => ({
                 url: `${id}`,
@@ -84,6 +90,8 @@ export const {
     useCreateProductMutation,
     useUpdateProductMutation,
     useDeleteProductMutation,
+    useGetRecommendedProductsQuery,
+    useGetProductNameQuery,
     useGetByIdProductQuery,
     useExportProductQuery,
     useLazySearchProductQuery

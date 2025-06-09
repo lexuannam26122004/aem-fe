@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
 import { userSelector } from '@/redux/slices/userSlice'
 import UserAvatarMenu from './UserAvatarMenu'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import AdvancedSearchInput from './AdvancedSearchInput'
+import { useGetProductNameQuery } from '@/services/ProductService'
 
 const Logo = () => {
     return (
@@ -32,9 +34,12 @@ const UserHeader = () => {
     const [isOpen, setIsOpen] = useState(false)
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
-    const [isSearchFocused, setIsSearchFocused] = useState(false)
     const user = useSelector(userSelector)
     const pathName = usePathname()
+    const router = useRouter()
+
+    const { data: productNameResponse } = useGetProductNameQuery()
+    const productNames = productNameResponse?.data?.records || []
 
     const toggleMenu = () => {
         setIsOpen(!isOpen)
@@ -112,28 +117,12 @@ const UserHeader = () => {
 
                         <div className='flex items-center'>
                             {/* Search Bar */}
-                            <div className='hidden md:flex flex-1 w-[562px] max-w-xl mx-6 relative'>
-                                <div
-                                    className={`flex w-full items-center overflow-hidden rounded-full border transition-all duration-100 ${
-                                        isSearchFocused
-                                            ? 'border-blue-500 ring-2 ring-blue-100'
-                                            : 'border-gray-300 hover:border-gray-400'
-                                    }`}
-                                >
-                                    <input
-                                        type='text'
-                                        placeholder='Tìm kiếm sản phẩm...'
-                                        className='w-full py-3 pl-5 pr-12 rounded-full focus:outline-none bg-transparent'
-                                        value={searchQuery}
-                                        onChange={e => setSearchQuery(e.target.value)}
-                                        onFocus={() => setIsSearchFocused(true)}
-                                        onBlur={() => setIsSearchFocused(false)}
-                                    />
-                                    <button className='absolute right-4 text-gray-500 hover:text-blue-600 transition-colors'>
-                                        <Search size={20} />
-                                    </button>
-                                </div>
-                            </div>
+                            <AdvancedSearchInput
+                                products={productNames}
+                                onProductSelect={productName => {
+                                    router.push(`/user/products?keyword=${encodeURIComponent(productName)}`)
+                                }}
+                            />
 
                             {/* Right Navigation */}
                             <div className='flex items-center space-x-1 md:space-x-6'>
