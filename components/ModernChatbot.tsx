@@ -13,7 +13,7 @@ const ModernChatbot = ({ isOpen, onClose }) => {
 
     const userInfo = useSelector(userSelector).userInfo
 
-    const OPENROUTER_API_KEY = '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'
+    const OPENROUTER_API_KEY = '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'
 
     const createSystemPrompt = () => {
         return `Bạn là trợ lý AI chuyên nghiệp của cửa hàng thiết bị tự động hóa ShopFinity. 
@@ -254,7 +254,10 @@ PHONG CÁCH: Chuyên nghiệp, thân thiện, tập trung vào giải pháp kỹ
                                     }`}
                                 >
                                     {message.isUser ? (
-                                        <img src={userInfo?.avatar || '/images/account.png'} />
+                                        <img
+                                            className='w-9 h-9 object-cover rounded-full'
+                                            src={userInfo?.avatar || '/images/account.png'}
+                                        />
                                     ) : (
                                         <svg
                                             className='w-4 h-4 text-blue-600'

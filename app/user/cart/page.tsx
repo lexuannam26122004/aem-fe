@@ -91,7 +91,7 @@ const CartPage = () => {
                     setShowEmptyState(true)
                 })
         }
-    }, [isAuthChecked, isAuthenticated, cartData])
+    }, [isAuthChecked, isAuthenticated])
 
     const productsFlashSale = Array.isArray(flashSaleResponse?.data.records)
         ? (flashSaleResponse?.data.records as IProductSearch[])
