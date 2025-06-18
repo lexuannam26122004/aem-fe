@@ -23,6 +23,7 @@
             "CREATE_NOTIFICATIONS": "Create notifications",
             "CHANGE_PASSWORD": "Change password",
             "SCHEDULAR": "Schedular",
+            "CUSTOMER_PAGE": "Customer page",
             "LOGOUT": "Logout"
         },
         "SIDEBAR": {

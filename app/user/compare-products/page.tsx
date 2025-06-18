@@ -20,45 +20,29 @@ import {
 } from 'lucide-react'
 import { IProductCompare } from '@/models/Product'
 import { formatCurrency } from '@/common/format'
+import { useDispatch, useSelector } from 'react-redux'
+import { productCompareSelector, removeProductId } from '@/redux/slices/productCompareSlice'
+import { useGetCompareProductByIdQuery } from '@/services/UserProductService'
+import { useToast } from '@/hooks/useToast'
 
 const AIProductComparison = () => {
     const [results, setResults] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
     const [userNeeds, setUserNeeds] = useState('')
+    const dispatch = useDispatch()
+    const toast = useToast()
+    const productIds = useSelector(productCompareSelector)
 
-    // Sample product data
-    const product1: IProductCompare = {
-        id: 1,
-        productName: 'SmartHub Pro X1',
-        image: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-3.webp',
-        sku: 'SH-PRO-X1-2024',
-        rating: 4.9,
-        description: 'SmartHub Pro X1 - Trung tâm điều khiển thông minh với AI tích hợp, hỗ trợ đa kết nối.',
-        descriptionDetail:
-            'SmartHub Pro X1 là trung tâm điều khiển thông minh thế hệ mới, tích hợp AI tiên tiến giúp tối ưu hóa hiệu suất tự động hóa. Hỗ trợ kết nối WiFi 6, Bluetooth 5.2 và Zigbee 3.0, SmartHub Pro X1 mang đến trải nghiệm liền mạch và nhanh chóng cho người dùng.',
-        variants: 'WiFi 6, Bluetooth 5.2, Zigbee 3.0',
-        price: 2500000,
-        discountPrice: 2100000,
-        discountRate: 16,
-        quantity: 25
-    }
+    const { data: productResponse1 } = useGetCompareProductByIdQuery(productIds[0], {
+        skip: !productIds[0]
+    })
 
-    const product2: IProductCompare = {
-        id: 2,
-        productName: 'AutoMaster Elite Z9',
-        image: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-8.webp',
-        sku: 'AM-ELITE-Z9-2024',
-        rating: 4.7,
-        description:
-            'AutoMaster Elite Z9 - Thiết bị tự động hóa cao cấp với AI tiên tiến, hỗ trợ kết nối đa dạng và hiệu suất vượt trội.',
-        descriptionDetail:
-            'AutoMaster Elite Z9 là thiết bị tự động hóa cao cấp, tích hợp AI tiên tiến giúp tối ưu hóa quy trình sản xuất. Hỗ trợ kết nối Thread, Matter và AI Voice Control, AutoMaster Elite Z9 mang đến giải pháp linh hoạt và hiệu quả cho các nhà máy thông minh.',
-        variants: 'Thread, Matter, AI Voice Control',
-        price: 3200000,
-        discountPrice: 2800000,
-        discountRate: 12,
-        quantity: 18
-    }
+    const { data: productResponse2 } = useGetCompareProductByIdQuery(productIds[1], {
+        skip: !productIds[1]
+    })
+
+    const product1: IProductCompare | null = productIds[0] ? productResponse1?.data || null : null
+    const product2: IProductCompare | null = productIds[1] ? productResponse2?.data || null : null
 
     const renderStars = (rating: number) => {
         const fullStars = Math.floor(rating)
@@ -490,6 +474,10 @@ Trả về chính xác theo cấu trúc HTML đã hướng dẫn, BẮT BUỘC L
     }
 
     const startAnalysis = async () => {
+        if (!product1 || !product2) {
+            toast('Vui lòng chọn đủ 2 sản phẩm để so sánh', 'error')
+            return
+        }
         setIsLoading(true)
 
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -582,7 +570,9 @@ Trả về chính xác theo cấu trúc HTML đã hướng dẫn, BẮT BUỘC L
                     <button
                         // disabled={isRemoveFavoriteLoading}
                         className='p-[10px] bg-red-50 rounded-full text-red-600 hover:bg-red-100 transition-colors'
-                        // onClick={() => removeItem(item.id)}
+                        onClick={() => {
+                            dispatch(removeProductId(product.id))
+                        }}
                     >
                         {/* {(isFavoriteFetching || isRemoveFavoriteLoading) &&
                                                 originalArgs == product.id ? (

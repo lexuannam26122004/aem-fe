@@ -272,7 +272,7 @@ export default function UserOrderContent() {
 
                                         {/* Actions */}
                                         <div className='p-6 flex flex-wrap gap-5 justify-end border-t border-gray-200'>
-                                            <button className='btn-outline'>
+                                            <button className='btn-outline' onClick={() => router.push('/#contact')}>
                                                 <MessageSquare className='w-4 h-4' />
                                                 <span>{t('COMMON.USER.CONTACT_SUPPORT')}</span>
                                             </button>

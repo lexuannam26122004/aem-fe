@@ -149,9 +149,10 @@ function Page() {
         } else {
             setFilter(prev => ({
                 ...prev,
-                isType: undefined
+                status: undefined
             }))
         }
+        setPage(1)
     }
 
     if (isLoading || countLoading || isLoadingCategory) {

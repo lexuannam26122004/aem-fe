@@ -35,7 +35,7 @@ function Page() {
     const toast = useToast()
     const [isSubmit, setIsSubmit] = useState(false)
     const [fullName, setFullName] = useState('')
-    const [birthday, setBirthday] = useState('')
+    const [birthday, setBirthday] = useState(dayjs(new Date()).format('YYYY-MM-DD'))
     const [address, setAddress] = useState('')
     const [phoneNumber, setPhoneNumber] = useState('')
     const [email, setEmail] = useState('')

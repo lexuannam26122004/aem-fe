@@ -669,7 +669,7 @@ function DataTable({ data, setFilter }: IProps) {
                                                         }
                                                     }}
                                                     onClick={() => {
-                                                        router.push(`/admin/customers/detail?id=${row.id}`)
+                                                        router.push(`/admin/customers/${row.id}`)
                                                     }}
                                                 >
                                                     <EyeIcon size={16} color='#2563eb' />

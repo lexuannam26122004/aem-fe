@@ -65,6 +65,9 @@ export const UserProductApis = createApi({
         getByIdProduct: builder.query<IResponse, number>({
             query: id => `${id}`
         }),
+        getCompareProductById: builder.query<IResponse, number>({
+            query: id => `${id}/get-compare-product`
+        }),
         exportProduct: builder.query<IResponse, IProductFilter>({
             query: filter => {
                 const params = new URLSearchParams()
@@ -92,6 +95,7 @@ export const {
     useDeleteProductMutation,
     useGetRecommendedProductsQuery,
     useGetProductNameQuery,
+    useGetCompareProductByIdQuery,
     useGetByIdProductQuery,
     useExportProductQuery,
     useLazySearchProductQuery

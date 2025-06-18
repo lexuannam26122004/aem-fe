@@ -12,13 +12,13 @@ import {
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ChevronDown, CalendarClock, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
-import { PencilLine } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { keyframes } from '@emotion/react'
-// import { useGetAuthMeQuery } from '@/services/AuthService'
+import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined'
+import { useGetAuthMeQuery } from '@/services/AuthService'
 
 const rotate = keyframes`
     0% {
@@ -28,15 +28,6 @@ const rotate = keyframes`
         transform: rotate(360deg);
     }
 `
-
-const responseData = {
-    Data: {
-        AvatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-2.webp',
-        FullName: 'Nam Lee',
-        Roles: ['Manager'],
-        IsAdmin: true
-    }
-}
 
 const AvatarMenu = () => {
     const router = useRouter()
@@ -48,14 +39,15 @@ const AvatarMenu = () => {
     const [fullName, setFullName] = useState('')
     const [roles, setRoles] = useState<string[]>([])
 
-    // const { data: responseData, isFetching: isFetchingGetMe, refetch } = useGetAuthMeQuery()
-    const data = responseData?.Data
-    const isFetchingGetMe = false
+    const { data: responseData, isFetching: isFetchingGetMe } = useGetAuthMeQuery()
+    const data = responseData?.data
+
     useEffect(() => {
         if (!isFetchingGetMe && data) {
-            setAvatarPath(data.AvatarPath ? data.AvatarPath : '/images/account.png')
-            setFullName(data.FullName || 'N/A')
-            setRoles(data.Roles || [])
+            console.log('User data:', data)
+            setAvatarPath(data.avatar ? data.avatar : '/images/account.png')
+            setFullName(data.fullName || 'N/A')
+            setRoles(data.roles || [])
         }
     }, [data, isFetchingGetMe])
 
@@ -85,26 +77,14 @@ const AvatarMenu = () => {
         prevOpen.current = open
     }, [open])
 
-    const handleCreateNotification = () => {
-        setOpen(false)
-        router.push('/admin/notification/create')
-    }
-
     const handleChangePassword = () => {
         setOpen(false)
-        router.push('/change-password')
-    }
-
-    const handleSchedular = () => {
-        setOpen(false)
-        router.push('/user/schedular')
+        router.push('/auth/change-password')
     }
 
     const handleLogout = () => {
         setOpen(false)
-        sessionStorage.removeItem('auth_token')
-        // refetch()
-        router.push('/login')
+        router.push('/auth/login')
     }
 
     return (
@@ -303,7 +283,7 @@ const AvatarMenu = () => {
                                         </MenuItem>
                                     )} */}
 
-                                    <MenuItem
+                                    {/* <MenuItem
                                         onClick={handleCreateNotification}
                                         sx={{
                                             color: 'var(--text-color)',
@@ -316,9 +296,9 @@ const AvatarMenu = () => {
                                     >
                                         <PencilLine style={{ marginRight: '16px' }} />
                                         {t('COMMON.AVATAR_MENU.CREATE_NOTIFICATIONS')}
-                                    </MenuItem>
+                                    </MenuItem> */}
 
-                                    <MenuItem
+                                    {/* <MenuItem
                                         onClick={handleSchedular}
                                         sx={{
                                             color: 'var(--text-color)',
@@ -331,21 +311,22 @@ const AvatarMenu = () => {
                                     >
                                         <CalendarClock style={{ marginRight: '16px' }} />
                                         {t('COMMON.AVATAR_MENU.SCHEDULAR')}
-                                    </MenuItem>
+                                    </MenuItem> */}
 
-                                    {/* <MenuItem
-                                        onClick={handleClose}
+                                    <MenuItem
+                                        onClick={() => router.push('/user')}
                                         sx={{
                                             color: 'var(--text-color)',
                                             borderRadius: '8px',
+                                            padding: '9px 12px',
                                             '&:hover': {
                                                 backgroundColor: 'var(--background-color-item-hover)'
                                             }
                                         }}
                                     >
-                                        <AccessTimeOutlinedIcon sx={{ mr: 2 }} />
-                                        {t('COMMON.AVATAR_MENU.LOGIN_HISTORY')}
-                                    </MenuItem> */}
+                                        <LocalMallOutlinedIcon sx={{ mr: 2 }} />
+                                        {t('COMMON.AVATAR_MENU.CUSTOMER_PAGE')}
+                                    </MenuItem>
 
                                     <MenuItem
                                         onClick={handleChangePassword}

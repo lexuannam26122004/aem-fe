@@ -19,6 +19,7 @@ import { useSearchSupplierQuery } from '@/services/SupplierService'
 import { useCreateProductMutation } from '@/services/ProductService'
 import { useToast } from '@/hooks/useToast'
 import uploadImageToCloudinary from '@/common/uploadImageToCloudinary'
+import { useRouter } from 'next/navigation'
 
 type EnhancedSelectProps = {
     label: string
@@ -130,9 +131,10 @@ const ProductCreateForm = () => {
     const fileInputRef = useRef(null)
     const variantImageInputRefs = useRef({})
     const { t } = useTranslation('common')
+    const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
 
-    const [createProduct, { isLoading: isCreatingLoading }] = useCreateProductMutation()
+    const [createProduct] = useCreateProductMutation()
     const { data: categoryResponse, isLoading: isLoadingCategory } = useSearchCategoryQuery({
         pageSize: 50,
         pageNumber: 1
@@ -440,10 +442,10 @@ const ProductCreateForm = () => {
 
     const handleClose = e => {
         e.preventDefault()
-        console.log('Form closed')
+        router.push('/admin/products')
     }
 
-    if (isCreatingLoading || isLoadingCategory || isLoadingBrand || isLoadingFeature || isLoadingSupplier) {
+    if (isLoadingCategory || isLoadingBrand || isLoadingFeature || isLoadingSupplier) {
         return <Loading />
     }
 

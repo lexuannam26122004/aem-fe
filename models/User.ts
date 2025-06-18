@@ -21,6 +21,17 @@ export interface IUserUpdate {
     companyName?: string
 }
 
+export interface IAdminUser {
+    id: number
+    username: string
+    fullName: string
+    email: string
+    phoneNumber: string
+    birthday?: string
+    avatar?: string
+    roles: string[]
+}
+
 export interface IUser extends IUserUpdate {
     id: number
     username: string

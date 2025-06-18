@@ -398,7 +398,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                     fontSize: '15px'
                                                 }}
                                             >
-                                                {new Date(row.purchaseDate).toLocaleDateString('vi-VN', {
+                                                {new Date(row.orderDate).toLocaleDateString('vi-VN', {
                                                     day: '2-digit',
                                                     month: '2-digit',
                                                     year: 'numeric'
@@ -411,7 +411,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                     fontSize: '12px'
                                                 }}
                                             >
-                                                {new Date(row.purchaseDate).toLocaleString('vi-VN', {
+                                                {new Date(row.orderDate).toLocaleString('vi-VN', {
                                                     hour: '2-digit',
                                                     minute: '2-digit',
                                                     hour12: false

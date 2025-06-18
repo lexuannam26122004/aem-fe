@@ -17,6 +17,7 @@ import {
     FormControl,
     InputLabel
 } from '@mui/material'
+import { saveAs } from 'file-saver'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Divider, Paper } from '@mui/material'
@@ -26,9 +27,13 @@ import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime, formatCurrency } from '@/common/format'
-import { Download } from 'lucide-react'
-import { useGetRevenuePerformanceReportQuery } from '@/services/RevenueServices'
+import { Download, Loader2 } from 'lucide-react'
+import {
+    useGetRevenuePerformanceReportQuery,
+    useLazyExportRevenuePerformanceReportQuery
+} from '@/services/RevenueServices'
 import Loading from '@/components/Loading'
+import { useToast } from '@/hooks/useToast'
 
 function ReportTable() {
     const { t } = useTranslation('common')
@@ -95,6 +100,27 @@ function ReportTable() {
                 pageNumber: 1
             }
         })
+    }
+    const [exportTrigger, { isFetching: isFetchingExport }] = useLazyExportRevenuePerformanceReportQuery()
+    const toast = useToast()
+
+    const handleExport = async () => {
+        const result = await exportTrigger({
+            fromDate: filter.fromDate,
+            toDate: filter.toDate,
+            orderStatus: filter.orderStatus,
+            pageSize: filter.pageSize,
+            pageNumber: filter.pageNumber
+        })
+
+        if (result.data) {
+            const blob = new Blob([result.data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            })
+            saveAs(blob, `DoanhThu_${filter.fromDate}_${filter.toDate}.xlsx`)
+        } else {
+            toast('Có lỗi xảy ra khi xuất báo cáo', 'error')
+        }
     }
 
     if (isLoading) {
@@ -404,7 +430,10 @@ function ReportTable() {
                 </Box>
 
                 <Button
-                    startIcon={<Download />}
+                    startIcon={
+                        isFetchingExport ? <Loader2 size={20} className='animate-spin' /> : <Download size={20} />
+                    }
+                    onClick={handleExport}
                     sx={{
                         height: '51px',
                         backgroundColor: 'var(--background-color-button-save)',

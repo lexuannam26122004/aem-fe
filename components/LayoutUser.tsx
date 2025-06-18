@@ -158,7 +158,10 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                         </button>
 
                         {/* Zalo button */}
-                        <button
+                        <a
+                            href='https://zalo.me/0833367548' // Thay bằng số Zalo của bạn
+                            target='_blank'
+                            rel='noopener noreferrer'
                             className='bg-[#028fe3] text-white p-1 flex items-center rounded-full shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)] transition-all duration-300 group relative'
                             aria-label='Liên hệ qua Zalo'
                         >
@@ -174,10 +177,11 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                                     </div>
                                 </div>
                             </div>
-                        </button>
+                        </a>
 
                         {/* Call button */}
-                        <button
+                        <a
+                            href='tel:0833367548'
                             className='bg-gradient-to-r from-green-500 to-emerald-400 text-white p-3 rounded-full shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)] transition-all duration-300 group relative'
                             aria-label='Gọi điện tư vấn'
                         >
@@ -199,7 +203,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                                     </div>
                                 </div>
                             </div>
-                        </button>
+                        </a>
                     </div>
                 )}
 

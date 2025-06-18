@@ -101,6 +101,9 @@ body {
     --background-color-button-save: #ffffff;
     --text-color-button-save: #1c252e;
 
+    --background-color-all: #ffffff;
+    --text-color-all: #141a21;
+
     --background-color-confirm-delete: #ff5630;
     --background-color-confirm-delete-hover: #a72321;
 
@@ -218,6 +221,9 @@ body {
     --text-color-silver-selected: #fff;
 
     --coupon-color-code: #7e22ce;
+
+    --background-color-all: #1c252e;
+    --text-color-all: #fff;
 
     --background-color-button-view: #e2edfc;
     --background-color-button-edit: #fef8de;

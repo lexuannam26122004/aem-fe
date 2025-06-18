@@ -1,6 +1,8 @@
+'use client'
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Search, User, Heart, ShoppingCart, Menu, X, ChevronDown, Phone, Mail, MapPin, Bell, LogIn } from 'lucide-react'
+import { Search, User, Heart, ShoppingCart, Menu, X, ChevronDown, Phone, Mail, MapPin, LogIn } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
 import { userSelector } from '@/redux/slices/userSlice'
@@ -77,11 +79,24 @@ const UserHeader = () => {
                     </div>
                     <div className='flex items-center space-x-6'>
                         <Link
-                            href='/notifications'
+                            href='/user/compare-products'
                             className='flex items-center space-x-2 hover:text-blue-200 transition-colors'
                         >
-                            <Bell size={14} />
-                            <span>Thông báo</span>
+                            <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                className='w-4 h-4'
+                                fill='none'
+                                viewBox='0 0 24 24'
+                                stroke='currentColor'
+                            >
+                                <path
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                    strokeWidth={2}
+                                    d='M10 3H5a2 2 0 00-2 2v14a2 2 0 002 2h5m4-18h5a2 2 0 012 2v14a2 2 0 01-2 2h-5M12 8v8'
+                                />
+                            </svg>
+                            <span>So sánh sản phẩm</span>
                         </Link>
                         <Link
                             href='/#contact'

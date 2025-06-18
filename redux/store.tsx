@@ -21,7 +21,7 @@ import { CartApis } from '@/services/CartService'
 import { UserAuthApis } from '@/services/UserAuthService'
 import { userSlice } from './slices/userSlice'
 import { persistReducer, persistStore } from 'redux-persist'
-import storage from 'redux-persist/lib/storage' // sử dụng localStorage
+import storage from 'redux-persist/lib/storage'
 import { UserApis } from '@/services/UserService'
 import { CustomerAddressApis } from '@/services/CustomerAddressService'
 import { UserOrderApis } from '@/services/UserOrderService'
@@ -41,11 +41,13 @@ import { OrderInsightsApis } from '@/services/OrderInsightsService'
 import { CustomerReportApis } from '@/services/CustomerReportService'
 import { ActivityLogApis } from '@/services/ActivityLogService'
 import { InventoryReportApis } from '@/services/InventoryReportService'
+import { AuthApis } from '@/services/AuthService'
+import { productCompareSlice } from './slices/productCompareSlice'
 
 const persistConfig = {
     key: 'root',
     storage,
-    whitelist: ['user', 'products', 'carts']
+    whitelist: ['user', 'products', 'carts', 'productCompare']
 }
 const rootReducer = combineReducers({
     [userSlice.name]: userSlice.reducer,
@@ -86,7 +88,9 @@ const rootReducer = combineReducers({
     [OrderInsightsApis.reducerPath]: OrderInsightsApis.reducer,
     [CustomerReportApis.reducerPath]: CustomerReportApis.reducer,
     [ActivityLogApis.reducerPath]: ActivityLogApis.reducer,
-    [InventoryReportApis.reducerPath]: InventoryReportApis.reducer
+    [InventoryReportApis.reducerPath]: InventoryReportApis.reducer,
+    [AuthApis.reducerPath]: AuthApis.reducer,
+    [productCompareSlice.name]: productCompareSlice.reducer
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
@@ -129,7 +133,8 @@ export const store = configureStore({
             RevenueApis.middleware,
             CustomerReportApis.middleware,
             ActivityLogApis.middleware,
-            InventoryReportApis.middleware
+            InventoryReportApis.middleware,
+            AuthApis.middleware
         ) as any
 })
 

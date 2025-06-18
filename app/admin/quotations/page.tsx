@@ -52,7 +52,7 @@ function Page() {
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
     const countPending = countResponse?.data.pendingCount || 0
-    const countCompleted = countResponse?.data.completedCount || 0
+    const countCompleted = countResponse?.data.completed || 0
     const countCancelled = countResponse?.data.cancelledCount || 0
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {

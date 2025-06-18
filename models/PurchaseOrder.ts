@@ -10,7 +10,7 @@ export interface IPurchaseOrder {
     supplierEmail?: string
     supplierAddress?: string
     totalItems: number
-    purchaseDate: string
+    orderDate: string
     deliveryDate?: string
     totalAmount: number
     discountAmount?: number

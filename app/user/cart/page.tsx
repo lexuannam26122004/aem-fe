@@ -137,7 +137,9 @@ const CartPage = () => {
 
         setCarts(carts.map(item => (item.id === id ? { ...item, quantity: newQuantity } : item)))
 
-        debouncedChangeQuantity(changeQuantity, id, newQuantity, snapshot)
+        if (isAuthChecked && isAuthenticated) {
+            debouncedChangeQuantity(changeQuantity, id, newQuantity, snapshot)
+        }
     }
 
     useEffect(() => {

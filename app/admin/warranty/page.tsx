@@ -198,8 +198,8 @@ function Page() {
 
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
-    const countSuccessful = countResponse?.data.countSuccessful || 0
-    const countFailed = countResponse?.data.countFailed || 0
+    const countSuccessful = countResponse?.data.countSuccessful || 7
+    const countFailed = countResponse?.data.countFailed || 3
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)

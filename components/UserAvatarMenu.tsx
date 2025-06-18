@@ -123,7 +123,7 @@ const UserAvatarMenu = () => {
                         <span className='absolute inset-0 bg-gradient-to-r from-[#ffc41f] to-[#3675ff] rounded-full animate-spin [animation-duration:5s] z-0' />
                         <span className='absolute inset-[1.5px] bg-white rounded-full z-2' />
                         <img
-                            src={avatarPath || '/images/account.png'}
+                            src={avatarPath}
                             alt={fullName}
                             className='w-[37px] h-[37px] rounded-full object-cover relative z-10'
                         />

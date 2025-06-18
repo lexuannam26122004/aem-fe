@@ -17,11 +17,11 @@ import { Edit, EyeIcon, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import AlertDialog from '@/components/AlertDialog'
-import { useChangeIsPartnerSupplierMutation, useChangeStatusSupplierMutation } from '@/services/SupplierService'
 import { useToast } from '@/hooks/useToast'
 import { ICoupon, ICouponFilter } from '@/models/Coupon'
 import CouponDetailDialog from './DialogDetail'
 import DialogUpdate from './DialogUpdate'
+import { useDeleteCouponMutation } from '@/services/CouponService'
 
 function getStatusBgColor(row: ICoupon): string {
     if (isPastDate(row.expiryDate)) {
@@ -86,10 +86,8 @@ function DataTable({ data, setFilter, refetch }: IProps) {
     const [orderBy, setOrderBy] = useState<string>('')
     const [openDialog, setOpenDialog] = useState(false)
     const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null)
-    const [selectedChangeId, setSelectedChangeId] = useState<number | null>(null)
     const [typeAlert, setTypeAlert] = useState<number | null>(null)
-    const [changeStatusSupplierMutation, { isLoading: isLoadingDelete }] = useChangeStatusSupplierMutation()
-    const [changePartner, { isLoading: isLoadingChange }] = useChangeIsPartnerSupplierMutation()
+    const [deleteCoupon, { isLoading: isLoadingDelete }] = useDeleteCouponMutation()
     const [coupon, setCoupon] = useState<ICoupon | null>(null)
     const [updateId, setUpdateId] = useState<number | null>(null)
 
@@ -117,25 +115,10 @@ function DataTable({ data, setFilter, refetch }: IProps) {
         setCoupon(row)
     }
 
-    const handleChangePartner = async () => {
-        if (selectedChangeId) {
-            try {
-                await changePartner(selectedChangeId).unwrap()
-                refetch()
-                toast(t('COMMON.SUPPLIERS.UPDATE_PARTNER_SUCCESS'), 'success')
-            } catch {
-                toast(t('COMMON.SUPPLIERS.UPDATE_PARTNER_FAIL'), 'error')
-            }
-        }
-        setOpenDialog(false)
-        setSelectedChangeId(null)
-        setTypeAlert(null)
-    }
-
     const handleDeleteSupplier = async () => {
         if (selectedDeleteId) {
             try {
-                await changeStatusSupplierMutation(selectedDeleteId).unwrap()
+                await deleteCoupon(selectedDeleteId).unwrap()
                 refetch()
                 toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
             } catch {
@@ -666,20 +649,6 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                     buttonCancel={t('COMMON.ALERT_DIALOG.CANCEL')}
                     buttonConfirm={t('COMMON.ALERT_DIALOG.DELETE')}
                     onConfirm={() => handleDeleteSupplier()}
-                />
-            )}
-
-            {typeAlert === 1 && (
-                <AlertDialog
-                    title={t('COMMON.ALERT_DIALOG.CONFIRM')}
-                    isLoading={isLoadingChange}
-                    content={t('COMMON.SUPPLIERS.CONFIRM_UPDATE_PARTNER')}
-                    type='warning'
-                    open={openDialog}
-                    setOpen={setOpenDialog}
-                    buttonCancel={t('COMMON.ALERT_DIALOG.CANCEL')}
-                    buttonConfirm={t('COMMON.ALERT_DIALOG.OK')}
-                    onConfirm={() => handleChangePartner()}
                 />
             )}
 

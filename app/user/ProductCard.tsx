@@ -1,12 +1,15 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Heart, Star, ShoppingCart, Zap, Flame, ShoppingBag } from 'lucide-react'
+import React from 'react'
+import { Star, Zap, Flame } from 'lucide-react'
 import { formatCurrency } from '@/common/format'
 import { IProductSearch } from '@/models/Product'
 import { Tooltip } from '@mui/material'
-import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
+import { useDispatch, useSelector } from 'react-redux'
+import { addProductId, productCompareSelector, setProductIds } from '@/redux/slices/productCompareSlice'
+import { useToast } from '@/hooks/useToast'
+import { isArray } from 'lodash'
 
 interface IProductCardProps {
     product: IProductSearch
@@ -14,43 +17,41 @@ interface IProductCardProps {
 }
 
 const ProductCard = ({ product, isHotSale = false }: IProductCardProps) => {
-    const { t } = useTranslation('common')
     const router = useRouter()
-    const [isWishlisted, setIsWishlisted] = useState(false)
-    // const [isHovered, setIsHovered] = useState(false)
-    const buttons = [
-        {
-            id: 'wishlist',
-            tooltip: t('COMMON.USER.FAVORITE'),
-            icon: Heart,
-            onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
-                e.stopPropagation()
-                setIsWishlisted(!isWishlisted)
-            },
-            className: isWishlisted
-                ? 'bg-pink-600 text-white shadow-md'
-                : 'bg-white/90 text-gray-500 hover:bg-pink-100 hover:text-pink-600 hover:shadow-md',
-            iconClassName: isWishlisted ? 'fill-current' : ''
-        },
-        {
-            id: 'add-to-cart',
-            tooltip: t('COMMON.USER.ADD_TO_CART'),
-            icon: ShoppingBag,
 
-            onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
-                e.stopPropagation()
-            },
-            className: 'bg-white/90 text-gray-500 hover:bg-blue-100 hover:text-blue-600 hover:shadow-md'
-        },
-        {
-            id: 'shop-now',
-            tooltip: t('COMMON.USER.SHOP_NOW'),
-            icon: ShoppingCart,
+    // const buttons = [
+    //     {
+    //         id: 'wishlist',
+    //         tooltip: t('COMMON.USER.FAVORITE'),
+    //         icon: Heart,
+    //         onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+    //             e.stopPropagation()
+    //             setIsWishlisted(!isWishlisted)
+    //         },
+    //         className: isWishlisted
+    //             ? 'bg-pink-600 text-white shadow-md'
+    //             : 'bg-white/90 text-gray-500 hover:bg-pink-100 hover:text-pink-600 hover:shadow-md',
+    //         iconClassName: isWishlisted ? 'fill-current' : ''
+    //     },
+    //     {
+    //         id: 'add-to-cart',
+    //         tooltip: t('COMMON.USER.ADD_TO_CART'),
+    //         icon: ShoppingBag,
 
-            onClick: (e: React.MouseEvent<HTMLButtonElement>) => e.stopPropagation(),
-            className: 'bg-white/90 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600 hover:shadow-md'
-        }
-    ]
+    //         onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+    //             e.stopPropagation()
+    //         },
+    //         className: 'bg-white/90 text-gray-500 hover:bg-blue-100 hover:text-blue-600 hover:shadow-md'
+    //     },
+    //     {
+    //         id: 'shop-now',
+    //         tooltip: t('COMMON.USER.SHOP_NOW'),
+    //         icon: ShoppingCart,
+
+    //         onClick: (e: React.MouseEvent<HTMLButtonElement>) => e.stopPropagation(),
+    //         className: 'bg-white/90 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600 hover:shadow-md'
+    //     }
+    // ]
 
     const renderStars = (rating: number) => {
         const fullStars = Math.floor(rating)
@@ -64,6 +65,35 @@ const ProductCard = ({ product, isHotSale = false }: IProductCardProps) => {
                 {hasHalfStar && <Star className='w-4 h-4 fill-[#ffba17] text-[#ffba17] opacity-50' />}
             </div>
         )
+    }
+
+    const dispatch = useDispatch()
+    const compareIds = useSelector(productCompareSelector) || []
+    const toast = useToast()
+
+    const handleCompare = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation()
+
+        console.log('handleCompare', product.id, compareIds)
+
+        if (isArray(compareIds) && compareIds.includes(product.id)) {
+            toast('Sản phẩm đã có trong danh sách so sánh', 'info')
+            return
+        }
+
+        if (isArray(compareIds) && compareIds.length >= 2) {
+            toast('Chỉ có thể so sánh tối đa 2 sản phẩm', 'error')
+            return
+        }
+
+        if (compareIds.length === 0) {
+            dispatch(setProductIds([product.id]))
+            toast('Đã thêm vào danh sách so sánh', 'success')
+            return
+        }
+
+        dispatch(addProductId(product.id))
+        toast('Đã thêm vào danh sách so sánh', 'success')
     }
 
     const buttonClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -128,7 +158,7 @@ const ProductCard = ({ product, isHotSale = false }: IProductCardProps) => {
 
                     {/* Quick Actions */}
                     <div className='absolute bottom-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0'>
-                        {buttons.map(button => (
+                        {/* {buttons.map(button => (
                             <Tooltip key={button.id} title={button.tooltip} arrow placement='top'>
                                 <button
                                     onClick={button.onClick}
@@ -139,7 +169,29 @@ const ProductCard = ({ product, isHotSale = false }: IProductCardProps) => {
                                     })}
                                 </button>
                             </Tooltip>
-                        ))}
+                        ))} */}
+
+                        <Tooltip title='So sánh sản phẩm' arrow placement='top'>
+                            <button
+                                onClick={handleCompare}
+                                className='p-2 rounded-full backdrop-blur-sm transition-all duration-300 bg-white/90 text-gray-500 hover:bg-purple-100 hover:text-purple-600 hover:shadow-md'
+                            >
+                                <svg
+                                    xmlns='http://www.w3.org/2000/svg'
+                                    className='w-5 h-5'
+                                    fill='none'
+                                    viewBox='0 0 24 24'
+                                    stroke='currentColor'
+                                >
+                                    <path
+                                        strokeLinecap='round'
+                                        strokeLinejoin='round'
+                                        strokeWidth={2}
+                                        d='M10 3H5a2 2 0 00-2 2v14a2 2 0 002 2h5m4-18h5a2 2 0 012 2v14a2 2 0 01-2 2h-5M12 8v8'
+                                    />
+                                </svg>
+                            </button>
+                        </Tooltip>
                     </div>
                 </div>
 

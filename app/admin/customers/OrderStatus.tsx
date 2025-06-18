@@ -45,7 +45,7 @@ export default function OrderStatusChart() {
             {
                 name: 'Tỉ lệ đơn hàng',
                 type: 'pie',
-                radius: ['40%', '70%'],
+                radius: ['35%', '70%'],
                 center: ['50%', '40%'],
                 avoidLabelOverlap: true,
                 itemStyle: {

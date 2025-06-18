@@ -656,7 +656,7 @@ export default function OrderDetailPage() {
                                                     >
                                                         {orderDetail.discountShippingFee &&
                                                         orderDetail.discountShippingFee >= 0
-                                                            ? '- '
+                                                            ? '-'
                                                             : ''}
                                                         {formatCurrency(orderDetail.discountShippingFee || 0)}
                                                     </Typography>
@@ -695,9 +695,9 @@ export default function OrderDetailPage() {
                                                             textAlign: 'right'
                                                         }}
                                                     >
-                                                        {orderDetail.discountAmount &&
-                                                            orderDetail.discountAmount >= 0 &&
-                                                            '- '}
+                                                        {orderDetail.discountAmount && orderDetail.discountAmount >= 0
+                                                            ? '-'
+                                                            : ''}
                                                         {formatCurrency(orderDetail.discountAmount || 0)}
                                                     </Typography>
                                                 </TableCell>
@@ -1084,9 +1084,10 @@ export default function OrderDetailPage() {
                                                     fontWeight: 'bold'
                                                 }}
                                             >
-                                                {orderDetail.paymentMethod === 'cod' &&
-                                                orderDetail.orderStatus === 'pending'
-                                                    ? t('COMMON.ORDER.ORDER_PENDING')
+                                                {orderDetail.paymentMethod === 'cod'
+                                                    ? orderDetail.orderStatus === 'pending'
+                                                        ? t('COMMON.ORDER.ORDER_PENDING')
+                                                        : t('COMMON.ORDER.CONFIRMED')
                                                     : orderDetail.paymentTime
                                                     ? t('COMMON.ORDER.ORDER_PAID')
                                                     : t('COMMON.ORDER.PENDING_PAYMENT')}

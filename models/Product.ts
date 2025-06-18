@@ -149,4 +149,5 @@ export interface IProductFilter extends IFilter {
 
 export interface IProductAdminFilter extends IFilter {
     categoryId?: number
+    status?: string
 }

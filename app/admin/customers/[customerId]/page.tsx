@@ -20,10 +20,9 @@ import {
     RefreshCwIcon,
     ChevronRightIcon,
     ShoppingCartIcon,
-    MapPinHouse,
-    ArrowRight
+    MapPinHouse
 } from 'lucide-react'
-import { PlusIcon } from 'lucide-react'
+// import { PlusIcon } from 'lucide-react'
 import {
     Avatar,
     Box,
@@ -42,38 +41,68 @@ import {
     Typography
 } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { formatCurrency } from '@/common/format'
+import { formatCurrency, formatDate } from '@/common/format'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
 import TrendByCategories from '../TrendByCategories'
 import Chart from '../AverageByMonth'
 import OrderStatusChart from '../OrderStatus'
 import GetStyleCustomer from '@/components/GetStyleCustomer'
+import { usePathname, useRouter } from 'next/navigation'
+import RateInventoryChart from './RateInventoryChart'
+import { useGetByIdCustomerQuery } from '@/services/CustomerService'
+import Loading from '@/components/Loading'
+import EmptyState from '@/components/EmptyState'
 
-const customerNotes = [
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-1.webp',
-        content:
-            'The customer expressed interest in receiving consultations about new products, and as a follow-up, an email notification regarding the iPhone 15 Pro has been sent.',
-        date: '15/03/2025',
-        fullname: 'Nguyễn Văn Anh'
-    },
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-2.webp',
-        content:
-            'The customer has shown a preference for receiving updates and recommendations on new products, and an email notification with details about the iPhone 15 Pro has already been sent.',
-        date: '25/03/2025',
-        fullname: 'Lê Xuân Nam'
+export interface ICustomerDetail {
+    profile: {
+        fullName: string
+        username: string
+        avatar: string
+        gender: boolean
+        birthday: string
+        createdAt: string
+        status: boolean
+        phoneNumber: string
+        email: string
+        address: string
+        rank: string
     }
-]
 
-// Sample orders data
-const customerOrders = [
-    { id: 'ORD-2025031', date: '15/03/2025', total: 1250000, status: 'done', items: 3 },
-    { id: 'ORD-2025024', date: '12/02/2025', total: 850000, status: 'cancelled', items: 2 },
-    { id: 'ORD-2025018', date: '28/01/2025', total: 1750000, status: 'progressing', items: 4 },
-    { id: 'ORD-2024156', date: '14/12/2024', total: 650000, status: 'done', items: 1 }
-]
+    overview: {
+        totalSpent: number
+        orderCount: number
+        averageOrderValue: number
+        lastPurchaseDate: string | null
+        spendingChangeRate: number
+        averageOrderChangeRate: number
+    }
+
+    recentOrders: Array<{
+        orderCode: string
+        orderDate: string
+        productCount: number
+        total: number
+        status: string
+    }>
+
+    paymentStats: {
+        vnpay: number
+        momo: number
+        cod: number
+    }
+
+    orderStatusStats: {
+        completed: number
+        cancelled: number
+        returned: number
+    }
+
+    shoppingTrend: {
+        months: string[]
+        values: number[]
+    }
+}
 
 // Recent activity data
 const recentActivity = [
@@ -107,51 +136,51 @@ const recentActivity = [
     }
 ]
 
-const customer = {
-    id: 1,
-    fullName: 'Nguyễn Văn An',
-    username: 'nguyenvanan',
-    email: 'an.nguyen@gmail.com',
-    phoneNumber: '0987654321',
-    address: '123 Đường Lê Lợi, Quận 1, TP.HCM',
-    birthday: '1995-05-12',
-    avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-15.webp',
-    gender: 'Nam',
-    createdAt: '2024-03-01',
-    rank: 'gold',
-    lastPurchase: '2024-03-15',
-    totalOrders: 15,
-    totalSpent: 30000000,
-    isActive: true
-}
-
 function getStatusBgColor(status: string): string {
     if (status === 'cancelled') {
-        return 'var(--background-color-cancel)'
-    } else if (status === 'progressing') {
-        return 'var(--background-color-pending)'
+        return 'var(--background-color-cancel-selected)'
+    } else if (status === 'delivered') {
+        return 'var(--background-color-success-selected)'
+    } else if (status === 'pending') {
+        return 'var(--background-color-pending-selected)'
+    } else if (status === 'returned') {
+        return 'var(--background-color-silver-selected)'
+    } else if (status === 'processing') {
+        return 'var(--background-color-pink-selected)'
     } else {
-        return 'var(--background-color-success)'
+        return 'var(--background-color-blue-selected)'
     }
 }
 
 function getBorderColor(status: string): string {
     if (status === 'cancelled') {
-        return '1px solid var(--border-color-cancel)'
-    } else if (status === 'progressing') {
-        return '1px solid var(--border-color-pending)'
+        return 'var(--border-color-cancel-selected)'
+    } else if (status === 'delivered') {
+        return 'var(--border-color-success-selected)'
+    } else if (status === 'pending') {
+        return 'var(--border-color-pending-selected)'
+    } else if (status === 'returned') {
+        return 'var(--border-color-silver-selected)'
+    } else if (status === 'processing') {
+        return 'var(--border-color-pink-selected)'
     } else {
-        return '1px solid var(--border-color-success)'
+        return 'var(--border-color-blue-selected)'
     }
 }
 
 function getStatusTextColor(status: string): string {
     if (status === 'cancelled') {
-        return 'var(--text-color-cancel)'
-    } else if (status === 'progressing') {
-        return 'var(--text-color-pending)'
+        return 'var(--text-color-cancel-selected)'
+    } else if (status === 'delivered') {
+        return 'var(--text-color-success-selected)'
+    } else if (status === 'pending') {
+        return 'var(--text-color-pending-selected)'
+    } else if (status === 'returned') {
+        return 'var(--text-color-silver-selected)'
+    } else if (status === 'processing') {
+        return 'var(--text-color-pink-selected)'
     } else {
-        return 'var(--text-color-success)'
+        return 'var(--text-color-blue-selected)'
     }
 }
 
@@ -159,8 +188,20 @@ export default function Page() {
     const [activeTab, setActiveTab] = useState('info')
     const { t } = useTranslation('common')
     const { theme } = useTheme()
+    const router = useRouter()
+    const pathname = usePathname()
+    const customerId = pathname.split('/').pop() || ''
 
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
+    const { data: customerData, isLoading, error } = useGetByIdCustomerQuery(customerId)
+    const customer: ICustomerDetail = customerData?.data || {}
+
+    if (isLoading) {
+        return <Loading />
+    }
+
+    if (error) {
+        return <EmptyState />
+    }
 
     const option = {
         grid: {
@@ -172,7 +213,7 @@ export default function Page() {
         },
         xAxis: {
             type: 'category',
-            data: months,
+            data: customer?.shoppingTrend?.months,
             axisLine: {
                 lineStyle: {
                     color: theme === 'light' ? '#d9d9d9' : '#444444'
@@ -244,7 +285,7 @@ export default function Page() {
         series: [
             {
                 name: t('COMMON.CUSTOMER.REVENUE'),
-                data: [820000, 932700, 601000, 400034, 1290000, 883044, 1320000],
+                data: customer?.shoppingTrend?.values || [],
                 type: 'line',
                 smooth: true,
                 symbol: 'circle',
@@ -335,10 +376,10 @@ export default function Page() {
                                         p: 0.75
                                     }}
                                 >
-                                    {customer.avatarPath ? (
+                                    {customer.profile.avatar ? (
                                         <Avatar
-                                            src={customer.avatarPath}
-                                            alt={customer.fullName}
+                                            src={customer.profile.avatar}
+                                            alt={customer.profile.fullName}
                                             sx={{
                                                 height: 96,
                                                 width: 96,
@@ -359,11 +400,11 @@ export default function Page() {
                                                 boxShadow: 3
                                             }}
                                         >
-                                            {customer.fullName.charAt(0)}
+                                            {customer.profile.fullName.charAt(0)}
                                         </Avatar>
                                     )}
                                 </Box>
-                                {customer.isActive && (
+                                {customer.profile.status && (
                                     <Box
                                         sx={{
                                             position: 'absolute',
@@ -387,11 +428,11 @@ export default function Page() {
                                 }}
                             >
                                 <Typography variant='h4' fontWeight='bold'>
-                                    {customer.fullName}
+                                    {customer.profile.fullName}
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1 }}>
-                                    {<GetStyleCustomer customerRank={customer.rank} />}
-                                    {customer.isActive ? (
+                                    {<GetStyleCustomer customerRank={customer.profile.rank} />}
+                                    {customer.profile.status ? (
                                         <Chip
                                             icon={
                                                 <CheckCircleIcon
@@ -439,7 +480,7 @@ export default function Page() {
                                     }}
                                 >
                                     <UserCircleIcon style={{ width: 16, height: 16, marginRight: 0.5 }} />
-                                    <Typography variant='body2'> {customer.username}</Typography>
+                                    <Typography variant='body2'> {customer.profile.username}</Typography>
                                 </Box>
                             </Box>
                         </Box>
@@ -504,13 +545,13 @@ export default function Page() {
                                 >
                                     <PackageIcon style={{ width: 16, height: 16, marginRight: 0.5 }} />
                                     <Typography variant='body2'>
-                                        {customer.totalOrders} {t('COMMON.CUSTOMER.ORDER')}
+                                        {customer.overview.orderCount} {t('COMMON.CUSTOMER.ORDER')}
                                     </Typography>
                                 </Box>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <CalendarIcon style={{ width: 16, height: 16, marginRight: 0.5 }} />
                                     <Typography variant='body2'>
-                                        {t('COMMON.CUSTOMER.CREATED_AT')} {customer.createdAt}
+                                        {t('COMMON.CUSTOMER.CREATED_AT')} {formatDate(customer.profile.createdAt)}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -556,7 +597,7 @@ export default function Page() {
                                     mb: 1
                                 }}
                             >
-                                {customer.totalSpent.toLocaleString()} VND
+                                {formatCurrency(customer.overview.totalSpent)}
                             </Typography>
                             <Box
                                 sx={{
@@ -611,7 +652,7 @@ export default function Page() {
                                     mb: 1
                                 }}
                             >
-                                {customer.totalOrders}
+                                {customer.overview.orderCount}
                             </Typography>
                             <Box
                                 sx={{
@@ -627,7 +668,9 @@ export default function Page() {
                                         fontSize: '14px'
                                     }}
                                 >
-                                    {t('COMMON.CUSTOMER.LAST_PURCHASE', { value: customer.lastPurchase })}
+                                    {t('COMMON.CUSTOMER.LAST_PURCHASE', {
+                                        value: formatDate(customer.overview.lastPurchaseDate) || 'N/A'
+                                    })}
                                 </Typography>
                             </Box>
                         </Paper>
@@ -707,7 +750,10 @@ export default function Page() {
                                     mb: 1
                                 }}
                             >
-                                {Math.round(customer.totalSpent / customer.totalOrders).toLocaleString()} VND
+                                {Math.round(
+                                    customer.overview.totalSpent / customer.overview.orderCount
+                                ).toLocaleString()}{' '}
+                                VND
                             </Typography>
                             <Box
                                 sx={{
@@ -800,7 +846,7 @@ export default function Page() {
                             textTransform: 'none'
                         }}
                     />
-                    <Tab
+                    {/* <Tab
                         label={t('COMMON.CUSTOMER.STATISTIC')}
                         value='stats'
                         iconPosition='start'
@@ -821,7 +867,7 @@ export default function Page() {
                             fontWeight: 'bold',
                             textTransform: 'none'
                         }}
-                    />
+                    /> */}
                 </Tabs>
 
                 <Box
@@ -917,11 +963,11 @@ export default function Page() {
                                                         sx={{
                                                             fontSize: '15px',
                                                             color: 'var(--text-color)',
-                                                            fontWeight: 'bold',
+                                                            // fontWeight: 'bold',
                                                             borderBottom: '1px dashed var(--border-color)'
                                                         }}
                                                     >
-                                                        {customer.fullName}
+                                                        {customer.profile.fullName}
                                                     </TableCell>
                                                 </TableRow>
 
@@ -940,11 +986,11 @@ export default function Page() {
                                                         sx={{
                                                             fontSize: '15px',
                                                             color: 'var(--text-color)',
-                                                            fontWeight: 'bold',
+                                                            // fontWeight: 'bold',
                                                             borderBottom: '1px dashed var(--border-color)'
                                                         }}
                                                     >
-                                                        {customer.username}
+                                                        {customer.profile.username}
                                                     </TableCell>
                                                 </TableRow>
 
@@ -963,11 +1009,13 @@ export default function Page() {
                                                         sx={{
                                                             fontSize: '15px',
                                                             color: 'var(--text-color)',
-                                                            fontWeight: 'bold',
+                                                            // fontWeight: 'bold',
                                                             borderBottom: '1px dashed var(--border-color)'
                                                         }}
                                                     >
-                                                        {customer.gender}
+                                                        {customer.profile.gender
+                                                            ? t('COMMON.EMPLOYEES.MALE')
+                                                            : t('COMMON.EMPLOYEES.FEMALE')}
                                                     </TableCell>
                                                 </TableRow>
 
@@ -987,12 +1035,12 @@ export default function Page() {
                                                         sx={{
                                                             fontSize: '15px',
                                                             color: 'var(--text-color)',
-                                                            fontWeight: 'bold',
+                                                            // fontWeight: 'bold',
                                                             paddingBottom: 0,
                                                             borderBottom: 'none'
                                                         }}
                                                     >
-                                                        {customer.birthday}
+                                                        {formatDate(customer.profile.birthday)}
                                                     </TableCell>
                                                 </TableRow>
                                             </TableBody>
@@ -1044,12 +1092,12 @@ export default function Page() {
                                                                 display: 'flex',
                                                                 color: 'var(--text-color)',
                                                                 alignItems: 'center',
-                                                                fontWeight: 'bold',
+                                                                // fontWeight: 'bold',
                                                                 fontSize: '15px'
                                                             }}
                                                         >
                                                             <MapPinHouse className='w-5 h-5 mr-3 text-blue-400 flex-shrink-0 mt-0.5' />
-                                                            {customer.address}
+                                                            {customer.profile.address}
                                                         </Box>
                                                     </TableCell>
                                                 </TableRow>
@@ -1075,12 +1123,12 @@ export default function Page() {
                                                                 display: 'flex',
                                                                 color: 'var(--text-color)',
                                                                 alignItems: 'center',
-                                                                fontWeight: 'bold',
+                                                                // fontWeight: 'bold',
                                                                 fontSize: '15px'
                                                             }}
                                                         >
                                                             <MailIcon className='w-5 h-5 mr-3 text-blue-400 flex-shrink-0 mt-0.5' />
-                                                            {customer.email}
+                                                            {customer.profile.email}
                                                         </Box>
                                                     </TableCell>
                                                 </TableRow>
@@ -1108,12 +1156,12 @@ export default function Page() {
                                                                 display: 'flex',
                                                                 color: 'var(--text-color)',
                                                                 alignItems: 'center',
-                                                                fontWeight: 'bold',
+                                                                // fontWeight: 'bold',
                                                                 fontSize: '15px'
                                                             }}
                                                         >
                                                             <PhoneIcon className='w-5 h-5 mr-3 text-blue-400 flex-shrink-0 mt-0.5' />
-                                                            {customer.phoneNumber}
+                                                            {customer.profile.phoneNumber}
                                                         </Box>
                                                     </TableCell>
                                                 </TableRow>
@@ -1261,257 +1309,237 @@ export default function Page() {
                         <Box
                             sx={{
                                 display: 'flex',
+                                overflowX: 'auto',
                                 flexDirection: 'column',
                                 gap: '24px'
                             }}
                         >
-                            <Typography
-                                sx={{
-                                    fontSize: '18px',
-                                    color: 'var(--text-color)',
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                {t('COMMON.CUSTOMER.HISTORY_ORDERS')}
-                            </Typography>
-
-                            <Box
-                                sx={{
-                                    borderRadius: '8px',
-                                    overflow: 'hidden',
-                                    border: '1px solid var(--border-color)'
-                                }}
-                            >
-                                <TableContainer
+                            <Grid container spacing='24px'>
+                                <Grid
+                                    size={4}
                                     sx={{
-                                        maxHeight: '295px',
-                                        '&::-webkit-scrollbar': {
-                                            width: '7px',
-                                            height: '7px',
-                                            backgroundColor: 'var(--background-color)'
-                                        },
-                                        '&::-webkit-scrollbar-thumb': {
-                                            backgroundColor: 'var(--scrollbar-color)',
-                                            borderRadius: '10px'
-                                        },
-                                        backgroundColor: 'var(--background-color-item)',
-                                        overflow: 'auto'
+                                        height: '380px'
                                     }}
                                 >
-                                    <Table stickyHeader>
-                                        <TableHead
+                                    <RateInventoryChart data={customer.orderStatusStats} />
+                                </Grid>
+
+                                <Grid size={8}>
+                                    <Box
+                                        sx={{
+                                            borderRadius: '8px',
+                                            overflow: 'hidden',
+                                            border: '1px solid var(--border-color)'
+                                        }}
+                                    >
+                                        <TableContainer
                                             sx={{
-                                                position: 'sticky',
-                                                top: 0,
-                                                zIndex: 1,
-                                                width: '100%'
+                                                maxHeight: '380px',
+                                                '&::-webkit-scrollbar': {
+                                                    width: '7px',
+                                                    height: '7px',
+                                                    backgroundColor: 'var(--background-color)'
+                                                },
+                                                '&::-webkit-scrollbar-thumb': {
+                                                    backgroundColor: 'var(--scrollbar-color)',
+                                                    borderRadius: '10px'
+                                                },
+                                                backgroundColor: 'var(--background-color-item)',
+                                                overflow: 'auto'
                                             }}
                                         >
-                                            <TableRow
-                                                sx={{
-                                                    '&:last-child td, &:last-child th': {
-                                                        border: 'none'
-                                                    }
-                                                }}
-                                            >
-                                                <TableCell
+                                            <Table stickyHeader>
+                                                <TableHead
                                                     sx={{
-                                                        color: 'var(--label-title-color)',
-                                                        fontSize: '14px',
-                                                        backgroundColor: 'var(--background-color-table-header)',
-                                                        fontWeight: 'bold'
+                                                        position: 'sticky',
+                                                        top: 0,
+                                                        zIndex: 1,
+                                                        width: '100%'
                                                     }}
                                                 >
-                                                    {t('COMMON.CUSTOMER.ORDER_ID')}
-                                                </TableCell>
-                                                <TableCell
-                                                    sx={{
-                                                        backgroundColor: 'var(--background-color-table-header)',
-                                                        color: 'var(--label-title-color)',
-                                                        fontSize: '14px',
-                                                        fontWeight: 'bold'
-                                                    }}
-                                                >
-                                                    {t('COMMON.CUSTOMER.ORDER_DATE')}
-                                                </TableCell>
-                                                <TableCell
-                                                    sx={{
-                                                        backgroundColor: 'var(--background-color-table-header)',
-                                                        color: 'var(--label-title-color)',
-                                                        fontSize: '14px',
-                                                        fontWeight: 'bold'
-                                                    }}
-                                                >
-                                                    {t('COMMON.CUSTOMER.COUNT')}
-                                                </TableCell>
-                                                <TableCell
-                                                    sx={{
-                                                        backgroundColor: 'var(--background-color-table-header)',
-                                                        color: 'var(--label-title-color)',
-                                                        fontSize: '14px',
-                                                        fontWeight: 'bold',
-                                                        textAlign: 'right'
-                                                    }}
-                                                >
-                                                    {t('COMMON.CUSTOMER.TOTAL')}
-                                                </TableCell>
-                                                <TableCell
-                                                    sx={{
-                                                        backgroundColor: 'var(--background-color-table-header)',
-                                                        color: 'var(--label-title-color)',
-                                                        fontSize: '14px',
-                                                        textAlign: 'center',
-                                                        fontWeight: 'bold'
-                                                    }}
-                                                >
-                                                    {t('COMMON.CUSTOMER.STATUS')}
-                                                </TableCell>
-                                                <TableCell
-                                                    sx={{
-                                                        backgroundColor: 'var(--background-color-table-header)',
-                                                        color: 'var(--label-title-color)'
-                                                    }}
-                                                ></TableCell>
-                                            </TableRow>
-                                        </TableHead>
-
-                                        <TableBody>
-                                            {customerOrders.map((order, index) => (
-                                                <TableRow
-                                                    key={index}
-                                                    sx={{
-                                                        '&:last-child td, &:last-child th': {
-                                                            border: 'none'
-                                                        },
-                                                        transition: 'background-color 60ms ease-in-out',
-                                                        backgroundColor:
-                                                            index % 2 === 1
-                                                                ? 'var(--background-color-table-body)'
-                                                                : 'transparent',
-                                                        '&:hover': {
-                                                            backgroundColor: 'var(--hover-color-table-body) !important'
-                                                        }
-                                                    }}
-                                                >
-                                                    <TableCell
+                                                    <TableRow
                                                         sx={{
-                                                            borderBottom: '1px dashed var(--border-color)',
-                                                            fontSize: '15px',
-                                                            color: '#0087ff',
-                                                            fontWeight: 'bold'
+                                                            '&:last-child td, &:last-child th': {
+                                                                border: 'none'
+                                                            }
                                                         }}
                                                     >
-                                                        {order.id}
-                                                    </TableCell>
-                                                    <TableCell
-                                                        sx={{
-                                                            borderBottom: '1px dashed var(--border-color)',
-                                                            color: 'var(--text-color)',
-                                                            fontSize: '15px'
-                                                        }}
-                                                    >
-                                                        {order.date}
-                                                    </TableCell>
-                                                    <TableCell
-                                                        sx={{
-                                                            borderBottom: '1px dashed var(--border-color)',
-                                                            color: 'var(--text-color)',
-                                                            textTransform: 'none',
-                                                            fontSize: '15px'
-                                                        }}
-                                                    >
-                                                        {order.items} {t('COMMON.CUSTOMER.PRODUCTS')}
-                                                    </TableCell>
-                                                    <TableCell
-                                                        sx={{
-                                                            borderBottom: '1px dashed var(--border-color)',
-                                                            fontSize: '15px',
-                                                            color: 'var(--text-color)',
-                                                            textAlign: 'right',
-                                                            fontWeight: 'bold'
-                                                        }}
-                                                    >
-                                                        {formatCurrency(order.total)}
-                                                    </TableCell>
-                                                    <TableCell
-                                                        sx={{
-                                                            borderBottom: '1px dashed var(--border-color)',
-                                                            padding: '13px 16px',
-                                                            fontSize: '15px'
-                                                        }}
-                                                    >
-                                                        <Box
+                                                        <TableCell
                                                             sx={{
-                                                                borderRadius: '9999px',
-                                                                padding: '5px 12px',
-                                                                margin: 'auto',
-                                                                border: getBorderColor(order.status),
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                maxWidth: '110px',
-                                                                minWidth: '100px',
-                                                                justifyContent: 'center',
-                                                                backgroundColor: getStatusBgColor(order.status)
-                                                            }}
-                                                        >
-                                                            <Typography
-                                                                sx={{
-                                                                    fontSize: '13px',
-                                                                    overflow: 'hidden',
-                                                                    color: getStatusTextColor(order.status),
-                                                                    width: 'auto',
-                                                                    fontWeight: 'bold',
-                                                                    display: 'inline-block',
-                                                                    textOverflow: 'ellipsis',
-                                                                    whiteSpace: 'nowrap'
-                                                                }}
-                                                            >
-                                                                {order.status === 'done'
-                                                                    ? t('COMMON.CUSTOMER.DONE')
-                                                                    : order.status === 'progressing'
-                                                                    ? t('COMMON.CUSTOMER.PROGRESSING')
-                                                                    : t('COMMON.CUSTOMER.CANCELLED')}
-                                                            </Typography>
-                                                        </Box>
-                                                    </TableCell>
-                                                    <TableCell
-                                                        sx={{
-                                                            borderBottom: '1px dashed var(--border-color)'
-                                                        }}
-                                                    >
-                                                        <Box
-                                                            sx={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '8px',
-                                                                color: '#0087ff',
-                                                                cursor: 'pointer',
-                                                                userSelect: 'none',
-                                                                '&:hover': {
-                                                                    color: '#0078e3'
-                                                                },
+                                                                color: 'var(--label-title-color)',
+                                                                fontSize: '14px',
+                                                                backgroundColor: 'var(--background-color-table-header)',
                                                                 fontWeight: 'bold'
                                                             }}
                                                         >
-                                                            <Typography
+                                                            {t('COMMON.CUSTOMER.ORDER_ID')}
+                                                        </TableCell>
+                                                        <TableCell
+                                                            sx={{
+                                                                backgroundColor: 'var(--background-color-table-header)',
+                                                                color: 'var(--label-title-color)',
+                                                                fontSize: '14px',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        >
+                                                            {t('COMMON.CUSTOMER.ORDER_DATE')}
+                                                        </TableCell>
+                                                        <TableCell
+                                                            sx={{
+                                                                backgroundColor: 'var(--background-color-table-header)',
+                                                                color: 'var(--label-title-color)',
+                                                                fontSize: '14px',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        >
+                                                            {t('COMMON.CUSTOMER.COUNT')}
+                                                        </TableCell>
+                                                        <TableCell
+                                                            sx={{
+                                                                backgroundColor: 'var(--background-color-table-header)',
+                                                                color: 'var(--label-title-color)',
+                                                                fontSize: '14px',
+                                                                fontWeight: 'bold',
+                                                                textAlign: 'right'
+                                                            }}
+                                                        >
+                                                            {t('COMMON.CUSTOMER.TOTAL')}
+                                                        </TableCell>
+                                                        <TableCell
+                                                            sx={{
+                                                                backgroundColor: 'var(--background-color-table-header)',
+                                                                color: 'var(--label-title-color)',
+                                                                fontSize: '14px',
+                                                                textAlign: 'center',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        >
+                                                            {t('COMMON.CUSTOMER.STATUS')}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+
+                                                <TableBody>
+                                                    {customer?.recentOrders &&
+                                                        customer?.recentOrders.map((order, index) => (
+                                                            <TableRow
+                                                                key={index}
                                                                 sx={{
-                                                                    fontWeight: 'bold',
-                                                                    fontSize: '14px'
+                                                                    '&:last-child td, &:last-child th': {
+                                                                        border: 'none'
+                                                                    },
+                                                                    transition: 'background-color 60ms ease-in-out',
+                                                                    backgroundColor:
+                                                                        index % 2 === 1
+                                                                            ? 'var(--background-color-table-body)'
+                                                                            : 'transparent',
+                                                                    '&:hover': {
+                                                                        backgroundColor:
+                                                                            'var(--hover-color-table-body) !important'
+                                                                    }
                                                                 }}
                                                             >
-                                                                {t('COMMON.BUTTON.DETAIL')}
-                                                            </Typography>
-
-                                                            <ArrowRight height={16} width={16} />
-                                                        </Box>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                            </Box>
+                                                                <TableCell
+                                                                    sx={{
+                                                                        borderBottom: '1px dashed var(--border-color)',
+                                                                        fontSize: '15px',
+                                                                        color: '#0087ff',
+                                                                        fontWeight: 'bold'
+                                                                    }}
+                                                                    onClick={() =>
+                                                                        router.push(`/admin/orders/${order.orderCode}`)
+                                                                    }
+                                                                >
+                                                                    {order.orderCode}
+                                                                </TableCell>
+                                                                <TableCell
+                                                                    sx={{
+                                                                        borderBottom: '1px dashed var(--border-color)',
+                                                                        color: 'var(--text-color)',
+                                                                        fontSize: '15px'
+                                                                    }}
+                                                                >
+                                                                    {order.orderDate}
+                                                                </TableCell>
+                                                                <TableCell
+                                                                    sx={{
+                                                                        borderBottom: '1px dashed var(--border-color)',
+                                                                        color: 'var(--text-color)',
+                                                                        textTransform: 'none',
+                                                                        fontSize: '15px'
+                                                                    }}
+                                                                >
+                                                                    {order.productCount} {t('COMMON.CUSTOMER.PRODUCTS')}
+                                                                </TableCell>
+                                                                <TableCell
+                                                                    sx={{
+                                                                        borderBottom: '1px dashed var(--border-color)',
+                                                                        fontSize: '15px',
+                                                                        color: 'var(--text-color)',
+                                                                        textAlign: 'right',
+                                                                        fontWeight: 'bold'
+                                                                    }}
+                                                                >
+                                                                    {formatCurrency(order.total)}
+                                                                </TableCell>
+                                                                <TableCell
+                                                                    sx={{
+                                                                        borderBottom: '1px dashed var(--border-color)',
+                                                                        padding: '13px 16px',
+                                                                        fontSize: '15px'
+                                                                    }}
+                                                                >
+                                                                    <Box
+                                                                        sx={{
+                                                                            borderRadius: '9999px',
+                                                                            padding: '5px 12px',
+                                                                            margin: 'auto',
+                                                                            border: getBorderColor(order.status),
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            maxWidth: '110px',
+                                                                            minWidth: '100px',
+                                                                            justifyContent: 'center',
+                                                                            backgroundColor: getStatusBgColor(
+                                                                                order.status
+                                                                            )
+                                                                        }}
+                                                                    >
+                                                                        <Typography
+                                                                            sx={{
+                                                                                fontSize: '13px',
+                                                                                overflow: 'hidden',
+                                                                                color: getStatusTextColor(order.status),
+                                                                                width: 'auto',
+                                                                                fontWeight: 'bold',
+                                                                                display: 'inline-block',
+                                                                                textOverflow: 'ellipsis',
+                                                                                whiteSpace: 'nowrap'
+                                                                            }}
+                                                                        >
+                                                                            {order.status === 'pending' &&
+                                                                                t('COMMON.ORDER.PENDING')}
+                                                                            {order.status === 'returned' &&
+                                                                                t('COMMON.ORDER.RETURNED')}
+                                                                            {order.status === 'processing' &&
+                                                                                t('COMMON.ORDER.PROCESSING')}
+                                                                            {order.status === 'shipping' &&
+                                                                                t('COMMON.ORDER.SHIPPING')}
+                                                                            {order.status === 'delivered' &&
+                                                                                t('COMMON.ORDER.DELIVERED')}
+                                                                            {order.status === 'cancelled' &&
+                                                                                t('COMMON.ORDER.CANCELLED')}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                </TableBody>
+                                            </Table>
+                                        </TableContainer>
+                                    </Box>
+                                </Grid>
+                            </Grid>
 
                             <Grid container columnSpacing='24px'>
                                 <Grid
@@ -1589,7 +1617,7 @@ export default function Page() {
                                                     fontSize: '14px'
                                                 }}
                                             >
-                                                {t('COMMON.CUSTOMER.CREDIT_CARD')}
+                                                VNPAY
                                             </Typography>
 
                                             <Typography
@@ -1598,7 +1626,7 @@ export default function Page() {
                                                     fontSize: '14px'
                                                 }}
                                             >
-                                                VISA **** 1234
+                                                {t('COMMON.CUSTOMER.DIGITAL_WALLET')}
                                             </Typography>
                                         </Box>
 
@@ -1610,7 +1638,7 @@ export default function Page() {
                                                 ml: 'auto'
                                             }}
                                         >
-                                            65%
+                                            {customer?.paymentStats.vnpay}%
                                         </Typography>
                                     </Paper>
 
@@ -1669,7 +1697,7 @@ export default function Page() {
                                                 ml: 'auto'
                                             }}
                                         >
-                                            25%
+                                            {customer?.paymentStats.momo}%
                                         </Typography>
                                     </Paper>
 
@@ -1727,7 +1755,7 @@ export default function Page() {
                                                 ml: 'auto'
                                             }}
                                         >
-                                            10%
+                                            {customer?.paymentStats.cod}%
                                         </Typography>
                                     </Paper>
                                 </Grid>
@@ -1828,7 +1856,7 @@ export default function Page() {
                 </Box>
             </Paper>
 
-            <Paper
+            {/* <Paper
                 sx={{
                     borderRadius: '15px',
                     backgroundColor: 'var(--background-color-item)',
@@ -1889,7 +1917,7 @@ export default function Page() {
                     </Button>
                 </Box>
 
-                <Box
+                 <Box
                     sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -1949,8 +1977,8 @@ export default function Page() {
                             </Typography>
                         </Box>
                     ))}
-                </Box>
-            </Paper>
+                </Box> 
+            </Paper> */}
         </Box>
     )
 }

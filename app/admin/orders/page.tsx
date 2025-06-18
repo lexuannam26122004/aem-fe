@@ -10,8 +10,7 @@ import {
     Paper,
     TextField,
     InputAdornment,
-    Divider,
-    Button
+    Divider
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -22,7 +21,6 @@ import Tab from '@mui/material/Tab'
 import { debounce } from 'lodash'
 import { useCallback } from 'react'
 import Loading from '@/components/Loading'
-import { CirclePlus } from 'lucide-react'
 import { useSearchOrderQuery, useGetCountTypeQuery } from '@/services/OrderService'
 import { IOrder, IOrderFilter } from '@/models/Order'
 import dayjs from 'dayjs'
@@ -44,7 +42,6 @@ function Page() {
         toDate: dayjs().format('YYYY-MM-DD')
     })
     const [keyword, setKeyword] = useState('')
-    const [open, setOpen] = useState(false)
 
     const { data: dataResponse, isLoading, isFetching, refetch } = useSearchOrderQuery(filter)
 
@@ -126,12 +123,25 @@ function Page() {
         if (newValue !== undefined) {
             setFilter(prev => ({
                 ...prev,
-                isType: newValue
+                orderStatus:
+                    newValue === 0
+                        ? undefined
+                        : newValue === 1
+                        ? 'pending'
+                        : newValue === 2
+                        ? 'processing'
+                        : newValue === 3
+                        ? 'shipping'
+                        : newValue === 4
+                        ? 'delivered'
+                        : newValue === 5
+                        ? 'cancelled'
+                        : 'returned'
             }))
         } else {
             setFilter(prev => ({
                 ...prev,
-                isType: undefined
+                orderStatus: undefined
             }))
         }
     }
@@ -623,30 +633,6 @@ function Page() {
                                 />
                             </LocalizationProvider>
                         </Box>
-
-                        <Button
-                            variant='contained'
-                            startIcon={<CirclePlus />}
-                            sx={{
-                                ml: 'auto',
-                                height: '51px',
-                                backgroundColor: 'var(--background-color-button-save)',
-                                width: 'auto',
-                                padding: '0px 30px',
-                                '&:hover': {
-                                    backgroundColor: 'var(--background-color-button-save-hover)'
-                                },
-                                color: 'var(--text-color-button-save)',
-                                fontSize: '15px',
-                                borderRadius: '8px',
-                                fontWeight: 'bold',
-                                whiteSpace: 'nowrap',
-                                textTransform: 'none'
-                            }}
-                            onClick={() => setOpen(true)}
-                        >
-                            {t('COMMON.BUTTON.CREATE')}
-                        </Button>
                     </Box>
 
                     <OrderTable data={orderData} refetch={refetchPage} setFilter={setFilter} />

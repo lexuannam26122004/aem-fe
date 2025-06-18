@@ -29,6 +29,33 @@ export const OrderInsightsApis = createApi({
         // GET: /api/admin/order-insights/detailed-report?fromDate=...&toDate=...
         getDetailedOrderReport: builder.query<IResponse, IDateRange>({
             query: ({ fromDate, toDate }) => `detailed-report?fromDate=${fromDate}&toDate=${toDate}`
+        }),
+
+        exportDetailedOrderReport: builder.query<Blob, IDateRange>({
+            async queryFn(arg, _api, _extraOptions, baseQuery) {
+                const { fromDate, toDate } = arg
+                const token = sessionStorage.getItem('auth_token')
+                const url = `/export?fromDate=${fromDate}&toDate=${toDate}`
+
+                const result = await baseQuery({
+                    url,
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    responseHandler: async response => {
+                        if (!response.ok) {
+                            throw new Error('Export failed')
+                        }
+                        return await response.blob()
+                    }
+                })
+
+                if ('error' in result) {
+                    return { error: result.error }
+                }
+                return { data: result.data as Blob }
+            }
         })
     })
 })
@@ -37,5 +64,6 @@ export const {
     useGetMonthlyOverviewQuery,
     useGetAvgOrderDurationQuery,
     useGetOrderValueSegmentsQuery,
-    useGetDetailedOrderReportQuery
+    useGetDetailedOrderReportQuery,
+    useLazyExportDetailedOrderReportQuery
 } = OrderInsightsApis
