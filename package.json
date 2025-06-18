@@ -72,6 +72,7 @@
     "date-fns": "^3.6.0",
     "date-fns-tz": "^3.2.0",
     "dayjs": "^1.11.13",
+    "deep-equal": "^2.2.3",
     "dompurify": "^3.2.5",
     "echarts-for-react": "^3.0.2",
     "editorjs-text-color-plugin": "^2.0.4",
@@ -107,6 +108,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/antd": "^0.12.32",
+    "@types/deep-equal": "^1.0.4",
     "@types/dompurify": "^3.0.5",
     "@types/lodash": "^4.17.15",
     "@types/moment": "^2.11.29",

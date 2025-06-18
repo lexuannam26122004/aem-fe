@@ -21,7 +21,6 @@ import AlertDialog from '@/components/AlertDialog'
 import { useDeleteProductMutation } from '@/services/ProductService'
 import { useToast } from '@/hooks/useToast'
 import { IProduct, IProductFilter } from '@/models/Product'
-import ProductDetailDialog from './DialogDetail'
 
 function getStatusBgColor(row: IProduct): string {
     if (row.stockQuantity === 0) {
@@ -73,7 +72,6 @@ function DataTable({ data, setFilter, refetch }: IProps) {
     const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null)
     const [selectedChangeId] = useState<number | null>(null)
     const [typeAlert, setTypeAlert] = useState<number | null>(null)
-    const [product, setProduct] = useState<IProduct | null>(null)
 
     const [changeStatusProduct, { isLoading: isLoadingDelete }] = useDeleteProductMutation()
 
@@ -115,7 +113,6 @@ function DataTable({ data, setFilter, refetch }: IProps) {
         }
         setOpenDialog(false)
         setSelectedDeleteId(null)
-        setProduct(null)
         setTypeAlert(null)
     }
 
@@ -423,7 +420,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                             }}
                                         >
                                             <Avatar
-                                                src={row.images[0]}
+                                                src={row.image}
                                                 sx={{
                                                     width: '60px',
                                                     height: '60px',
@@ -719,7 +716,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                             borderColor: '#96c5ff'
                                                         }
                                                     }}
-                                                    onClick={() => router.push(`/admin/products/detail`)}
+                                                    onClick={() => router.push(`/admin/products/${row.id}`)}
                                                 >
                                                     <EyeIcon size={16} color='#2563eb' />
                                                 </Box>
@@ -787,10 +784,6 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                     buttonConfirm={t('COMMON.ALERT_DIALOG.DELETE')}
                     onConfirm={() => handleDeleteSupplier()}
                 />
-            )}
-
-            {product && (
-                <ProductDetailDialog isOpen={product !== null} onClose={() => setProduct(null)} product={product} />
             )}
         </>
     )

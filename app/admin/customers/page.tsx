@@ -12,8 +12,7 @@ import {
     InputAdornment,
     Divider,
     FormControl,
-    InputLabel,
-    Button
+    InputLabel
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -24,187 +23,14 @@ import Tab from '@mui/material/Tab'
 import { debounce } from 'lodash'
 import { useCallback } from 'react'
 import Loading from '@/components/Loading'
-import { CircleAlert, CirclePlus } from 'lucide-react'
-import { useSearchCouponQuery, useGetCountTypeQuery } from '@/services/CouponService'
+import { CircleAlert } from 'lucide-react'
 import { ICustomer, ICustomerFilter } from '@/models/Customer'
 import dayjs from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime } from '@/common/format'
-
-const customers: ICustomer[] = [
-    {
-        id: 1,
-        fullName: 'Nguyễn Văn An',
-        username: 'nguyenvanan',
-        email: 'an.nguyen@gmail.com',
-        phoneNumber: '0987654321',
-        address: '123 Đường Lê Lợi, Quận 1, TP.HCM',
-        birthday: '1995-05-12',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2024-03-01T10:30:00',
-        rank: 'gold',
-        lastPurchase: '2024-03-15T14:00:00',
-        totalOrders: 15,
-        totalSpent: 30000000,
-        isActive: true
-    },
-    {
-        id: 2,
-        fullName: 'Trần Thị Bích Ngọc',
-        username: 'bichngoc',
-        email: 'ngoc.tran@gmail.com',
-        phoneNumber: '0912345678',
-        address: '45 Đường Hoàng Diệu, Đà Nẵng',
-        birthday: '1998-09-22',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2024-02-10T11:45:00',
-        rank: 'silver',
-        lastPurchase: '2024-03-18T10:15:00',
-        totalOrders: 10,
-        totalSpent: 15000000,
-        isActive: false
-    },
-    {
-        id: 3,
-        fullName: 'Lê Minh Tuấn',
-        username: 'leminhtuan',
-        email: 'tuan.le@gmail.com',
-        phoneNumber: '0978123456',
-        address: '90 Đường Phạm Ngũ Lão, Hà Nội',
-        birthday: '1990-12-05',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2023-12-20T09:00:00',
-        rank: 'gold',
-        lastPurchase: '2024-03-12T16:20:00',
-        totalOrders: 25,
-        totalSpent: 50000000,
-        isActive: true
-    },
-    {
-        id: 4,
-        fullName: 'Phạm Hồng Nhung',
-        username: 'hongnhung',
-        email: 'nhung.pham@gmail.com',
-        phoneNumber: '0934567890',
-        address: '12 Đường Trần Phú, Nha Trang',
-        birthday: '2000-03-08',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2024-01-05T13:15:00',
-        rank: 'new',
-        lastPurchase: '2024-02-28T11:30:00',
-        totalOrders: 3,
-        totalSpent: 2000000,
-        isActive: false
-    },
-    {
-        id: 5,
-        fullName: 'Đặng Quốc Bảo',
-        username: 'quocbao',
-        email: 'bao.dang@gmail.com',
-        phoneNumber: '0965432109',
-        address: '78 Đường Nguyễn Huệ, TP.HCM',
-        birthday: '1988-07-20',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2023-10-15T17:00:00',
-        rank: 'gold',
-        lastPurchase: '2024-03-10T09:45:00',
-        totalOrders: 30,
-        totalSpent: 60000000,
-        isActive: false
-    },
-    {
-        id: 6,
-        fullName: 'Vũ Thị Lan',
-        username: 'vuthilan',
-        email: 'lan.vu@gmail.com',
-        phoneNumber: '0956781234',
-        address: '56 Đường Lê Duẩn, Huế',
-        birthday: '1997-11-12',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2024-02-22T08:30:00',
-        rank: 'silver',
-        lastPurchase: '2024-03-16T14:50:00',
-        totalOrders: 12,
-        totalSpent: 18000000,
-        isActive: true
-    },
-    {
-        id: 7,
-        fullName: 'Trịnh Công Minh',
-        username: 'congminh',
-        email: 'minh.trinh@gmail.com',
-        phoneNumber: '0923456789',
-        address: '33 Đường Phan Chu Trinh, Đà Nẵng',
-        birthday: '1994-04-25',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2024-01-30T12:45:00',
-        rank: 'silver',
-        lastPurchase: '2024-03-14T17:10:00',
-        totalOrders: 20,
-        totalSpent: 40000000,
-        isActive: false
-    },
-    {
-        id: 8,
-        fullName: 'Hoàng Thị Mai',
-        username: 'hoangmai',
-        email: 'mai.hoang@gmail.com',
-        phoneNumber: '0909876543',
-        address: '22 Đường Lý Thường Kiệt, Cần Thơ',
-        birthday: '1999-06-30',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2024-03-01T10:00:00',
-        rank: 'new',
-        lastPurchase: '2024-03-20T13:30:00',
-        totalOrders: 5,
-        totalSpent: 7000000,
-        isActive: true
-    },
-    {
-        id: 9,
-        fullName: 'Ngô Đức Thịnh',
-        username: 'ngoducthinh',
-        email: 'thinh.ngo@gmail.com',
-        phoneNumber: '0943216789',
-        address: '67 Đường Bạch Đằng, Hải Phòng',
-        birthday: '1985-01-15',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2023-09-10T15:00:00',
-        rank: 'gold',
-        lastPurchase: '2024-03-19T18:00:00',
-        totalOrders: 40,
-        totalSpent: 80000000,
-        isActive: true
-    },
-    {
-        id: 10,
-        fullName: 'Lý Thị Thanh',
-        username: 'lythithanh',
-        email: 'thanh.ly@gmail.com',
-        phoneNumber: '0911234567',
-        address: '88 Đường Hùng Vương, Hà Nội',
-        birthday: '1992-02-18',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2024-03-05T14:20:00',
-        rank: 'new',
-        lastPurchase: '2024-03-21T09:20:00',
-        totalOrders: 8,
-        totalSpent: 12000000,
-        isActive: true
-    }
-]
+import { useGetCustomerCountTypeQuery, useSearchCustomerQuery } from '@/services/CustomerService'
 
 function Page() {
     const { t } = useTranslation('common')
@@ -217,14 +43,12 @@ function Page() {
         pageNumber: 1
     })
     const [keyword, setKeyword] = useState('')
-    const [open, setOpen] = useState(false)
-    useEffect(() => {}, [open])
 
-    const { data: dataResponse, isLoading, isFetching, refetch } = useSearchCouponQuery(filter)
+    const { data: dataResponse, isLoading, isFetching, refetch } = useSearchCustomerQuery(filter)
 
-    const { data: countResponse, isLoading: countLoading, refetch: countRefetch } = useGetCountTypeQuery()
+    const { data: countResponse, isLoading: countLoading, refetch: countRefetch } = useGetCustomerCountTypeQuery()
 
-    const couponData = dataResponse?.data?.records || (customers as ICustomer[])
+    const couponData = (dataResponse?.data?.records as ICustomer[]) || []
 
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
@@ -297,12 +121,19 @@ function Page() {
         if (newValue !== undefined) {
             setFilter(prev => ({
                 ...prev,
-                isType: newValue
+                rank:
+                    newValue === 0
+                        ? undefined
+                        : newValue === 1
+                        ? 'gold_customer'
+                        : newValue === 2
+                        ? 'silver_customer'
+                        : 'new_customer'
             }))
         } else {
             setFilter(prev => ({
                 ...prev,
-                isType: undefined
+                rank: undefined
             }))
         }
     }
@@ -694,7 +525,7 @@ function Page() {
                                                 borderRadius: '6px'
                                             }}
                                         >
-                                            {t('COMMON.COUPON.ALL_CUSTOMER')}
+                                            {t('COMMON.CUSTOMER.ALL_CUSTOMER')}
                                         </MenuItem>
 
                                         <MenuItem
@@ -719,30 +550,6 @@ function Page() {
                                     </Select>
                                 </FormControl>
                             </Box>
-
-                            <Button
-                                variant='contained'
-                                startIcon={<CirclePlus />}
-                                sx={{
-                                    ml: 'auto',
-                                    height: '51px',
-                                    backgroundColor: 'var(--background-color-button-save)',
-                                    width: 'auto',
-                                    padding: '0px 30px',
-                                    '&:hover': {
-                                        backgroundColor: 'var(--background-color-button-save-hover)'
-                                    },
-                                    color: 'var(--text-color-button-save)',
-                                    fontSize: '15px',
-                                    borderRadius: '8px',
-                                    fontWeight: 'bold',
-                                    whiteSpace: 'nowrap',
-                                    textTransform: 'none'
-                                }}
-                                onClick={() => setOpen(true)}
-                            >
-                                {t('COMMON.BUTTON.CREATE')}
-                            </Button>
                         </Box>
 
                         <Box

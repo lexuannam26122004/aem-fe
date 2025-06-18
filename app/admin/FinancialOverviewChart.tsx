@@ -1,36 +1,14 @@
+import { IResponse } from '@/models/Common'
 import { Paper, Typography } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 
-const responseData = {
-    data: {
-        revenue: [
-            12000000, 13000000, 12500000, 14000000, 15000000, 16000000, 15500000, 16500000, 17000000, 18000000,
-            19000000, 20000000
-        ],
-        expenses: [
-            8000000, 8500000, 8200000, 9000000, 9500000, 9700000, 9600000, 10000000, 10200000, 11000000, 11500000,
-            12000000
-        ],
-        months: [
-            '06/2024',
-            '07/2024',
-            '08/2024',
-            '09/2024',
-            '10/2024',
-            '11/2024',
-            '12/2024',
-            '01/2025',
-            '02/2025',
-            '03/2025',
-            '04/2025',
-            '05/2025'
-        ]
-    }
+interface IFinancialOverviewChartProps {
+    responseData: IResponse
 }
 
-export default function FinancialOverviewChart() {
+export default function FinancialOverviewChart({ responseData }: IFinancialOverviewChartProps) {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
     // const currentYear = new Date().getFullYear()

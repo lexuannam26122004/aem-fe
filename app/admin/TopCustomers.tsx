@@ -6,94 +6,6 @@ import { BadgeCheckIcon, PhoneCall, ShoppingBag, StarIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { keyframes } from '@emotion/react'
 
-const data: ICustomer[] = [
-    {
-        id: 1,
-        username: 'johndoe',
-        fullName: 'Lê Xuân Nam',
-        email: 'johndoe@example.com',
-        phoneNumber: '0987654321',
-        address: '123 Đường ABC, Quận 1, TP.HCM',
-        birthday: '1990-01-01',
-        gender: true,
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-1.webp',
-        createdAt: '2023-03-01T10:00:00Z',
-        rank: 'Gold',
-        lastPurchase: '2025-04-10T14:30:00Z',
-        totalOrders: 15,
-        totalSpent: 35000000,
-        isActive: true
-    },
-    {
-        id: 2,
-        username: 'janesmith',
-        fullName: 'Vũ Thị Yến Nhi',
-        email: 'jane.smith@example.com',
-        phoneNumber: '0912345678',
-        address: '456 Đường XYZ, Quận 3, Hà Nội',
-        birthday: '1985-05-15',
-        gender: false,
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-12.webp',
-        createdAt: '2022-08-12T09:15:00Z',
-        rank: 'Platinum',
-        lastPurchase: '2025-03-25T16:20:00Z',
-        totalOrders: 30,
-        totalSpent: 82000000,
-        isActive: true
-    },
-    {
-        id: 3,
-        username: 'lequang',
-        fullName: 'Lê Thị Tuyết Phương',
-        email: 'lequang@example.com',
-        phoneNumber: '0909123456',
-        address: '789 Lý Thường Kiệt, Đà Nẵng',
-        birthday: '1992-07-20',
-        gender: true,
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-16.webp',
-        createdAt: '2024-01-05T12:00:00Z',
-        rank: 'Silver',
-        lastPurchase: '2025-04-05T10:45:00Z',
-        totalOrders: 8,
-        totalSpent: 18000000,
-        isActive: true
-    },
-    {
-        id: 4,
-        username: 'ngothao',
-        fullName: 'Ngô Thảo',
-        email: 'ngothao@example.com',
-        phoneNumber: '0932456789',
-        address: '321 Nguyễn Huệ, Huế',
-        birthday: '1995-11-30',
-        gender: false,
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-7.webp',
-        createdAt: '2021-10-21T08:00:00Z',
-        rank: 'Gold',
-        lastPurchase: '2025-02-15T13:10:00Z',
-        totalOrders: 20,
-        totalSpent: 46000000,
-        isActive: false
-    },
-    {
-        id: 5,
-        username: 'phamminh',
-        fullName: 'Phạm Minh',
-        email: 'phamminh@example.com',
-        phoneNumber: '0968123456',
-        address: '654 Lê Duẩn, Hải Phòng',
-        birthday: '1988-03-10',
-        gender: true,
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-7.webp',
-        createdAt: '2023-05-10T11:30:00Z',
-        rank: 'Bronze',
-        lastPurchase: '2025-05-01T09:50:00Z',
-        totalOrders: 5,
-        totalSpent: 9200000,
-        isActive: true
-    }
-]
-
 const pulse = keyframes`
   0% {
     transform: scale(1);
@@ -108,13 +20,16 @@ const pulse = keyframes`
     opacity: 1;
   }
 `
+interface ITopCustomersProps {
+    data: ICustomer[]
+}
 
-export function TopCustomers() {
+export function TopCustomers({ data }: ITopCustomersProps) {
     const { t } = useTranslation('common')
 
     const getRankBadge = (rank: string) => {
         switch (rank) {
-            case 'gold':
+            case 'gold_customer':
                 return (
                     <Box
                         sx={{
@@ -139,7 +54,7 @@ export function TopCustomers() {
                         {t('COMMON.CUSTOMER.GOLD_CUSTOMER')}
                     </Box>
                 )
-            case 'silver':
+            case 'silver_customer':
                 return (
                     <Box
                         sx={{
@@ -218,7 +133,7 @@ export function TopCustomers() {
                     }}
                 >
                     <Avatar
-                        src={item.avatarPath}
+                        src={item.avatar}
                         sx={{
                             width: '48px',
                             height: '48px'

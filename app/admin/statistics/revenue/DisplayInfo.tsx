@@ -4,6 +4,7 @@ import { Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
+import { IResponse } from '@/models/Common'
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount).replace('₫', '')
@@ -21,39 +22,11 @@ const getLastWeekDays = (daysOfWeek: string[]) => {
     return weekDays
 }
 
-const responseData = {
-    data: {
-        statsByDay: [
-            {
-                quotationsSent: 130,
-                quotationConverted: 31,
-                totalDiscount: 14018796,
-                grossProfit: 50594728,
-                revenue: 14500000, // hôm nay
-                orders: 30
-            }
-        ],
-        rate: {
-            quotationsSentRate: -1.52,
-            quotationConvertedRate: -11.43,
-            totalDiscountRate: 0.42,
-            grossProfitRate: -11.57,
-            revenueRate: 7.41,
-            ordersRate: 20.0
-        }
-    }
+interface IProps {
+    dataResponse: IResponse
 }
 
-const dataSet = {
-    quotationsSent: [117, 121, 133, 101, 138, 132, 130],
-    quotationConverted: [32, 39, 42, 47, 30, 35, 31],
-    totalDiscount: [12615982, 14720997, 13038328, 14691940, 11057738, 13960749, 14018796],
-    grossProfit: [65850108, 62169518, 55088343, 51828959, 68893026, 57217255, 50594728],
-    revenue: [12000000, 11000000, 11500000, 13000000, 12500000, 13500000, 14500000], // Hôm nay là 14,500,000 VNĐ
-    orders: [15, 10, 12, 20, 18, 25, 30]
-}
-
-export default function DisplayInfo() {
+export default function DisplayInfo({ dataResponse }: IProps) {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
 
@@ -69,19 +42,22 @@ export default function DisplayInfo() {
 
     // const { data: responseData, isLoading } = useStatsDisplayQuery(currentDate.toISOString().split('T')[0])
 
-    const quotationsSent = responseData?.data?.statsByDay[0]?.quotationsSent || 0
-    const quotationConverted = responseData?.data?.statsByDay[0]?.quotationConverted || 0
-    const totalDiscount = responseData?.data?.statsByDay[0]?.totalDiscount || 0
-    const grossProfit = responseData?.data?.statsByDay[0]?.grossProfit || 0
-    const quotationsSentRate = responseData?.data?.rate.quotationsSentRate
-    const quotationConvertedRate = responseData?.data?.rate.quotationConvertedRate
-    const totalDiscountRate = responseData?.data?.rate.totalDiscountRate
-    const grossProfitRate = responseData?.data?.rate.grossProfitRate
+    const quotationsSent = dataResponse?.data?.statsByDay?.quotationsSent || 0
+    const quotationConverted = dataResponse?.data?.statsByDay?.quotationConverted || 0
+    const totalDiscount = dataResponse?.data?.statsByDay?.totalDiscount || 0
+    const grossProfit = dataResponse?.data?.statsByDay?.grossProfit || 0
 
-    const revenue = responseData?.data?.statsByDay[0]?.revenue || 0
-    const orders = responseData?.data?.statsByDay[0]?.orders || 0
-    const revenueRate = responseData?.data?.rate.revenueRate
-    const ordersRate = responseData?.data?.rate.ordersRate
+    const quotationsSentRate = dataResponse?.data?.rate?.quotationsSentRate
+    const quotationConvertedRate = dataResponse?.data?.rate?.quotationConvertedRate
+    const totalDiscountRate = dataResponse?.data?.rate?.totalDiscountRate
+    const grossProfitRate = dataResponse?.data?.rate?.grossProfitRate
+
+    const revenue = dataResponse?.data?.statsByDay?.revenue || 0
+    const orders = dataResponse?.data?.statsByDay?.orders || 0
+    const revenueRate = dataResponse?.data?.rate?.revenueRate
+    const ordersRate = dataResponse?.data?.rate?.ordersRate
+
+    const dataSet = dataResponse?.data?.weekData
 
     const getOption = (data: number[], color: string) => {
         return {

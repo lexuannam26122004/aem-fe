@@ -235,7 +235,7 @@ export default function UserProfileComponent() {
                 toast('Địa chỉ đã được thêm thành công', 'success')
             })
             .catch(error => {
-                const errorMessage = error.data?.message || 'Thêm địa chỉ không thành công'
+                const errorMessage = error.data?.detail || 'Thêm địa chỉ không thành công'
                 toast(errorMessage, 'error')
             })
     }
@@ -249,7 +249,7 @@ export default function UserProfileComponent() {
                 toast('Địa chỉ đã được cập nhật thành công', 'success')
             })
             .catch(error => {
-                const errorMessage = error.data?.message || 'Cập nhật địa chỉ không thành công'
+                const errorMessage = error.data?.detail || 'Cập nhật địa chỉ không thành công'
                 toast(errorMessage, 'error')
             })
     }
@@ -259,7 +259,7 @@ export default function UserProfileComponent() {
             .unwrap()
             .then(() => toast('Địa chỉ đã được xóa thành công', 'success'))
             .catch(error => {
-                const errorMessage = error.data?.message || 'Xóa địa chỉ không thành công'
+                const errorMessage = error.data?.detail || 'Xóa địa chỉ không thành công'
                 toast(errorMessage, 'error')
             })
     }
@@ -271,7 +271,7 @@ export default function UserProfileComponent() {
                 toast('Địa chỉ đã được đặt làm mặc định', 'success')
             })
             .catch(error => {
-                const errorMessage = error.data?.message || 'Đặt địa chỉ mặc định không thành công'
+                const errorMessage = error.data?.detail || 'Đặt địa chỉ mặc định không thành công'
                 toast(errorMessage, 'error')
             })
     }

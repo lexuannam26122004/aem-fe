@@ -4,10 +4,26 @@ import { Box } from '@mui/material'
 import DisplayInfo from './DisplayInfo'
 import RateInventoryChart from './RateInventoryChart'
 import ReportTable from './ReportTable'
-import OutOfStockTable from './OutOfStockTable'
 import TopSellingProducts from './TopSellingProducts'
 import TopPurchasedProducts from './TopPurchasedProducts'
+import {
+    useGetInventoryOverviewQuery,
+    useGetStockDistributionQuery,
+    useGetTopSellingProductsQuery,
+    useGetTopImportedProductsQuery
+} from '@/services/InventoryReportService'
+import Loading from '@/components/Loading'
+
 export default function WarrantyReportsPage() {
+    const { data: inventoryOverviewData, isLoading: isInventoryOverviewLoading } = useGetInventoryOverviewQuery()
+    const { data: stockDistributionData, isLoading: isStockDistributionLoading } = useGetStockDistributionQuery()
+    const { data: topSellingData, isLoading: isTopSellingLoading } = useGetTopSellingProductsQuery()
+    const { data: topImportedData, isLoading: isTopImportedLoading } = useGetTopImportedProductsQuery()
+
+    if (isInventoryOverviewLoading || isTopSellingLoading || isTopImportedLoading || isStockDistributionLoading) {
+        return <Loading />
+    }
+
     return (
         <Box
             sx={{
@@ -30,7 +46,7 @@ export default function WarrantyReportsPage() {
                         width: 'calc(100% / 3 * 2 + 24px)'
                     }}
                 >
-                    <DisplayInfo />
+                    <DisplayInfo responseData={inventoryOverviewData} />
                 </Box>
 
                 <Box
@@ -38,11 +54,11 @@ export default function WarrantyReportsPage() {
                         width: 'calc(100% / 3)'
                     }}
                 >
-                    <RateInventoryChart />
+                    <RateInventoryChart responseData={stockDistributionData} />
                 </Box>
             </Box>
 
-            <OutOfStockTable />
+            {/* <OutOfStockTable /> */}
 
             <Box
                 sx={{
@@ -56,7 +72,7 @@ export default function WarrantyReportsPage() {
                         width: 'calc(100% / 2 - 12px)'
                     }}
                 >
-                    <TopSellingProducts />
+                    <TopSellingProducts data={topSellingData?.data} />
                 </Box>
 
                 <Box
@@ -64,7 +80,7 @@ export default function WarrantyReportsPage() {
                         width: 'calc(100% / 2 - 12px)'
                     }}
                 >
-                    <TopPurchasedProducts />
+                    <TopPurchasedProducts data={topImportedData?.data} />
                 </Box>
             </Box>
 

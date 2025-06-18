@@ -1,30 +1,23 @@
 import { MenuItem, FormControl, Select, Box, Typography, SelectChangeEvent, InputLabel } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import * as echarts from 'echarts'
 import { useTranslation } from 'react-i18next'
-import dayjs from 'dayjs'
+import { IResponse } from '@/models/Common'
 
-const getChartData = (range: number) => {
-    const dayCount = range === 0 ? 7 : range === 1 ? 14 : 30
-    const today = dayjs()
-
-    const labels = Array.from({ length: dayCount }, (_, i) => today.subtract(dayCount - 1 - i, 'day').format('DD/MM'))
-
-    const revenue = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 5000000) + 8000000)
-
-    const orders = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 100) + 100)
-
-    return { labels, revenue, orders }
+interface IChartOrderRevenueProps {
+    responseData: IResponse
 }
 
-export default function ChartOrderRevenue() {
+export default function ChartOrderRevenue({ responseData }: IChartOrderRevenueProps) {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
     const [type, setType] = useState(0)
 
-    const chartData = useMemo(() => getChartData(type), [type])
+    const labels = responseData?.data?.labels || []
+    const revenue = responseData?.data?.revenueSeries || []
+    const orders = responseData?.data?.ordersSeries || []
 
     const handleTypeChange = (event: SelectChangeEvent<number>) => {
         setType(event.target.value as number)
@@ -62,7 +55,7 @@ export default function ChartOrderRevenue() {
         xAxis: [
             {
                 type: 'category',
-                data: chartData.labels,
+                data: labels,
                 axisLabel: {
                     fontSize: 14,
                     fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
@@ -127,7 +120,7 @@ export default function ChartOrderRevenue() {
                 name: t('COMMON.HOME.REVENUE') + ' (VND)',
                 type: 'line',
                 yAxisIndex: 0,
-                data: chartData.revenue,
+                data: revenue,
                 smooth: true,
                 lineStyle: { color: '#3675ff', width: 3 },
                 itemStyle: { color: '#3675ff' },
@@ -151,7 +144,7 @@ export default function ChartOrderRevenue() {
                 name: t('COMMON.HOME.ORDERS'),
                 type: 'line',
                 yAxisIndex: 1,
-                data: chartData.orders,
+                data: orders,
                 smooth: true,
                 lineStyle: { color: '#ffab00', width: 3 },
                 itemStyle: { color: '#ffab00' },

@@ -21,137 +21,13 @@ import Tab from '@mui/material/Tab'
 import { debounce } from 'lodash'
 import { useCallback } from 'react'
 import Loading from '@/components/Loading'
-import { useSearchCouponQuery, useGetCountTypeQuery } from '@/services/CouponService'
 import { IActivityLog, IActivityLogFilter } from '@/models/ActivityLog'
 import dayjs from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime } from '@/common/format'
-
-const activities: IActivityLog[] = [
-    {
-        id: 1,
-        userId: 101,
-        username: 'john_doe',
-        avatarPath: '/avatars/john.png',
-        fullName: 'John Doe',
-        activityType: 'Login',
-        logDate: '2025-03-28T08:15:00Z',
-        description: 'User logged in',
-        status: true,
-        email: 'lexuannam@gmail.com'
-    },
-    {
-        id: 2,
-        userId: 102,
-        username: 'jane_smith',
-        avatarPath: '/avatars/jane.png',
-        fullName: 'Jane Smith',
-        activityType: 'Update Profile',
-        logDate: '2025-03-28T09:30:00Z',
-        description:
-            'Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile information Updated profile informationUpdated profile information Updated profile information Updated profile information Updated profile informationUpdated profile information Updated profile information',
-        status: true,
-        email: 'lexuannam@gmail.com'
-    },
-    {
-        id: 3,
-        userId: 103,
-        username: 'michael_brown',
-        avatarPath: '/avatars/michael.png',
-        fullName: 'Michael Brown',
-        activityType: 'Logout',
-        logDate: '2025-03-28T10:00:00Z',
-        description: 'User logged out',
-        status: true,
-        email: 'lexuannam@gmail.com'
-    },
-    {
-        id: 4,
-        userId: 104,
-        username: 'lisa_white',
-        avatarPath: '/avatars/lisa.png',
-        fullName: 'Lisa White',
-        activityType: 'Delete Order',
-        logDate: '2025-03-28T11:45:00Z',
-        description: 'Deleted order #12345',
-        status: false,
-        email: 'lexuannam@gmail.com'
-    },
-    {
-        id: 5,
-        userId: 105,
-        username: 'david_clark',
-        avatarPath: '/avatars/david.png',
-        fullName: 'David Clark',
-        activityType: 'Login',
-        logDate: '2025-03-28T12:20:00Z',
-        description: 'User logged in',
-        status: true,
-        email: 'lexuannam@gmail.com'
-    },
-    {
-        id: 6,
-        userId: 106,
-        username: 'susan_miller',
-        avatarPath: '/avatars/susan.png',
-        fullName: 'Susan Miller',
-        activityType: 'Add Product',
-        logDate: '2025-03-28T13:10:00Z',
-        description: 'Added a new product to the catalog',
-        status: true,
-        email: 'lexuannam@gmail.com'
-    },
-    {
-        id: 7,
-        userId: 107,
-        username: 'robert_wilson',
-        avatarPath: '/avatars/robert.png',
-        fullName: 'Robert Wilson',
-        activityType: 'Update Settings',
-        logDate: '2025-03-28T14:05:00Z',
-        description: 'Changed account settings',
-        status: true,
-        email: 'lexuannam@gmail.com'
-    },
-    {
-        id: 8,
-        userId: 108,
-        username: 'emily_taylor',
-        avatarPath: '/avatars/emily.png',
-        fullName: 'Emily Taylor',
-        activityType: 'Failed Login',
-        logDate: '2025-03-28T15:00:00Z',
-        description: 'Failed login attempt',
-        status: false,
-        email: 'lexuannam@gmail.com'
-    },
-    {
-        id: 9,
-        userId: 109,
-        username: 'william_jones',
-        avatarPath: '/avatars/william.png',
-        fullName: 'William Jones',
-        activityType: 'Password Reset',
-        logDate: '2025-03-28T15:50:00Z',
-        description: 'User reset password',
-        status: true,
-        email: 'lexuannam@gmail.com'
-    },
-    {
-        id: 10,
-        userId: 110,
-        username: 'olivia_martin',
-        avatarPath: '/avatars/olivia.png',
-        fullName: 'Olivia Martin',
-        activityType: 'Logout',
-        logDate: '2025-03-28T16:30:00Z',
-        description: 'User logged out',
-        status: true,
-        email: 'lexuannam@gmail.com'
-    }
-]
+import { useGetCountActivityLogTypeQuery, useSearchActivityLogQuery } from '@/services/ActivityLogService'
 
 function Page() {
     const { t } = useTranslation('common')
@@ -167,16 +43,16 @@ function Page() {
     })
     const [keyword, setKeyword] = useState('')
 
-    const { data: dataResponse, isLoading, isFetching, refetch } = useSearchCouponQuery(filter)
+    const { data: dataResponse, isLoading, isFetching, refetch } = useSearchActivityLogQuery(filter)
 
-    const { data: countResponse, isLoading: countLoading, refetch: countRefetch } = useGetCountTypeQuery()
+    const { data: countResponse, isLoading: countLoading, refetch: countRefetch } = useGetCountActivityLogTypeQuery()
 
-    const couponData = dataResponse?.data?.records || (activities as IActivityLog[])
+    const activityData = (dataResponse?.data?.records as IActivityLog[]) || []
 
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
-    const countSuccessful = countResponse?.data.countSuccessful || 0
-    const countFailed = countResponse?.data.countFailed || 0
+    const successCount = countResponse?.data.successCount || 0
+    const failCount = countResponse?.data.failCount || 0
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -223,14 +99,14 @@ function Page() {
     }
 
     useEffect(() => {
-        if (!isFetching && couponData) {
-            const from = (page - 1) * Number(rowsPerPage) + Math.min(1, couponData?.length)
+        if (!isFetching && activityData) {
+            const from = (page - 1) * Number(rowsPerPage) + Math.min(1, activityData?.length)
             setFrom(from)
 
-            const to = Math.min(couponData?.length + (page - 1) * Number(rowsPerPage), totalRecords)
+            const to = Math.min(activityData?.length + (page - 1) * Number(rowsPerPage), totalRecords)
             setTo(to)
         }
-    }, [isFetching, couponData, page, rowsPerPage])
+    }, [isFetching, activityData, page, rowsPerPage])
 
     useEffect(() => {
         refetch()
@@ -243,12 +119,12 @@ function Page() {
         if (newValue !== undefined) {
             setFilter(prev => ({
                 ...prev,
-                isType: newValue
+                isActive: newValue === 0 ? undefined : newValue === 1 ? true : false
             }))
         } else {
             setFilter(prev => ({
                 ...prev,
-                isType: undefined
+                isActive: undefined
             }))
         }
     }
@@ -344,7 +220,7 @@ function Page() {
                                                         : 'var(--text-color-all)'
                                             }}
                                         >
-                                            {countSuccessful + countFailed}
+                                            {successCount + failCount}
                                         </Box>
                                     </Box>
                                 }
@@ -377,7 +253,7 @@ function Page() {
                                                         : 'var(--text-color-success)'
                                             }}
                                         >
-                                            {countSuccessful}
+                                            {successCount}
                                         </Box>
                                     </Box>
                                 }
@@ -410,7 +286,7 @@ function Page() {
                                                         : 'var(--text-color-cancel)'
                                             }}
                                         >
-                                            {countFailed}
+                                            {failCount}
                                         </Box>
                                     </Box>
                                 }
@@ -574,7 +450,7 @@ function Page() {
                         </LocalizationProvider>
                     </Box>
 
-                    <ActivityTable data={activities} refetch={refetchPage} setFilter={setFilter} />
+                    <ActivityTable data={activityData} refetch={refetchPage} setFilter={setFilter} />
 
                     <Box display='flex' alignItems='center' justifyContent='space-between' padding='24px'>
                         <Box display='flex' alignItems='center'>

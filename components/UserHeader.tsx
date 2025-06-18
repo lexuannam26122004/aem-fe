@@ -7,7 +7,9 @@ import { userSelector } from '@/redux/slices/userSlice'
 import UserAvatarMenu from './UserAvatarMenu'
 import { usePathname, useRouter } from 'next/navigation'
 import AdvancedSearchInput from './AdvancedSearchInput'
-import { useGetProductNameQuery } from '@/services/ProductService'
+import { useGetProductNameQuery } from '@/services/UserProductService'
+import { useSearchCategoryQuery } from '@/services/CategoryService'
+import { ICategory } from '@/models/Category'
 
 const Logo = () => {
     return (
@@ -19,16 +21,6 @@ const Logo = () => {
     )
 }
 
-const categories = [
-    { name: 'Điện thoại & Máy tính bảng', href: '/category/phones-tablets' },
-    { name: 'Laptop & Máy tính', href: '/category/laptops-computers' },
-    { name: 'Thiết bị điện tử', href: '/category/electronics' },
-    { name: 'Phụ kiện công nghệ', href: '/category/accessories' },
-    { name: 'Thiết bị thông minh', href: '/category/smart-devices' },
-    { name: 'Máy ảnh & Quay phim', href: '/category/cameras' },
-    { name: 'Gaming & Giải trí', href: '/category/gaming' }
-]
-
 const UserHeader = () => {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
@@ -38,6 +30,14 @@ const UserHeader = () => {
     const pathName = usePathname()
     const router = useRouter()
 
+    const { data: categoriesResponse } = useSearchCategoryQuery({
+        pageSize: 5,
+        pageNumber: 1,
+        level: 2
+    })
+    const categories = Array.isArray(categoriesResponse?.data.records)
+        ? (categoriesResponse?.data.records as ICategory[])
+        : []
     const { data: productNameResponse } = useGetProductNameQuery()
     const productNames = productNameResponse?.data?.records || []
 
@@ -224,11 +224,11 @@ const UserHeader = () => {
                                     <div className='p-1'>
                                         {categories.map((category, index) => (
                                             <Link
+                                                href={`/user/products?category=${category.categoryName}`}
                                                 key={index}
-                                                href={category.href}
                                                 className='flex px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors'
                                             >
-                                                {category.name}
+                                                {category.categoryName}
                                             </Link>
                                         ))}
                                     </div>
@@ -343,11 +343,11 @@ const UserHeader = () => {
                                                     {categories.map((category, index) => (
                                                         <Link
                                                             key={index}
-                                                            href={category.href}
+                                                            href={`/user/products?category=${category.categoryName}`}
                                                             className='block py-2 px-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors'
                                                             onClick={() => setIsOpen(false)}
                                                         >
-                                                            {category.name}
+                                                            {category.categoryName}
                                                         </Link>
                                                     ))}
                                                 </motion.div>

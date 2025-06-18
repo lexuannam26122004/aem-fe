@@ -17,18 +17,18 @@ export interface IEmployeeUpdate {
     fullName: string
     email: string
     phoneNumber: string
+    username: string
     address: string
     birthday: string
-    avatarPath?: string
+    avatar?: string
     gender: boolean
     isActive: boolean
     roles: string[]
 }
 
 export interface IEmployee extends IEmployeeUpdate {
-    id: number
-    username: string
-    createdAt: string
+    id: string
+    createdDate: string
 }
 
 export interface IEmployeeFilter extends IFilter {}

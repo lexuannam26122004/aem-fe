@@ -8,17 +8,17 @@ export interface ICustomerReportFilter extends IFilter {
 }
 
 export interface ICustomerReports {
-    date: string
-    customerCount: number
-    newCustomerCount: number
-    returningCustomerCount: number
-    returningRate: number
-    repeatCustomerCount: number
-    newCustomerRate: number
-    sameDayRepeatRate: number
-    orderCount: number
-    averageOrderPerCustomer: number
-    revenue: number
-    averageSpendPerCustomer: number
-    averageSpendPerOrder: number
+    date: string // dd/MM/yyyy
+    totalCustomers: number
+    newCustomers: number
+    returningCustomers: number
+    repeatRate: number // %
+    newCustomerRate: number // %
+    customersWith2OrMoreOrders: number
+    dailyRepeatRate: number // %
+    totalOrders: number
+    ordersPerCustomer: number
+    totalSpending: number
+    spendingPerCustomer: number
+    spendingPerOrder: number
 }

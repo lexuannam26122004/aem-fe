@@ -28,8 +28,11 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { convertToVietnamTime } from '@/common/format'
 import LoadingButton from '@mui/lab/LoadingButton'
 import { useRouter } from 'next/navigation'
-import { IInventoryItemList } from '@/models/Inventory'
+import { IInventoryCreate, IInventoryItemList } from '@/models/Inventory'
 import NoteInput from './NoteInput'
+import { useCreateInventoryMutation, useGetProductsQuery } from '@/services/InventoryService'
+import Loading from '@/components/Loading'
+import { useToast } from '@/hooks/useToast'
 
 const customSelectStyles = {
     control: (provided: any, state: any) => ({
@@ -82,72 +85,6 @@ const customSelectStyles = {
     })
 }
 
-const productData: IInventoryItemList[] = [
-    {
-        id: 1,
-        productName: 'Laptop Dell XPS 13',
-        productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-1.webp',
-        productUnit: 'cái',
-        realQuantity: 58,
-        systemQuantity: 60,
-        notes: undefined,
-        categoryName: 'Laptop',
-        stockDifference: undefined,
-        sku: 'SKU-001',
-        stockStatus: 'inStock'
-    },
-    {
-        id: 2,
-        productName: 'iPhone 15 Pro',
-        productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-15.webp',
-        productUnit: 'chiếc',
-        realQuantity: 102,
-        systemQuantity: 102,
-        notes: undefined,
-        categoryName: 'Điện thoại',
-        stockDifference: undefined,
-        sku: 'SKU-002',
-        stockStatus: 'inStock'
-    },
-    {
-        id: 3,
-        productName: 'Sony WH-1000XM5',
-        productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-5.webp',
-        productUnit: 'thiết bị',
-        realQuantity: 25,
-        systemQuantity: 22,
-        notes: undefined,
-        categoryName: 'Tivi',
-        stockDifference: undefined,
-        sku: 'SKU-003',
-        stockStatus: 'lowStock'
-    },
-    // Các sản phẩm mẫu sinh thêm
-    ...Array.from({ length: 47 }, (_, index) => {
-        const id = index + 4
-        const real = Math.floor(Math.random() * 100)
-        const systemQuantity = Math.floor(Math.random() * 100)
-        return {
-            id,
-            productName: `Product Sample ${id}`,
-            productImage: `https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-${
-                (id % 20) + 1
-            }.webp`, // random hình trong 20 cái có sẵn
-            productUnit: 'cái',
-            realQuantity: real,
-            systemQuantity: systemQuantity,
-            notes: undefined,
-            categoryName: id % 2 === 0 ? 'Điện thoại' : 'Laptop',
-            stockDifference: real - systemQuantity,
-            sku: `SKU-${String(id).padStart(3, '0')}`,
-            stockStatus: (id % 3 === 0 ? 'lowStock' : id % 3 === 1 ? 'outOfStock' : 'inStock') as
-                | 'inStock'
-                | 'outOfStock'
-                | 'lowStock'
-        }
-    })
-]
-
 export default function CreatePage() {
     const { t } = useTranslation('common')
     const router = useRouter()
@@ -156,6 +93,11 @@ export default function CreatePage() {
     const [publishDate, setPublishDate] = useState(new Date().toDateString())
     const [notes, setNotes] = useState('')
     const [products, setProducts] = useState<IInventoryItemList[]>([])
+    const toast = useToast()
+    const { data: productResponse, isLoading: isLoadingProducts } = useGetProductsQuery('')
+    const productData = productResponse?.data || []
+
+    const [createInventory] = useCreateInventoryMutation()
 
     const [inputValue, setInputValue] = useState('')
 
@@ -196,7 +138,7 @@ export default function CreatePage() {
                     }}
                 >
                     <Avatar
-                        src={item.productImage}
+                        src={item.image}
                         sx={{
                             width: '40px',
                             height: '40px',
@@ -251,18 +193,51 @@ export default function CreatePage() {
         }
     }
 
-    const handleSave = () => {
+    const handleSubmit = async (isCloseAfter: boolean = false) => {
         setIsSubmit(true)
-        if (notes.trim() === '') {
+
+        if (notes.trim() === '' || products.length === 0) {
+            toast('Vui lòng nhập đầy đủ thông tin!', 'error')
             return
         }
-    }
 
-    const handleSaveAndClose = () => {}
+        const payload: IInventoryCreate = {
+            notes,
+            inventoryDate: new Date().toISOString(),
+            products: products.map(p => ({
+                productId: p.id,
+                systemQuantity: p.systemQuantity ?? 0,
+                realQuantity: p.realQuantity ?? 0,
+                notes: p.notes ?? ''
+            }))
+        }
+
+        try {
+            setIsLoading(true)
+            await createInventory(payload).unwrap()
+            toast('Tạo phiếu kiểm kho thành công!', 'success')
+
+            if (isCloseAfter) {
+                router.push('/inventory')
+            } else {
+                setProducts([])
+                setNotes('')
+            }
+        } catch (error: any) {
+            toast(error?.data?.detail || 'Đã có lỗi xảy ra', 'error')
+        } finally {
+            setIsLoading(false)
+            setIsSubmit(false)
+        }
+    }
 
     const handleDeleteClick = (id: number) => {
         const updatedProducts = products.filter(product => product.id !== id)
         setProducts(updatedProducts)
+    }
+
+    if (isLoadingProducts) {
+        return <Loading />
     }
 
     return (
@@ -576,7 +551,7 @@ export default function CreatePage() {
                                             }}
                                         >
                                             <Avatar
-                                                src={row.productImage}
+                                                src={row.image}
                                                 sx={{
                                                     width: '50px',
                                                     height: '50px',
@@ -790,7 +765,7 @@ export default function CreatePage() {
                         whiteSpace: 'nowrap',
                         textTransform: 'none'
                     }}
-                    onClick={handleSave}
+                    onClick={() => handleSubmit(false)}
                 >
                     {t('COMMON.BUTTON.SAVE')}
                 </LoadingButton>
@@ -815,7 +790,7 @@ export default function CreatePage() {
                         whiteSpace: 'nowrap',
                         textTransform: 'none'
                     }}
-                    onClick={handleSaveAndClose}
+                    onClick={() => handleSubmit(true)}
                 >
                     {t('COMMON.BUTTON.SAVE_AND_CLOSE')}
                 </LoadingButton>

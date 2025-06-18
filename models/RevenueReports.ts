@@ -3,7 +3,7 @@ import { IFilter } from './Common'
 export interface IRevenueReportFilter extends IFilter {
     fromDate: string
     toDate: string
-    statusOrder?: string
+    orderStatus?: string
 }
 
 export interface IRevenueReports {

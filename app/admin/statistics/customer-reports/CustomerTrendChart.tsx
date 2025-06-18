@@ -1,30 +1,23 @@
 import { MenuItem, FormControl, Select, Box, Typography, SelectChangeEvent, InputLabel } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import * as echarts from 'echarts'
 import { useTranslation } from 'react-i18next'
-import dayjs from 'dayjs'
-
-const getChartData = (range: number) => {
-    const dayCount = range === 0 ? 7 : range === 1 ? 14 : 30
-    const today = dayjs()
-
-    const labels = Array.from({ length: dayCount }, (_, i) => today.subtract(dayCount - 1 - i, 'day').format('DD/MM'))
-
-    const newCustomers = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 40) + 15)
-    const returningCustomers = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 20) + 3)
-    const orders = Array.from({ length: dayCount }, () => Math.floor(Math.random() * 50) + 25)
-
-    return { labels, newCustomers, returningCustomers, orders }
-}
+import { useGetCustomerTrendQuery } from '@/services/CustomerReportService'
+import Loading from '@/components/Loading'
 
 export default function CustomerTrendChart() {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
     const [type, setType] = useState(0)
 
-    const chartData = useMemo(() => getChartData(type), [type])
+    const { data: trend, isLoading: isTrendLoading } = useGetCustomerTrendQuery(type === 0 ? 7 : type === 1 ? 14 : 30)
+
+    const labels = trend?.data?.labels || []
+    const newCustomers = trend?.data?.newCustomerSeries || []
+    const returningCustomers = trend?.data?.returningCustomerSeries || []
+    const orders = trend?.data?.orderSeries || []
 
     const handleTypeChange = (event: SelectChangeEvent<number>) => {
         setType(event.target.value as number)
@@ -65,7 +58,7 @@ export default function CustomerTrendChart() {
         },
         xAxis: {
             type: 'category',
-            data: chartData.labels,
+            data: labels,
             axisLabel: {
                 fontSize: 14,
                 fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
@@ -95,7 +88,7 @@ export default function CustomerTrendChart() {
             {
                 name: t('COMMON.CUSTOMER_REPORTS.NEW_CUSTOMERS'),
                 type: 'line',
-                data: chartData.newCustomers,
+                data: newCustomers,
                 smooth: true,
                 lineStyle: { color: '#ffab00', width: 3 },
                 itemStyle: { color: '#ffab00' },
@@ -118,7 +111,7 @@ export default function CustomerTrendChart() {
             {
                 name: t('COMMON.CUSTOMER_REPORTS.RETURNING_CUSTOMERS'),
                 type: 'line',
-                data: chartData.returningCustomers,
+                data: returningCustomers,
                 smooth: true,
                 lineStyle: { color: '#00a76f', width: 3 },
                 itemStyle: { color: '#00a76f' },
@@ -141,7 +134,7 @@ export default function CustomerTrendChart() {
             {
                 name: t('COMMON.CUSTOMER_REPORTS.ORDERS'),
                 type: 'line',
-                data: chartData.orders,
+                data: orders,
                 smooth: true,
                 lineStyle: { color: '#3675ff', width: 3 },
                 itemStyle: { color: '#3675ff' },
@@ -162,6 +155,10 @@ export default function CustomerTrendChart() {
                 }
             }
         ]
+    }
+
+    if (isTrendLoading) {
+        return <Loading />
     }
 
     return (

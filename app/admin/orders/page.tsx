@@ -26,143 +26,10 @@ import { CirclePlus } from 'lucide-react'
 import { useSearchOrderQuery, useGetCountTypeQuery } from '@/services/OrderService'
 import { IOrder, IOrderFilter } from '@/models/Order'
 import dayjs from 'dayjs'
-import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { DatePicker } from '@mui/x-date-pickers'
 import { convertToVietnamTime } from '@/common/format'
-
-const orders: IOrder[] = [
-    {
-        id: 1,
-        orderCode: 'ORD10001',
-        customerName: 'Alice Johnson',
-        customerPhone: '1234567890',
-        customerId: 'CUS001',
-        itemCount: 3,
-        orderDate: '2025-04-20T10:00:00Z',
-        totalAmount: 1000030,
-        orderStatus: 'pending',
-        paymentMethod: 'Credit Card',
-        createdAt: '2025-04-20T09:55:00Z'
-    },
-    {
-        id: 2,
-        orderCode: 'ORD10002',
-        customerName: 'Bob Smith',
-        customerPhone: '9876543210',
-        customerId: 'CUS002',
-        itemCount: 1,
-        orderDate: '2025-04-18T12:30:00Z',
-        totalAmount: 800000,
-        orderStatus: 'delivered',
-        paymentMethod: 'PayPal',
-        createdAt: '2025-04-18T12:00:00Z'
-    },
-    {
-        id: 3,
-        orderCode: 'ORD10003',
-        customerName: 'Charlie Nguyen',
-        customerPhone: '5551122334',
-        customerId: 'CUS003',
-        itemCount: 2,
-        orderDate: '2025-04-19T14:15:00Z',
-        totalAmount: 1000050,
-        orderStatus: 'shipping',
-        paymentMethod: 'Bank Transfer',
-        createdAt: '2025-04-19T13:55:00Z'
-    },
-    {
-        id: 4,
-        orderCode: 'ORD10004',
-        customerName: 'Dana Lee',
-        customerPhone: '2223334444',
-        customerId: 'CUS004',
-        itemCount: 5,
-        orderDate: '2025-04-21T08:45:00Z',
-        totalAmount: 2000070,
-        orderStatus: 'processing',
-        paymentMethod: 'Credit Card',
-        createdAt: '2025-04-21T08:00:00Z'
-    },
-    {
-        id: 5,
-        orderCode: 'ORD10005',
-        customerName: 'Ethan Tran',
-        customerPhone: '6667778888',
-        customerId: 'CUS005',
-        itemCount: 4,
-        orderDate: '2025-04-22T11:20:00Z',
-        totalAmount: 2000000,
-        orderStatus: 'returned',
-        paymentMethod: 'Cash on Delivery',
-        createdAt: '2025-04-22T11:00:00Z'
-    },
-    {
-        id: 6,
-        orderCode: 'ORD10006',
-        customerName: 'Fiona Lam',
-        customerPhone: '1119992233',
-        customerId: 'CUS006',
-        itemCount: 2,
-        orderDate: '2025-04-17T17:00:00Z',
-        totalAmount: 900000,
-        orderStatus: 'cancelled',
-        paymentMethod: 'Credit Card',
-        createdAt: '2025-04-17T16:30:00Z'
-    },
-    {
-        id: 7,
-        orderCode: 'ORD10007',
-        customerName: 'George Park',
-        customerPhone: '7775553333',
-        customerId: 'CUS007',
-        itemCount: 6,
-        orderDate: '2025-04-16T09:10:00Z',
-        totalAmount: 1000040,
-        orderStatus: 'pending',
-        paymentMethod: 'PayPal',
-        createdAt: '2025-04-16T09:00:00Z'
-    },
-    {
-        id: 8,
-        orderCode: 'ORD10008',
-        customerName: 'Hannah Kim',
-        customerPhone: '9998887777',
-        customerId: 'CUS008',
-        itemCount: 3,
-        orderDate: '2025-04-23T15:45:00Z',
-        totalAmount: 2000025,
-        orderStatus: 'processing',
-        paymentMethod: 'Credit Card',
-        createdAt: '2025-04-23T15:30:00Z'
-    },
-    {
-        id: 9,
-        orderCode: 'ORD10009',
-        customerName: 'Isaac Lee',
-        customerPhone: '4445556666',
-        customerId: 'CUS009',
-        itemCount: 1,
-        orderDate: '2025-04-15T13:00:00Z',
-        totalAmount: 700000,
-        orderStatus: 'delivered',
-        paymentMethod: 'Cash on Delivery',
-        createdAt: '2025-04-15T12:50:00Z'
-    },
-    {
-        id: 10,
-        orderCode: 'ORD10010',
-        customerName: 'Julia Pham',
-        customerPhone: '3332221111',
-        customerId: 'CUS010',
-        itemCount: 2,
-        orderDate: '2025-04-22T10:30:00Z',
-        totalAmount: 1000005,
-        orderStatus: 'shipping',
-        paymentMethod: 'Bank Transfer',
-        createdAt: '2025-04-22T10:15:00Z'
-    }
-]
 
 function Page() {
     const { t } = useTranslation('common')
@@ -173,7 +40,7 @@ function Page() {
     const [filter, setFilter] = useState<IOrderFilter>({
         pageSize: 10,
         pageNumber: 1,
-        fromDate: dayjs().format('YYYY-MM-DD'),
+        fromDate: dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
         toDate: dayjs().format('YYYY-MM-DD')
     })
     const [keyword, setKeyword] = useState('')
@@ -183,16 +50,16 @@ function Page() {
 
     const { data: countResponse, isLoading: isCountLoading, refetch: countRefetch } = useGetCountTypeQuery()
 
-    const orderData = dataResponse?.data?.records || (orders as IOrder[])
+    const orderData = dataResponse?.data?.records as IOrder[]
 
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
-    const countPending = countResponse?.data.countPending || 0
-    const countProcessing = countResponse?.data.countProcessing || 0
-    const countShipping = countResponse?.data.countShipping || 0
-    const countDelivered = countResponse?.data.countDelivered || 0
-    const countCancelled = countResponse?.data.countCancelled || 0
-    const countReturned = countResponse?.data.countReturned || 0
+    const pendingCount = countResponse?.data.pendingCount || 0
+    const processingCount = countResponse?.data.processingCount || 0
+    const shippingCount = countResponse?.data.shippingCount || 0
+    const deliveredCount = countResponse?.data.deliveredCount || 0
+    const cancelledCount = countResponse?.data.cancelledCount || 0
+    const returnedCount = countResponse?.data.returnedCount || 0
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -387,12 +254,12 @@ function Page() {
                                                 color: 'var(--text-color-all-selected)'
                                             }}
                                         >
-                                            {countCancelled +
-                                                countDelivered +
-                                                countReturned +
-                                                countPending +
-                                                countProcessing +
-                                                countShipping}
+                                            {cancelledCount +
+                                                deliveredCount +
+                                                returnedCount +
+                                                pendingCount +
+                                                processingCount +
+                                                shippingCount}
                                         </Box>
                                     </Box>
                                 }
@@ -426,7 +293,7 @@ function Page() {
                                                         : 'var(--text-color-pending)'
                                             }}
                                         >
-                                            {countPending}
+                                            {pendingCount}
                                         </Box>
                                     </Box>
                                 }
@@ -460,7 +327,7 @@ function Page() {
                                                         : 'var(--text-color-pink)'
                                             }}
                                         >
-                                            {countProcessing}
+                                            {processingCount}
                                         </Box>
                                     </Box>
                                 }
@@ -494,7 +361,7 @@ function Page() {
                                                         : 'var(--text-color-blue)'
                                             }}
                                         >
-                                            {countShipping}
+                                            {shippingCount}
                                         </Box>
                                     </Box>
                                 }
@@ -528,7 +395,7 @@ function Page() {
                                                         : 'var(--text-color-success)'
                                             }}
                                         >
-                                            {countDelivered}
+                                            {deliveredCount}
                                         </Box>
                                     </Box>
                                 }
@@ -562,7 +429,7 @@ function Page() {
                                                         : 'var(--text-color-cancel)'
                                             }}
                                         >
-                                            {countCancelled}
+                                            {cancelledCount}
                                         </Box>
                                     </Box>
                                 }
@@ -596,7 +463,7 @@ function Page() {
                                                         : 'var(--text-color-silver)'
                                             }}
                                         >
-                                            {countReturned}
+                                            {returnedCount}
                                         </Box>
                                     </Box>
                                 }

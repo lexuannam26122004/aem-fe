@@ -7,6 +7,18 @@ import { Button } from '@mui/material'
 import LoadingButton from '@mui/lab/LoadingButton'
 import { useTranslation } from 'react-i18next'
 import TinyMCEEditor from '@/components/TinyMCEEditor'
+import { ICategory } from '@/models/Category'
+import { IBrand } from '@/models/Brand'
+import { IFeature } from '@/models/Feature'
+import { ISupplier } from '@/models/Supplier'
+import Loading from '@/components/Loading'
+import { useSearchCategoryQuery } from '@/services/CategoryService'
+import { useSearchBrandQuery } from '@/services/BrandService'
+import { useSearchFeatureQuery } from '@/services/FeatureService'
+import { useSearchSupplierQuery } from '@/services/SupplierService'
+import { useCreateProductMutation } from '@/services/ProductService'
+import { useToast } from '@/hooks/useToast'
+import uploadImageToCloudinary from '@/common/uploadImageToCloudinary'
 
 type EnhancedSelectProps = {
     label: string
@@ -107,43 +119,51 @@ export const EnhancedSelect = ({ label, value, onChange, options, placeholder }:
     )
 }
 
+interface ProductImageChoose {
+    url: string
+    name: string
+    isPrimary: boolean
+    file?: File
+}
+
 const ProductCreateForm = () => {
     const fileInputRef = useRef(null)
     const variantImageInputRefs = useRef({})
     const { t } = useTranslation('common')
-    const [isLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
-    // Mock data for dropdowns
-    const categories = [
-        { id: 1, name: 'Điện tử' },
-        { id: 2, name: 'Thời trang' },
-        { id: 3, name: 'Gia dụng' },
-        { id: 4, name: 'Sách' }
-    ]
+    const [createProduct, { isLoading: isCreatingLoading }] = useCreateProductMutation()
+    const { data: categoryResponse, isLoading: isLoadingCategory } = useSearchCategoryQuery({
+        pageSize: 50,
+        pageNumber: 1
+    })
 
-    const suppliers = [
-        { id: 1, name: 'Nhà cung cấp A' },
-        { id: 2, name: 'Nhà cung cấp B' },
-        { id: 3, name: 'Nhà cung cấp C' }
-    ]
+    const { data: brandResponse, isLoading: isLoadingBrand } = useSearchBrandQuery({
+        pageSize: 50,
+        pageNumber: 1
+    })
 
-    const brands = [
-        { id: 1, name: 'Samsung' },
-        { id: 2, name: 'Apple' },
-        { id: 3, name: 'Sony' },
-        { id: 4, name: 'LG' }
-    ]
+    const { data: featuresResponse, isLoading: isLoadingFeature } = useSearchFeatureQuery({
+        pageSize: 50,
+        pageNumber: 1
+    })
 
-    const availableFeatures = [
-        { id: 1, name: 'Chống nước' },
-        { id: 2, name: 'Bluetooth' },
-        { id: 3, name: 'WiFi' },
-        { id: 4, name: 'GPS' },
-        { id: 5, name: 'Camera' },
-        { id: 6, name: 'Cảm ứng' },
-        { id: 7, name: 'Pin lâu' },
-        { id: 8, name: 'Sạc nhanh' }
-    ]
+    const { data: supplierResponse, isLoading: isLoadingSupplier } = useSearchSupplierQuery({
+        pageSize: 50,
+        pageNumber: 1
+    })
+
+    const toast = useToast()
+
+    const categories = Array.isArray(categoryResponse?.data.records)
+        ? (categoryResponse?.data.records as ICategory[])
+        : []
+    const brands = Array.isArray(brandResponse?.data.records) ? (brandResponse?.data.records as IBrand[]) : []
+    const features = Array.isArray(featuresResponse?.data.records) ? (featuresResponse?.data.records as IFeature[]) : []
+    const suppliers = Array.isArray(supplierResponse?.data.records)
+        ? (supplierResponse?.data.records as ISupplier[])
+        : []
+    const [productImages, setProductImages] = useState<ProductImageChoose[]>([])
 
     // Form state
     const [formData, setFormData] = useState<IProductCreate>({
@@ -154,8 +174,8 @@ const ProductCreateForm = () => {
         price: 0,
         discountPrice: 0,
         unit: '',
-        warrantyPeriod: undefined,
-        stockQuantity: undefined,
+        warrantyPeriod: 0,
+        stockQuantity: 0,
         serialNumber: '',
         minStockThreshold: 0,
         brand: '',
@@ -219,36 +239,39 @@ const ProductCreateForm = () => {
                 setFormData(prev => {
                     const newVariants = [...prev.variants]
                     if (!newVariants[variantIndex].options[optionIndex].values[valueIndex]) {
-                        newVariants[variantIndex].options[optionIndex].values[valueIndex] = { value: '', image: '' }
+                        newVariants[variantIndex].options[optionIndex].values[valueIndex] = {
+                            value: '',
+                            image: ''
+                        }
                     }
                     newVariants[variantIndex].options[optionIndex].values[valueIndex].image =
                         typeof imageUrl === 'string' ? imageUrl : ''
+                    newVariants[variantIndex].options[optionIndex].values[valueIndex].file = file
                     return { ...prev, variants: newVariants }
                 })
             } else {
                 // Product image
                 if (imageIndex !== null) {
-                    setFormData(prev => {
-                        const newImages = [...prev.images]
+                    setProductImages(prev => {
+                        const newImages = [...prev]
                         newImages[imageIndex] = {
                             url: typeof imageUrl === 'string' ? imageUrl : '',
                             name: file.name,
-                            isPrimary: newImages[imageIndex]?.isPrimary || false
+                            isPrimary: newImages[imageIndex]?.isPrimary || false,
+                            file
                         }
-                        return { ...prev, images: newImages }
+                        return newImages
                     })
                 } else {
-                    setFormData(prev => ({
+                    setProductImages(prev => [
                         ...prev,
-                        images: [
-                            ...prev.images,
-                            {
-                                url: typeof imageUrl === 'string' ? imageUrl : '',
-                                name: file.name,
-                                isPrimary: prev.images.length === 0
-                            }
-                        ]
-                    }))
+                        {
+                            url: typeof imageUrl === 'string' ? imageUrl : '',
+                            name: file.name,
+                            isPrimary: prev.length === 0,
+                            file
+                        }
+                    ])
                 }
             }
         }
@@ -333,10 +356,84 @@ const ProductCreateForm = () => {
         }))
     }
 
-    const handleSave = e => {
+    const handleSave = async e => {
         e.preventDefault()
-        console.log('Form Data:', formData)
-        alert('Tạo sản phẩm thành công!')
+
+        setIsLoading(true)
+
+        const updatedImages = []
+
+        for (const image of productImages) {
+            if (image.file) {
+                const uploadedUrl = await uploadImageToCloudinary(image.file)
+                if (!uploadedUrl) {
+                    toast(t('COMMON.UPLOAD_IMAGE_FAIL'), 'error')
+                    setIsLoading(false)
+                    return
+                }
+                updatedImages.push({
+                    url: uploadedUrl,
+                    name: image.name,
+                    isPrimary: image.isPrimary
+                })
+            } else {
+                updatedImages.push(image)
+            }
+        }
+
+        const updatedVariants = await Promise.all(
+            formData.variants.map(async variant => {
+                const updatedOptions = await Promise.all(
+                    variant.options.map(async option => {
+                        const updatedValues = await Promise.all(
+                            option.values.map(async value => {
+                                if (value.file) {
+                                    const uploadedUrl = await uploadImageToCloudinary(value.file)
+                                    if (!uploadedUrl) {
+                                        toast(t('COMMON.UPLOAD_IMAGE_FAIL'), 'error')
+                                        setIsLoading(false)
+                                        return value
+                                    }
+                                    return {
+                                        ...value,
+                                        image: uploadedUrl,
+                                        file: undefined // remove file before sending to backend
+                                    }
+                                }
+                                return value
+                            })
+                        )
+                        return {
+                            ...option,
+                            values: updatedValues
+                        }
+                    })
+                )
+                return {
+                    ...variant,
+                    options: updatedOptions
+                }
+            })
+        )
+
+        const finalFormData = {
+            ...formData,
+            images: updatedImages,
+            variants: updatedVariants
+        }
+
+        await createProduct(finalFormData)
+            .unwrap()
+            .then(() => {
+                toast('Sản phẩm đã được tạo thành công!', 'success')
+            })
+            .catch(error => {
+                console.error('Error creating product:', error)
+                toast('Đã xảy ra lỗi khi tạo sản phẩm. Vui lòng thử lại.', 'error')
+            })
+            .finally(() => {
+                setIsLoading(false)
+            })
     }
 
     const handleSaveAndClose = () => {}
@@ -344,6 +441,10 @@ const ProductCreateForm = () => {
     const handleClose = e => {
         e.preventDefault()
         console.log('Form closed')
+    }
+
+    if (isCreatingLoading || isLoadingCategory || isLoadingBrand || isLoadingFeature || isLoadingSupplier) {
+        return <Loading />
     }
 
     return (
@@ -381,7 +482,10 @@ const ProductCreateForm = () => {
                                     placeholder='Chọn danh mục'
                                     value={formData.categoryId}
                                     onChange={value => handleInputChange('categoryId', value)}
-                                    options={categories}
+                                    options={categories.map(category => ({
+                                        id: category.id,
+                                        name: category.categoryName
+                                    }))}
                                 />
 
                                 <EnhancedSelect
@@ -389,7 +493,10 @@ const ProductCreateForm = () => {
                                     placeholder='Chọn nhà cung cấp'
                                     value={formData.supplierId}
                                     onChange={value => handleInputChange('supplierId', value)}
-                                    options={suppliers}
+                                    options={suppliers.map(supplier => ({
+                                        id: supplier.id,
+                                        name: supplier.supplierName
+                                    }))}
                                 />
 
                                 <EnhancedSelect
@@ -397,7 +504,10 @@ const ProductCreateForm = () => {
                                     placeholder='Chọn thương hiệu'
                                     value={formData.brand}
                                     onChange={value => handleInputChange('brand', value)}
-                                    options={brands}
+                                    options={brands.map(brand => ({
+                                        id: brand.id,
+                                        name: brand.brandName
+                                    }))}
                                 />
 
                                 <div>
@@ -570,7 +680,7 @@ const ProductCreateForm = () => {
                                     <input
                                         type='number'
                                         step='0.01'
-                                        value={formData.weight}
+                                        value={formData.weight || 0}
                                         onChange={e => handleInputChange('weight', e.target.value)}
                                         className='w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none'
                                         placeholder='0.00'
@@ -584,7 +694,7 @@ const ProductCreateForm = () => {
                                     <input
                                         type='number'
                                         step='0.01'
-                                        value={formData.length}
+                                        value={formData.length || 0}
                                         onChange={e => handleInputChange('length', e.target.value)}
                                         className='w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none'
                                         placeholder='0.00'
@@ -598,7 +708,7 @@ const ProductCreateForm = () => {
                                     <input
                                         type='number'
                                         step='0.01'
-                                        value={formData.width}
+                                        value={formData.width || 0}
                                         onChange={e => handleInputChange('width', e.target.value)}
                                         className='w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none'
                                         placeholder='0.00'
@@ -612,7 +722,7 @@ const ProductCreateForm = () => {
                                     <input
                                         type='number'
                                         step='0.01'
-                                        value={formData.height}
+                                        value={formData.height || 0}
                                         onChange={e => handleInputChange('height', e.target.value)}
                                         className='w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none'
                                         placeholder='0.00'
@@ -632,7 +742,7 @@ const ProductCreateForm = () => {
                                         Chọn tính năng có sẵn
                                     </label>
                                     <div className='flex flex-wrap gap-2'>
-                                        {availableFeatures.map(feature => (
+                                        {features.map(feature => (
                                             <button
                                                 key={feature.id}
                                                 type='button'
@@ -644,7 +754,7 @@ const ProductCreateForm = () => {
                                                         : 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'
                                                 }`}
                                             >
-                                                {feature.name}
+                                                {feature.featureName}
                                             </button>
                                         ))}
                                     </div>
@@ -702,7 +812,7 @@ const ProductCreateForm = () => {
                                                 key={index}
                                                 className='inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm'
                                             >
-                                                {availableFeatures.filter(f => f.id == feature.id)[0]?.name}
+                                                {features.filter(f => f.id == feature.id)[0]?.featureName}
                                                 <button
                                                     type='button'
                                                     onClick={() => removeFeature(feature.id)}
@@ -741,9 +851,9 @@ const ProductCreateForm = () => {
                                     </button>
                                 </div>
 
-                                {formData.images.length > 0 && (
+                                {productImages.length > 0 && (
                                     <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-                                        {formData.images.map((image, index) => (
+                                        {productImages.map((image, index) => (
                                             <div key={index} className='relative group'>
                                                 <div className='aspect-square bg-gray-100 rounded-lg overflow-hidden'>
                                                     <img

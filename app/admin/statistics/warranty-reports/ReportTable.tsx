@@ -25,7 +25,7 @@ import dayjs from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { convertToVietnamTime, formatWorkingTime } from '@/common/format'
+import { convertToVietnamTime } from '@/common/format'
 import { Download } from 'lucide-react'
 import { IWarrantyReportFilter, IWarrantyReports } from '@/models/WarrantyReports'
 
@@ -212,7 +212,7 @@ function ReportTable() {
                 width: '100%',
                 boxShadow: 'var(--box-shadow-paper)',
                 overflow: 'hidden',
-                borderRadius: '20px',
+                borderRadius: '15px',
                 backgroundColor: 'var(--background-color-item)'
             }}
         >
@@ -1013,7 +1013,9 @@ function ReportTable() {
                                                 color: 'var(--text-color)'
                                             }}
                                         >
-                                            {formatWorkingTime(row.averageTime, t)}
+                                            {row.averageTime !== null
+                                                ? row.averageTime + 'h'
+                                                : t('COMMON.HOME.NO_CHANGE')}
                                         </Typography>
                                     </TableCell>
 

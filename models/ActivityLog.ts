@@ -4,7 +4,7 @@ export interface IActivityLog {
     id: number
     userId: number
     username: string
-    avatarPath: string
+    avatar?: string
     fullName: string
     activityType: string
     logDate: string

@@ -1,37 +1,33 @@
 import { IFilter } from './Common'
 
 export interface IQuotation {
-    id: string
+    id: number
     quotationCode: string
-    customerName: string
+    customerFullName: string
     customerEmail: string
-    customerAvatarPath?: string
-    assigneeName?: string
-    assigneeId?: string
-    assigneeAvatarPath?: string
-    phone: string
-    itemCount: number
-    requestedDate: string
-    status: 'pending' | 'processing' | 'completed' | 'cancelled'
+    responsibleName?: string
+    responsibleAvatar?: string
+    responsiblePhone?: string
+    responsibleEmail?: string
+    customerAvatar: string
     createdAt: string
-    updatedAt: string
+    desiredDeliveryDate: string
+    totalItems: number
+    status: string
 }
 
 export interface IQuotationDetail extends IQuotation {
-    itemList: IQuotationItem[]
-    notes: string
-    customerIp: string
-    validityDate?: string
-    assigneePhone?: string
-    issuedDate?: string
-    receiveAddress?: string
+    customerPhone: string
+    additionalInformation?: string
+    quotationDate?: string
+    quotationExpiryDate?: string
+    items: IQuotationItem[]
 }
 
 export interface IQuotationItem {
-    id: number
     productName: string
-    productImage: string
-    productId: string
+    image: string
+    variants: string
     sku?: string
     quantity: number
 }
@@ -45,3 +41,18 @@ export interface IQuotationFilter extends IFilter {
 export interface IQuotationCreate {}
 
 export interface IQuotationUpdate {}
+
+export interface IUpdateResponsiblePersonModel {
+    quoteCode: string
+    responsibleAvatar?: string
+    responsibleName: string
+    responsibleEmail: string
+    responsiblePhone: string
+}
+
+export interface IUpdateQuoteStatusModel {
+    quoteCode: string
+    status: string
+    quotationDate?: string
+    quotationExpiryDate?: string
+}

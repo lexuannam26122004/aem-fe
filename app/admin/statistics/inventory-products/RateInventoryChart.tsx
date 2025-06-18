@@ -1,34 +1,33 @@
 // components/DepartmentChart.js
-import React from 'react'
+import React, { useMemo } from 'react'
 import ReactECharts from 'echarts-for-react'
 import { Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
+import { IResponse } from '@/models/Common'
 
-const OrderValueChart = () => {
+interface IProps {
+    responseData: IResponse
+}
+
+const RateInventoryChart = ({ responseData }: IProps) => {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
 
-    const generateStockRatioData = () => {
-        const full = Math.floor(Math.random() * 100) + 70 // Đủ hàng
-        const low = Math.floor(Math.random() * 60) + 30 // Gần hết hàng
-        const out = Math.floor(Math.random() * 30) + 10 // Hết hàng
+    const chartData = responseData?.data
 
-        return [
-            {
-                name: t('COMMON.INVENTORY_PRODUCTS_REPORTS.ENOUGH'),
-                value: full
-            },
-            {
-                name: t('COMMON.INVENTORY_PRODUCTS_REPORTS.LOW'),
-                value: low
-            },
-            {
-                name: t('COMMON.INVENTORY_PRODUCTS_REPORTS.OUT'),
-                value: out
+    const translatedChartData = useMemo(() => {
+        if (!chartData) return []
+
+        console.log(chartData)
+
+        return chartData.map(row => {
+            if (typeof row.name === 'string') {
+                return { name: t(row.name), value: row.value }
             }
-        ]
-    }
+            return row
+        })
+    }, [chartData, t])
 
     const option = {
         tooltip: {
@@ -52,10 +51,10 @@ const OrderValueChart = () => {
                 fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
             }
         },
-        color: ['#3675ff', '#f5aa0f', '#1dceed'],
+        color: ['#13eeaa', '#ffbd34', '#ff5d13'],
         series: [
             {
-                name: 'Access From',
+                name: t('COMMON.INVENTORY_PRODUCTS_REPORTS.PRODUCT_QUANTITY'),
                 type: 'pie',
                 center: ['50%', '37%'],
                 radius: ['25%', '70%'],
@@ -85,7 +84,7 @@ const OrderValueChart = () => {
                 labelLine: {
                     show: false
                 },
-                data: generateStockRatioData()
+                data: translatedChartData
             }
         ]
     }
@@ -110,7 +109,7 @@ const OrderValueChart = () => {
                     color: 'var(--text-color)'
                 }}
             >
-                {t('COMMON.ORDER_REPORTS.ORDER_VALUE_TIERS')}
+                {t('COMMON.INVENTORY_PRODUCTS_REPORTS.INVENTORY_STATUS_DISTRIBUTION')}
             </Typography>
 
             <ReactECharts option={option} style={{ height: '86%', width: '100%' }} />
@@ -118,4 +117,4 @@ const OrderValueChart = () => {
     )
 }
 
-export default OrderValueChart
+export default RateInventoryChart

@@ -20,28 +20,6 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/useToast'
 import { IInventory, IInventoryFilter } from '@/models/Inventory'
 
-const avatars = [
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-1.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-2.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-3.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-4.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-5.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-6.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-7.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-8.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-9.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-10.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-11.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-12.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-13.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-14.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-15.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-16.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-17.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-18.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-19.webp'
-]
-
 interface IProps {
     data: IInventory[]
     refetch: () => void
@@ -243,7 +221,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                     height: '40px',
                                                     borderRadius: '50%'
                                                 }}
-                                                src={row.assigneeAvatarPath || avatars[index]}
+                                                src={row.employeeAvatar || ''}
                                             />
                                             <Box
                                                 display='flex'
@@ -264,7 +242,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                         color: 'var(--primary-color)'
                                                     }}
                                                 >
-                                                    {row.assigneeName}
+                                                    {row.employeeName}
                                                 </Typography>
 
                                                 <Typography
@@ -277,7 +255,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                         whiteSpace: 'nowrap'
                                                     }}
                                                 >
-                                                    {row.assigneeId}
+                                                    {row.employeePhone}
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -296,7 +274,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                     fontSize: '15px'
                                                 }}
                                             >
-                                                {new Date(row.lastStockUpdate).toLocaleDateString('vi-VN', {
+                                                {new Date(row.inventoryDate).toLocaleDateString('vi-VN', {
                                                     day: '2-digit',
                                                     month: '2-digit',
                                                     year: 'numeric'
@@ -309,7 +287,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                     fontSize: '12px'
                                                 }}
                                             >
-                                                {new Date(row.lastStockUpdate).toLocaleString('vi-VN', {
+                                                {new Date(row.inventoryDate).toLocaleString('vi-VN', {
                                                     hour: '2-digit',
                                                     minute: '2-digit',
                                                     hour12: false
@@ -329,7 +307,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                 whiteSpace: 'nowrap'
                                             }}
                                         >
-                                            {row.itemCount}
+                                            {row.totalItems}
                                         </Typography>
                                     </TableCell>
 
@@ -380,7 +358,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                         }
                                                     }}
                                                     onClick={() => {
-                                                        router.push(`/admin/inventories/detail?id=${row.id}`)
+                                                        router.push(`/admin/inventories/${row.id}`)
                                                     }}
                                                 >
                                                     <EyeIcon size={16} color='#2563eb' />

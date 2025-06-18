@@ -13,14 +13,11 @@ import {
     TableSortLabel,
     Avatar
 } from '@mui/material'
-import { BadgeCheckIcon, CheckCircleIcon, Edit, EyeIcon, StarIcon, Trash2, XCircleIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { BadgeCheckIcon, CheckCircleIcon, EyeIcon, StarIcon, Trash2, XCircleIcon } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
 import AlertDialog from '@/components/AlertDialog'
-import { useChangeIsPartnerSupplierMutation, useChangeStatusSupplierMutation } from '@/services/SupplierService'
-import { useToast } from '@/hooks/useToast'
-import { ICoupon } from '@/models/Coupon'
 import { ICustomer, ICustomerFilter } from '@/models/Customer'
 import { formatCurrency } from '@/common/format'
 
@@ -47,53 +44,19 @@ function getStatusTextColor(status: boolean): string {
         return 'var(--text-color-success)'
     }
 }
-
-const avatars = [
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-1.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-2.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-3.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-4.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-5.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-6.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-7.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-8.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-9.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-10.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-11.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-12.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-13.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-14.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-15.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-16.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-17.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-18.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-19.webp'
-]
-
 interface IProps {
     data: ICustomer[]
     refetch: () => void
     setFilter: React.Dispatch<React.SetStateAction<ICustomerFilter>>
 }
 
-function DataTable({ data, setFilter, refetch }: IProps) {
+function DataTable({ data, setFilter }: IProps) {
     const { t } = useTranslation('common')
     const router = useRouter()
-    const toast = useToast()
     const [order, setOrder] = useState<'asc' | 'desc'>('asc')
     const [orderBy, setOrderBy] = useState<string>('')
     const [openDialog, setOpenDialog] = useState(false)
-    const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null)
-    const [selectedChangeId, setSelectedChangeId] = useState<number | null>(null)
     const [typeAlert, setTypeAlert] = useState<number | null>(null)
-    const [changeStatusSupplierMutation, { isLoading: isLoadingDelete }] = useChangeStatusSupplierMutation()
-    const [changePartner, { isLoading: isLoadingChange }] = useChangeIsPartnerSupplierMutation()
-    const [coupon, setCoupon] = useState<ICoupon | null>(null)
-    useEffect(() => {}, [coupon])
-
-    const handleButtonUpdateClick = (id: number) => {
-        router.push(`/admin/suppliers/update?id=${id}`)
-    }
 
     const handleSort = (property: string) => {
         setFilter(prev => ({
@@ -109,41 +72,9 @@ function DataTable({ data, setFilter, refetch }: IProps) {
         setOrderBy(property)
     }
 
-    const handleDeleteClick = async (id: number) => {
+    const handleDeleteClick = async () => {
         setTypeAlert(0)
-        setSelectedDeleteId(id)
         setOpenDialog(true)
-    }
-
-    const handleChangePartner = async () => {
-        if (selectedChangeId) {
-            try {
-                await changePartner(selectedChangeId).unwrap()
-                refetch()
-                toast(t('COMMON.SUPPLIERS.UPDATE_PARTNER_SUCCESS'), 'success')
-            } catch {
-                toast(t('COMMON.SUPPLIERS.UPDATE_PARTNER_FAIL'), 'error')
-            }
-        }
-        setOpenDialog(false)
-        setSelectedChangeId(null)
-        setTypeAlert(null)
-    }
-
-    const handleDeleteSupplier = async () => {
-        if (selectedDeleteId) {
-            try {
-                await changeStatusSupplierMutation(selectedDeleteId).unwrap()
-                refetch()
-                toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
-            } catch {
-                toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_FAIL'), 'error')
-            }
-        }
-        setOpenDialog(false)
-        setSelectedDeleteId(null)
-        setCoupon(null)
-        setTypeAlert(null)
     }
 
     const getRankBadge = (rank: string) => {
@@ -353,7 +284,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                             whiteSpace: 'nowrap'
                                         }}
                                     >
-                                        {t('COMMON.CUSTOMER.TOTAL_SPEND')}
+                                        {t('COMMON.CUSTOMER.TOTAL_SPENT')}
                                     </Typography>
                                 </TableSortLabel>
                             </TableCell>
@@ -500,7 +431,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                     height: '40px',
                                                     borderRadius: '50%'
                                                 }}
-                                                src={row.avatarPath || avatars[index]}
+                                                src={row.avatar}
                                             />
                                             <Box
                                                 display='flex'
@@ -745,28 +676,6 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                 </Box>
                                             </Tooltip>
 
-                                            <Tooltip title={t('COMMON.BUTTON.UPDATE')}>
-                                                <Box
-                                                    display='flex'
-                                                    alignItems='center'
-                                                    justifyContent='center'
-                                                    sx={{
-                                                        padding: '8px 12px',
-                                                        cursor: 'pointer',
-                                                        borderRadius: '8px',
-                                                        backgroundColor: 'var(--background-color-button-edit)',
-                                                        border: '1px solid #fde68a',
-                                                        '&:hover': {
-                                                            backgroundColor: 'var(--hover-color-button-edit)',
-                                                            borderColor: '#fadc5e'
-                                                        }
-                                                    }}
-                                                    onClick={() => handleButtonUpdateClick(row.id)}
-                                                >
-                                                    <Edit size={16} color='#d97706' />
-                                                </Box>
-                                            </Tooltip>
-
                                             <Tooltip title={t('COMMON.BUTTON.DELETE')}>
                                                 <Box
                                                     display='flex'
@@ -783,7 +692,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                             borderColor: '#fba5a5'
                                                         }
                                                     }}
-                                                    onClick={() => handleDeleteClick(row.id)}
+                                                    onClick={() => handleDeleteClick()}
                                                 >
                                                     <Trash2 size={16} color='#dc2626' />
                                                 </Box>
@@ -799,28 +708,14 @@ function DataTable({ data, setFilter, refetch }: IProps) {
             {typeAlert === 0 && (
                 <AlertDialog
                     title={t('COMMON.ALERT_DIALOG.CONFIRM')}
-                    isLoading={isLoadingDelete}
+                    isLoading={false}
                     content={t('COMMON.ALERT_DIALOG.CONFIRM_DELETE')}
                     type='warning'
                     open={openDialog}
                     setOpen={setOpenDialog}
                     buttonCancel={t('COMMON.ALERT_DIALOG.CANCEL')}
                     buttonConfirm={t('COMMON.ALERT_DIALOG.DELETE')}
-                    onConfirm={() => handleDeleteSupplier()}
-                />
-            )}
-
-            {typeAlert === 1 && (
-                <AlertDialog
-                    title={t('COMMON.ALERT_DIALOG.CONFIRM')}
-                    isLoading={isLoadingChange}
-                    content={t('COMMON.SUPPLIERS.CONFIRM_UPDATE_PARTNER')}
-                    type='warning'
-                    open={openDialog}
-                    setOpen={setOpenDialog}
-                    buttonCancel={t('COMMON.ALERT_DIALOG.CANCEL')}
-                    buttonConfirm={t('COMMON.ALERT_DIALOG.OK')}
-                    onConfirm={() => handleChangePartner()}
+                    onConfirm={() => handleDeleteClick()}
                 />
             )}
         </>

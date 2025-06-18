@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { Printer, Mail, PhoneCall } from 'lucide-react'
-import { IInventoryDetail, IInventoryFilter, IInventoryItemList } from '@/models/Inventory'
+import { IInventoryDetail, IInventoryProductFilter, IInventoryProductGet } from '@/models/Inventory'
 import SearchIcon from '@mui/icons-material/Search'
 import {
     Avatar,
@@ -27,16 +27,17 @@ import {
     InputLabel
 } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import Tabs from '@mui/material/Tabs'
-import Tab from '@mui/material/Tab'
-import dayjs from 'dayjs'
-import { useGetCountTypeQuery } from '@/services/InventoryService'
-import { debounce } from 'lodash'
+import { useGetByIdInventoryQuery } from '@/services/InventoryService'
+import { debounce, isArray } from 'lodash'
+import { usePathname } from 'next/navigation'
+import Loading from '@/components/Loading'
+import { useSearchCategoryQuery } from '@/services/CategoryService'
+import { ICategory } from '@/models/Category'
 
 function getStatusBgColor(status: string): string {
-    if (status === 'outOfStock') {
+    if (status === 'out_of_stock') {
         return 'var(--background-color-cancel)'
-    } else if (status === 'inStock') {
+    } else if (status === 'in_stock') {
         return 'var(--background-color-success)'
     } else {
         return 'var(--background-color-pending)'
@@ -44,9 +45,9 @@ function getStatusBgColor(status: string): string {
 }
 
 function getBorderColor(status: string): string {
-    if (status === 'outOfStock') {
+    if (status === 'out_of_stock') {
         return 'var(--border-color-cancel)'
-    } else if (status === 'inStock') {
+    } else if (status === 'in_stock') {
         return 'var(--border-color-success)'
     } else {
         return 'var(--border-color-pending)'
@@ -54,9 +55,9 @@ function getBorderColor(status: string): string {
 }
 
 function getStatusTextColor(status: string): string {
-    if (status === 'outOfStock') {
+    if (status === 'out_of_stock') {
         return 'var(--text-color-cancel)'
-    } else if (status === 'inStock') {
+    } else if (status === 'in_stock') {
         return 'var(--text-color-success)'
     } else {
         return 'var(--text-color-pending)'
@@ -66,82 +67,43 @@ function getStatusTextColor(status: string): string {
 export default function InventoryDetailPage() {
     const { t } = useTranslation('common')
 
-    const { data: countResponse } = useGetCountTypeQuery()
-    const countInStock = countResponse?.data.countInStock || 0
-    const countOutOfStock = countResponse?.data.countOutOfStock || 0
-    const countLowStock = countResponse?.data.countLowStock || 0
     const [order, setOrder] = useState<'asc' | 'desc'>('asc')
     const [orderBy, setOrderBy] = useState<string>('')
-
-    const inventoryDetail: IInventoryDetail = {
-        id: 1,
-        assigneeName: 'John Doe',
-        assigneeEmail: 'johndoe@gmail.com',
-        assigneeId: 'EMP001',
-        assigneeAvatarPath: '/avatars/john_doe.png',
-        assigneePhone: '+84123456789',
-        notes: 'Kiểm kho định kỳ tháng 4.',
-        lastStockUpdate: '2025-04-27T09:30:00Z',
-        itemList: [
-            {
-                id: 1,
-                productName: 'Laptop Dell XPS 13 Laptop Dell XPS 13 Laptop Dell XPS 13 Laptop Dell XPS 13',
-                productImage: '/products/laptop_dell_xps13.png',
-                productUnit: 'cái',
-                realQuantity: 58,
-                systemQuantity: 60,
-                notes: 'Thiếu 2 cái',
-                categoryName: 'Laptop',
-                stockDifference: -2,
-                sku: 'SKU-001',
-                stockStatus: 'inStock'
-            },
-            {
-                id: 2,
-                productName: 'iPhone 15 Pro',
-                productImage: '/products/iphone_15_pro.png',
-                productUnit: 'chiếc',
-                realQuantity: 102,
-                systemQuantity: 102,
-                categoryName: 'Điện thoại',
-                notes: 'Đầy đủ hàng',
-                stockDifference: 0,
-                sku: 'SKU-002',
-                stockStatus: 'inStock'
-            },
-            {
-                id: 3,
-                productName: 'Sony WH-1000XM5',
-                productUnit: 'thiết bị',
-                productImage: '/products/sony_wh1000xm5.png',
-                realQuantity: 25,
-                categoryName: 'Tivi',
-                notes: 'Dư 3 cái',
-                systemQuantity: 2,
-                stockDifference: 3,
-                sku: 'SKU-003',
-                stockStatus: 'lowStock'
-            }
-        ],
-        itemCount: 3
-    }
-
     const [page, setPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState('10')
     const [from, setFrom] = useState(1)
     const [to, setTo] = useState(10)
-    const [filter, setFilter] = useState<IInventoryFilter>({
-        pageSize: 10,
-        pageNumber: 1,
-        fromDate: dayjs().format('YYYY-MM-DD'),
-        toDate: dayjs().format('YYYY-MM-DD')
+
+    const [filter, setFilter] = useState<IInventoryProductFilter>({
+        pageSize: Number(rowsPerPage),
+        page: page,
+        keyword: '',
+        categoryId: undefined
     })
-    const [keyword, setKeyword] = useState('')
+    const pathName = usePathname()
+    const inventoryId = Number(pathName.split('/').pop())
+    const {
+        data: inventoryResponse,
+        isLoading: isLoadingInventory,
+        isFetching,
+        refetch
+    } = useGetByIdInventoryQuery({
+        id: inventoryId,
+        filter
+    })
+    const { data: categoryResponse, isLoading: isLoadingCategory } = useSearchCategoryQuery({
+        pageSize: 50,
+        pageNumber: 1,
+        level: 2
+    })
+    const categories = Array.isArray(categoryResponse?.data?.records)
+        ? (categoryResponse?.data?.records as ICategory[])
+        : []
 
-    useEffect(() => {}, [setFrom, setTo])
+    const inventoryDetail: IInventoryDetail = inventoryResponse?.data
 
-    const totalRecords = (inventoryDetail.itemCount as number) || 0
-    const inventoryData = inventoryDetail.itemList
+    const totalRecords = (inventoryDetail?.totalItems as number) || 0
+    const inventoryData = (inventoryDetail?.products as IInventoryProductGet[]) || []
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -178,7 +140,7 @@ export default function InventoryDetailPage() {
 
     const handleSearchKeyword = (value: string) => {
         setPage(1)
-        setKeyword(value)
+        setFilter({ ...filter, keyword: value, page: 1 })
         debouncedSetFilter(value)
     }
 
@@ -196,59 +158,51 @@ export default function InventoryDetailPage() {
         setOrderBy(property)
     }
 
-    // useEffect(() => {
-    //     if (!isFetching && inventoryData) {
-    //         const from = (page - 1) * Number(rowsPerPage) + Math.min(1, inventoryData?.length)
-    //         setFrom(from)
+    useEffect(() => {
+        if (!isFetching && inventoryData) {
+            const from = (page - 1) * Number(rowsPerPage) + Math.min(1, inventoryData?.length)
+            setFrom(from)
 
-    //         const to = Math.min(inventoryData?.length + (page - 1) * Number(rowsPerPage), totalRecords)
-    //         setTo(to)
-    //     }
-    // }, [isFetching, inventoryData, page, rowsPerPage])
+            const to = Math.min(inventoryData?.length + (page - 1) * Number(rowsPerPage), totalRecords)
+            setTo(to)
+        }
+    }, [isFetching, inventoryData, page, rowsPerPage])
 
     useEffect(() => {
-        // refetch()
+        refetch()
     }, [filter])
 
-    const [currentTab, setCurrentTab] = useState(0)
+    // const [currentTab, setCurrentTab] = useState(0)
 
-    const handleChangeTabs = (newValue: number) => {
-        setCurrentTab(newValue)
-        if (newValue !== undefined) {
-            setFilter(prev => ({
-                ...prev,
-                isType: newValue
-            }))
-        } else {
-            setFilter(prev => ({
-                ...prev,
-                isType: undefined
-            }))
-        }
-    }
-
-    const categories = [
-        { name: 'Điện thoại', id: 1 },
-        { name: 'Máy tính', id: 2 },
-        { name: 'Tivi', id: 3 },
-        { name: 'Tai nghe', id: 4 },
-        { name: 'Máy nghe nhạc', id: 5 }
-    ]
-
-    // if (isLoading || isCountLoading) {
-    //     return <Loading />
+    // const handleChangeTabs = (newValue: number) => {
+    //     setCurrentTab(newValue)
+    //     if (newValue !== undefined) {
+    //         setFilter(prev => ({
+    //             ...prev,
+    //             isType: newValue
+    //         }))
+    //     } else {
+    //         setFilter(prev => ({
+    //             ...prev,
+    //             isType: undefined
+    //         }))
+    //     }
     // }
 
-    const badgeStyle: React.CSSProperties = {
-        fontSize: '12px',
-        height: '24px',
-        minWidth: '24px',
-        borderRadius: '6px',
-        padding: '0px 7px',
-        fontWeight: 'bold',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+    // const badgeStyle: React.CSSProperties = {
+    //     fontSize: '12px',
+    //     height: '24px',
+    //     minWidth: '24px',
+    //     borderRadius: '6px',
+    //     padding: '0px 7px',
+    //     fontWeight: 'bold',
+    //     display: 'flex',
+    //     alignItems: 'center',
+    //     justifyContent: 'center'
+    // }
+
+    if (isLoadingInventory || isLoadingCategory) {
+        return <Loading />
     }
 
     return (
@@ -285,7 +239,7 @@ export default function InventoryDetailPage() {
                             marginLeft: '5px'
                         }}
                     >
-                        {new Date(inventoryDetail.lastStockUpdate).toLocaleDateString('vi-VN', {
+                        {new Date(inventoryDetail.inventoryDate).toLocaleDateString('vi-VN', {
                             year: 'numeric',
                             month: '2-digit',
                             day: '2-digit',
@@ -347,7 +301,7 @@ export default function InventoryDetailPage() {
                     {t('COMMON.QUOTATION.ASSIGNEE_INFO')}
                 </Typography>
 
-                {inventoryDetail.assigneeId ? (
+                {inventoryDetail.employeeName ? (
                     <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '200px', mt: '24px' }}>
                             <Box
@@ -357,7 +311,7 @@ export default function InventoryDetailPage() {
                                 }}
                             >
                                 <Avatar
-                                    src={inventoryDetail.assigneeAvatarPath}
+                                    src={inventoryDetail.employeeAvatar}
                                     sx={{
                                         width: '50px',
                                         height: '50px'
@@ -382,7 +336,7 @@ export default function InventoryDetailPage() {
                                             fontWeight: 'bold'
                                         }}
                                     >
-                                        {inventoryDetail.assigneeName}
+                                        {inventoryDetail.employeeName}
                                     </Typography>
 
                                     <Typography
@@ -391,7 +345,7 @@ export default function InventoryDetailPage() {
                                             fontSize: '15px'
                                         }}
                                     >
-                                        {inventoryDetail.assigneeId}
+                                        {inventoryDetail.employeeId}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -412,7 +366,7 @@ export default function InventoryDetailPage() {
                                             fontSize: '15px'
                                         }}
                                     >
-                                        {inventoryDetail.assigneeEmail}
+                                        {inventoryDetail.employeeMail}
                                     </Typography>
                                 </Box>
 
@@ -432,7 +386,7 @@ export default function InventoryDetailPage() {
                                             fontSize: '15px'
                                         }}
                                     >
-                                        {inventoryDetail.assigneePhone}
+                                        {inventoryDetail.employeePhone}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -487,11 +441,12 @@ export default function InventoryDetailPage() {
 
             <Paper
                 sx={{
+                    pt: '1px',
                     borderRadius: '15px',
                     backgroundColor: 'var(--background-color-item)'
                 }}
             >
-                <Tabs
+                {/* <Tabs
                     value={currentTab}
                     onChange={(e, newValue) => handleChangeTabs(newValue)}
                     variant='scrollable'
@@ -663,7 +618,7 @@ export default function InventoryDetailPage() {
                         }
                         value={3}
                     />
-                </Tabs>
+                </Tabs> */}
 
                 <Box display='flex' alignItems='center' gap='24px' margin='24px'>
                     <Box sx={{ position: 'relative', width: '70%', height: '51px', display: 'flex', gap: '20px' }}>
@@ -673,7 +628,7 @@ export default function InventoryDetailPage() {
                             placeholder={t('COMMON.PRODUCT.SEARCH')}
                             variant='outlined'
                             required
-                            value={keyword}
+                            value={filter.keyword || ''}
                             onChange={e => handleSearchKeyword(e.target.value)}
                             sx={{
                                 color: 'var(--text-color)',
@@ -831,18 +786,19 @@ export default function InventoryDetailPage() {
                                 >
                                     {t('COMMON.PRODUCT.ALL')}
                                 </MenuItem>
-                                {categories.map((item, index) => (
-                                    <MenuItem
-                                        key={index}
-                                        value={String(item.id)}
-                                        sx={{
-                                            mt: '4px',
-                                            borderRadius: '6px'
-                                        }}
-                                    >
-                                        {item.name}
-                                    </MenuItem>
-                                ))}
+                                {isArray(categories) &&
+                                    categories.map((item, index) => (
+                                        <MenuItem
+                                            key={index}
+                                            value={String(item.id)}
+                                            sx={{
+                                                mt: '4px',
+                                                borderRadius: '6px'
+                                            }}
+                                        >
+                                            {item.categoryName}
+                                        </MenuItem>
+                                    ))}
                             </Select>
                         </FormControl>
                     </Box>
@@ -997,7 +953,7 @@ export default function InventoryDetailPage() {
 
                         <TableBody>
                             {inventoryData &&
-                                inventoryData.map((row: IInventoryItemList, index: number) => (
+                                inventoryData.map((row: IInventoryProductGet, index: number) => (
                                     <TableRow
                                         key={index}
                                         sx={{
@@ -1029,7 +985,7 @@ export default function InventoryDetailPage() {
                                                 }}
                                             >
                                                 <Avatar
-                                                    src={row.productImage}
+                                                    src={row.image}
                                                     sx={{
                                                         width: '50px',
                                                         height: '50px',
@@ -1093,7 +1049,7 @@ export default function InventoryDetailPage() {
                                                     whiteSpace: 'nowrap'
                                                 }}
                                             >
-                                                {row.categoryName}
+                                                {row.category}
                                             </Box>
                                         </TableCell>
 
@@ -1108,7 +1064,7 @@ export default function InventoryDetailPage() {
                                                     whiteSpace: 'nowrap'
                                                 }}
                                             >
-                                                {row.productUnit}
+                                                {row.unit}
                                             </Typography>
                                         </TableCell>
 
@@ -1139,7 +1095,7 @@ export default function InventoryDetailPage() {
                                                     whiteSpace: 'nowrap'
                                                 }}
                                             >
-                                                {row.stockDifference}
+                                                {row.difference}
                                             </Typography>
                                         </TableCell>
 
@@ -1169,19 +1125,19 @@ export default function InventoryDetailPage() {
                                                 sx={{
                                                     borderRadius: '9999px',
                                                     padding: '7px 15px',
-                                                    border: getBorderColor(row.stockStatus),
+                                                    border: getBorderColor(row.status),
                                                     display: 'flex',
                                                     maxWidth: '130px',
                                                     minWidth: '120px',
                                                     justifyContent: 'center',
-                                                    backgroundColor: getStatusBgColor(row.stockStatus)
+                                                    backgroundColor: getStatusBgColor(row.status)
                                                 }}
                                             >
                                                 <Typography
                                                     sx={{
                                                         fontSize: '13px',
                                                         overflow: 'hidden',
-                                                        color: getStatusTextColor(row.stockStatus),
+                                                        color: getStatusTextColor(row.status),
                                                         width: 'auto',
                                                         fontWeight: 'bold',
                                                         display: 'inline-block',
@@ -1189,11 +1145,11 @@ export default function InventoryDetailPage() {
                                                         whiteSpace: 'nowrap'
                                                     }}
                                                 >
-                                                    {row.stockStatus === 'inStock'
+                                                    {row.status === 'in_stock'
                                                         ? t('COMMON.PRODUCT.IN_STOCK')
-                                                        : row.stockStatus === 'lowStock'
-                                                        ? t('COMMON.PRODUCT.OUT_OF_STOCK')
-                                                        : t('COMMON.PRODUCT.LOW_STOCK')}
+                                                        : row.status === 'low_stock'
+                                                        ? t('COMMON.PRODUCT.LOW_STOCK')
+                                                        : t('COMMON.PRODUCT.OUT_OF_STOCK')}
                                                 </Typography>
                                             </Box>
                                         </TableCell>

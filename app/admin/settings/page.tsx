@@ -52,28 +52,29 @@ export default function Page() {
 
     const [settings, setSettings] = useState<ShopSettings>({
         email: {
-            address: '',
-            password: '',
-            smtpServer: '',
-            senderName: ''
+            address: 'info@shopfinity.com',
+            password: '********', // để fake, bạn có thể bỏ hoặc mã hóa
+            smtpServer: 'smtp.shopfinity.com',
+            senderName: 'Shopfinity Team'
         },
         shop: {
-            name: '',
-            logo: '',
-            favicon: '',
-            phone: '',
-            address: '',
+            name: 'Shopfinity',
+            logo: '/assets/logo.png', // giả định file ảnh đã upload
+            favicon: '/assets/favicon.ico', // giả định favicon đã setup
+            phone: '0123 456 789',
+            address: '111A/1, đường số 38, Hiệp Bình Chánh, Thủ Đức, TP.HCM',
             socialLinks: {
-                facebook: '',
-                zalo: '',
-                instagram: ''
+                facebook: 'https://facebook.com/shopfinityvn',
+                zalo: 'https://zalo.me/1234567890',
+                instagram: 'https://instagram.com/shopfinity.vn'
             },
-            shippingPolicy: '',
-            returnPolicy: '',
-            description: ''
+            shippingPolicy: 'Miễn phí vận chuyển cho đơn hàng trên 500.000đ. Thời gian giao hàng từ 2-5 ngày làm việc.',
+            returnPolicy: 'Đổi trả trong vòng 7 ngày kể từ ngày nhận hàng nếu sản phẩm bị lỗi do nhà sản xuất.',
+            description:
+                'Nhà cung cấp thiết bị điện tử và giải pháp tự động hóa hàng đầu Việt Nam. Chúng tôi mang đến những sản phẩm chất lượng cao và dịch vụ hoàn hảo.'
         },
         payment: {
-            methods: ['COD', 'MOMO']
+            methods: ['cod', 'vnpay']
         }
     })
 

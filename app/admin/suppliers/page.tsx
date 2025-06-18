@@ -178,17 +178,47 @@ function Page() {
 
                 <Divider
                     sx={{
-                        borderColor: 'var(--border-color)'
+                        borderColor: 'var(--border-color)',
+                        borderStyle: 'dashed'
                     }}
                 />
 
                 <Box>
                     <Tabs
                         value={currentTab}
-                        onChange={(event, newValue) => handleChangeTabs(newValue)}
+                        onChange={(e, newValue) => handleChangeTabs(newValue)}
+                        variant='scrollable'
+                        scrollButtons={false}
+                        sx={{
+                            overflowX: 'auto',
+                            '& .MuiTabs-flexContainer': {
+                                flexWrap: 'nowrap'
+                            },
+                            '&::-webkit-scrollbar': {
+                                height: '6px'
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                                backgroundColor: '#ccc',
+                                borderRadius: '4px'
+                            },
+                            position: 'relative',
+                            '::after': {
+                                content: '""',
+                                display: 'block',
+                                width: '100%',
+                                bottom: '0',
+                                zIndex: 0,
+                                borderRadius: '1px',
+                                left: '0',
+                                position: 'absolute',
+                                height: '2px',
+                                backgroundColor: 'var(--border-tab)'
+                            }
+                        }}
                         slotProps={{
                             indicator: {
                                 sx: {
+                                    zIndex: 1,
                                     background: 'linear-gradient(to right,rgb(103, 255, 164),rgb(255, 182, 127))',
                                     height: '2px',
                                     borderRadius: '1px'

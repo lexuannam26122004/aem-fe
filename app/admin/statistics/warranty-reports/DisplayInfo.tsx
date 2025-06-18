@@ -2,7 +2,6 @@
 
 import { Avatar, Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { formatWorkingTime } from '@/common/format'
 
 const responseData = {
     data: {
@@ -199,7 +198,7 @@ function Page() {
                                 fontWeight: 'bold'
                             }}
                         >
-                            {formatWorkingTime(averageTime, t)}
+                            {averageTime !== null ? averageTime + 'h' : t('COMMON.HOME.NO_CHANGE')}
                         </Typography>
                         <Box
                             sx={{

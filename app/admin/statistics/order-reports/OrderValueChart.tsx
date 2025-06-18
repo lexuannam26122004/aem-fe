@@ -4,33 +4,20 @@ import ReactECharts from 'echarts-for-react'
 import { Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
+import { useGetOrderValueSegmentsQuery } from '@/services/OrderInsightsService'
+import Loading from '@/components/Loading'
 
 const OrderValueChart = () => {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
 
-    const generateFakeData = () => {
-        const result: { categories: string[]; low: number[]; mid: number[]; high: number[] } = {
-            categories: [],
-            low: [],
-            mid: [],
-            high: []
-        }
+    const { data: chartDataResponse, isLoading: isChartDataLoading } = useGetOrderValueSegmentsQuery(7)
 
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date()
-            date.setDate(date.getDate() - i)
-            const dayStr = date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) // ex: "14/05"
-            result.categories.push(dayStr)
-            result.low.push(Math.floor(Math.random() * 6) + 1)
-            result.mid.push(Math.floor(Math.random() * 6) + 1)
-            result.high.push(Math.floor(Math.random() * 6) + 1)
-        }
+    const chartData = chartDataResponse?.data
 
-        return result
+    if (isChartDataLoading || !chartData) {
+        return <Loading />
     }
-
-    const chartData = generateFakeData()
 
     const option = {
         animation: true,

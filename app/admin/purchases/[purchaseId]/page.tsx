@@ -19,6 +19,10 @@ import { useTranslation } from 'react-i18next'
 import EditRoundedIcon from '@mui/icons-material/EditRounded'
 import { formatCurrency } from '@/common/format'
 import { IPurchaseOrderDetail } from '@/models/PurchaseOrder'
+import { usePathname } from 'next/navigation'
+import { useGetByIdPurchaseOrderQuery } from '@/services/PurchaseOrderService'
+import Loading from '@/components/Loading'
+import EmptyState from '@/components/EmptyState'
 
 function getStatusBgColor(status: string): string {
     if (status === 'unpaid') {
@@ -47,62 +51,22 @@ function getStatusTextColor(status: string): string {
 export default function OrderDetailPage() {
     const { t } = useTranslation('common')
 
-    const orderDetail: IPurchaseOrderDetail = {
-        id: 1,
-        supplierAvatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-19.webp',
-        purchaseCode: 'PO-20250427-001',
-        supplierName: 'Công ty TNHH ABC',
-        supplierPhone: '+84 912 345 678',
-        receivedBy: 'Lê Xuân Nam',
-        employeeAvatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-1.webp',
-        supplierEmail: 'contact@abccompany.vn',
-        supplierAddress: '123 Đường Lê Lợi, Quận 1, TP.HCM, Việt Nam',
-        itemCount: 2,
-        purchaseDate: '2025-04-25T08:00:00Z',
-        receivedPhone: '+84 854 382 342',
-        receivedTime: '2025-04-26T14:00:00Z',
-        receivedId: 'EM-1234',
-        totalAmount: 10800000,
-        discountAmount: 300000,
-        paymentStatus: 'paid',
-        paymentTime: '2025-04-26T15:00:00Z',
-        notes: 'Đã giao đủ hàng, chất lượng tốt.',
-        createdAt: '2025-04-25T07:30:00Z',
-        createdBy: 'admin',
-        shippingFee: 200000,
-        subTotal: 10000000,
-        supplierTaxID: '123456789',
-        discountShippingFee: 50000,
-        paymentMethod: 'cod',
-        taxes: 800000,
-        itemList: [
-            {
-                id: 1,
-                productId: '1001',
-                productName: 'Máy in Canon LBP2900',
-                productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-15.webp',
-                quantity: 2,
-                purchasePrice: 3500000,
-                subtotal: 7000000,
-                taxAmount: 700000,
-                discountType: 1,
-                discountValue: 100000,
-                sku: 'PRN-CANON-2900'
-            },
-            {
-                id: 2,
-                productId: '1002',
-                productName: 'Giấy in A4 Double A 80gsm',
-                productImage: 'https://api-prod-minimal-v700.pages.dev/assets/images/cover/cover-12.webp',
-                quantity: 5,
-                purchasePrice: 600000,
-                subtotal: 3000000,
-                taxAmount: 300000,
-                discountType: 2,
-                discountValue: 5,
-                sku: 'PAP-DOUBLEA-A4'
-            }
-        ]
+    const pathName = usePathname()
+    const orderId = String(pathName.split('/').pop())
+    const { data: orderDetailResponse, isLoading, error: errorOrderDetail } = useGetByIdPurchaseOrderQuery(orderId)
+
+    const orderDetail: IPurchaseOrderDetail = orderDetailResponse?.data
+
+    if (isLoading) {
+        return <Loading />
+    }
+
+    if (errorOrderDetail) {
+        return (
+            <div className='mt-24'>
+                <EmptyState />
+            </div>
+        )
     }
 
     return (
@@ -136,7 +100,7 @@ export default function OrderDetailPage() {
                                 marginLeft: '5px'
                             }}
                         >
-                            {t('COMMON.ORDER.ORDER')} #{orderDetail.purchaseCode}
+                            {t('COMMON.ORDER.ORDER')} #{orderDetail.orderCode}
                         </Typography>
 
                         <Typography
@@ -146,7 +110,7 @@ export default function OrderDetailPage() {
                                 marginLeft: '5px'
                             }}
                         >
-                            {new Date(orderDetail.purchaseDate).toLocaleDateString('vi-VN', {
+                            {new Date(orderDetail.orderDate).toLocaleDateString('vi-VN', {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit',
@@ -160,28 +124,28 @@ export default function OrderDetailPage() {
                         sx={{
                             borderRadius: '9999px',
                             padding: '7px 15px',
-                            border: getBorderColor(orderDetail.paymentStatus),
+                            border: getBorderColor(orderDetail.orderStatus),
                             display: 'flex',
                             margin: '0 auto',
                             width: 'fit-content',
                             alignItems: 'center',
                             gap: '10px',
                             justifyContent: 'center',
-                            backgroundColor: getStatusBgColor(orderDetail.paymentStatus)
+                            backgroundColor: getStatusBgColor(orderDetail.orderStatus)
                         }}
                     >
                         <Typography
                             sx={{
                                 fontSize: '13px',
                                 overflow: 'hidden',
-                                color: getStatusTextColor(orderDetail.paymentStatus),
+                                color: getStatusTextColor(orderDetail.orderStatus),
                                 fontWeight: 'bold',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap'
                             }}
                         >
-                            {orderDetail.paymentStatus === 'paid' && t('COMMON.PURCHASE_ORDER.PAID')}
-                            {orderDetail.paymentStatus === 'unpaid' && t('COMMON.PURCHASE_ORDER.UNPAID')}
+                            {orderDetail.orderStatus === 'paid' && t('COMMON.PURCHASE_ORDER.PAID')}
+                            {orderDetail.orderStatus === 'unpaid' && t('COMMON.PURCHASE_ORDER.UNPAID')}
                         </Typography>
                     </Box>
                 </Box>
@@ -268,7 +232,7 @@ export default function OrderDetailPage() {
                                 mt: '18px'
                             }}
                         >
-                            {orderDetail.itemList.map((item, index) => {
+                            {orderDetail.items.map((item, index) => {
                                 return (
                                     <Box
                                         key={index}
@@ -280,7 +244,7 @@ export default function OrderDetailPage() {
                                         }}
                                     >
                                         <Avatar
-                                            src={item.productImage}
+                                            src={item.image}
                                             sx={{
                                                 width: '50px',
                                                 height: '50px',
@@ -337,7 +301,7 @@ export default function OrderDetailPage() {
                                                 marginLeft: 'auto'
                                             }}
                                         >
-                                            {formatCurrency(item.subtotal)}
+                                            {formatCurrency(item.totalPrice)}
                                         </Typography>
                                     </Box>
                                 )
@@ -435,7 +399,7 @@ export default function OrderDetailPage() {
                                                         textAlign: 'right'
                                                     }}
                                                 >
-                                                    {formatCurrency(orderDetail.shippingFee)}
+                                                    {formatCurrency(orderDetail.shippingCost || 0)}
                                                 </Typography>
                                             </TableCell>
                                         </TableRow>
@@ -472,10 +436,10 @@ export default function OrderDetailPage() {
                                                         textAlign: 'right'
                                                     }}
                                                 >
-                                                    {orderDetail.discountShippingFee &&
-                                                        orderDetail.discountShippingFee >= 0 &&
-                                                        '- '}
-                                                    {formatCurrency(orderDetail.discountShippingFee || 0)}
+                                                    {orderDetail.discountShipping && orderDetail.discountShipping >= 0
+                                                        ? '-'
+                                                        : ''}
+                                                    {formatCurrency(orderDetail.discountShipping || 0)}
                                                 </Typography>
                                             </TableCell>
                                         </TableRow>
@@ -512,9 +476,9 @@ export default function OrderDetailPage() {
                                                         textAlign: 'right'
                                                     }}
                                                 >
-                                                    {orderDetail.discountAmount &&
-                                                        orderDetail.discountAmount >= 0 &&
-                                                        '- '}
+                                                    {orderDetail.discountAmount && orderDetail.discountAmount >= 0
+                                                        ? '-'
+                                                        : ''}
                                                     {formatCurrency(orderDetail.discountAmount || 0)}
                                                 </Typography>
                                             </TableCell>
@@ -552,7 +516,7 @@ export default function OrderDetailPage() {
                                                         textAlign: 'right'
                                                     }}
                                                 >
-                                                    {formatCurrency(orderDetail.taxes || 0)}
+                                                    {formatCurrency(orderDetail.taxAmount || 0)}
                                                 </Typography>
                                             </TableCell>
                                         </TableRow>
@@ -599,7 +563,7 @@ export default function OrderDetailPage() {
                             </TableContainer>
                         </Box>
 
-                        {orderDetail.notes && (
+                        {orderDetail.description && (
                             <Box
                                 sx={{
                                     mt: '24px',
@@ -627,7 +591,7 @@ export default function OrderDetailPage() {
                                         color: 'var(--text-color)'
                                     }}
                                 >
-                                    {orderDetail.notes}
+                                    {orderDetail.description}
                                 </Typography>
                             </Box>
                         )}
@@ -663,7 +627,7 @@ export default function OrderDetailPage() {
                             }}
                         >
                             <Avatar
-                                src={orderDetail.supplierAvatarPath}
+                                src={orderDetail.supplier?.avatar}
                                 sx={{
                                     width: '50px',
                                     height: '50px'
@@ -684,7 +648,7 @@ export default function OrderDetailPage() {
                                         fontWeight: 'bold'
                                     }}
                                 >
-                                    {orderDetail.supplierName}
+                                    {orderDetail.supplier?.name}
                                 </Typography>
 
                                 <Typography
@@ -693,7 +657,7 @@ export default function OrderDetailPage() {
                                         fontSize: '15px'
                                     }}
                                 >
-                                    {orderDetail.supplierEmail}
+                                    {orderDetail.supplier?.email}
                                 </Typography>
                             </Box>
                         </Box>
@@ -736,7 +700,7 @@ export default function OrderDetailPage() {
                                                     textAlign: 'left'
                                                 }}
                                             >
-                                                {orderDetail.supplierAddress}
+                                                {orderDetail.supplier.address}
                                             </Typography>
                                         </TableCell>
                                     </TableRow>
@@ -773,7 +737,7 @@ export default function OrderDetailPage() {
                                                     textAlign: 'left'
                                                 }}
                                             >
-                                                {orderDetail.supplierPhone}
+                                                {orderDetail.supplier.phone}
                                             </Typography>
                                         </TableCell>
                                     </TableRow>
@@ -810,7 +774,7 @@ export default function OrderDetailPage() {
                                                     textAlign: 'left'
                                                 }}
                                             >
-                                                {orderDetail.supplierTaxID}
+                                                {orderDetail.supplier.taxCode}
                                             </Typography>
                                         </TableCell>
                                     </TableRow>
@@ -841,7 +805,7 @@ export default function OrderDetailPage() {
                             {t('COMMON.PURCHASE_ORDER.RECEIVED_BY')}
                         </Typography>
 
-                        {orderDetail.receivedBy ? (
+                        {orderDetail.receiver ? (
                             <Box>
                                 <Box
                                     sx={{
@@ -851,7 +815,7 @@ export default function OrderDetailPage() {
                                     }}
                                 >
                                     <Avatar
-                                        src={orderDetail.employeeAvatarPath}
+                                        src={orderDetail.receiver.avatar}
                                         sx={{
                                             width: '50px',
                                             height: '50px'
@@ -872,7 +836,7 @@ export default function OrderDetailPage() {
                                                 fontWeight: 'bold'
                                             }}
                                         >
-                                            {orderDetail.receivedBy}
+                                            {orderDetail.receiver.fullName}
                                         </Typography>
 
                                         <Typography
@@ -881,12 +845,12 @@ export default function OrderDetailPage() {
                                                 fontSize: '15px'
                                             }}
                                         >
-                                            {orderDetail.receivedId}
+                                            {orderDetail.receiver.phone}
                                         </Typography>
                                     </Box>
                                 </Box>
 
-                                {orderDetail.receivedTime && (
+                                {orderDetail.receiver.receiveTime && (
                                     <Box>
                                         <TableContainer>
                                             <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
@@ -924,16 +888,15 @@ export default function OrderDetailPage() {
                                                                     textAlign: 'left'
                                                                 }}
                                                             >
-                                                                {new Date(orderDetail.receivedTime).toLocaleDateString(
-                                                                    'vi-VN',
-                                                                    {
-                                                                        year: 'numeric',
-                                                                        month: '2-digit',
-                                                                        day: '2-digit',
-                                                                        hour: '2-digit',
-                                                                        minute: '2-digit'
-                                                                    }
-                                                                )}
+                                                                {new Date(
+                                                                    orderDetail.receiver.receiveTime
+                                                                ).toLocaleDateString('vi-VN', {
+                                                                    year: 'numeric',
+                                                                    month: '2-digit',
+                                                                    day: '2-digit',
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                })}
                                                             </Typography>
                                                         </TableCell>
                                                     </TableRow>
@@ -970,7 +933,7 @@ export default function OrderDetailPage() {
                                                                     textAlign: 'left'
                                                                 }}
                                                             >
-                                                                {orderDetail.receivedPhone}
+                                                                {orderDetail.receiver.phone}
                                                             </Typography>
                                                         </TableCell>
                                                     </TableRow>
@@ -1020,7 +983,7 @@ export default function OrderDetailPage() {
                             {t('COMMON.ORDER.PAYMENT')}
                         </Typography>
 
-                        {orderDetail.paymentMethod === 'momo' && (
+                        {orderDetail.payment.method === 'momo' && (
                             <Box
                                 sx={{
                                     mt: '20px',
@@ -1056,8 +1019,8 @@ export default function OrderDetailPage() {
                                             color: 'var(--label-title-color)'
                                         }}
                                     >
-                                        {orderDetail.paymentTime
-                                            ? new Date(orderDetail.paymentTime).toLocaleDateString('vi-VN', {
+                                        {orderDetail.payment.time
+                                            ? new Date(orderDetail.payment.time).toLocaleDateString('vi-VN', {
                                                   year: 'numeric',
                                                   month: '2-digit',
                                                   day: '2-digit',
@@ -1070,7 +1033,7 @@ export default function OrderDetailPage() {
                             </Box>
                         )}
 
-                        {orderDetail.paymentMethod === 'vnpay' && (
+                        {orderDetail.payment.method === 'vnpay' && (
                             <Box
                                 sx={{
                                     mt: '20px',
@@ -1106,8 +1069,8 @@ export default function OrderDetailPage() {
                                             color: 'var(--label-title-color)'
                                         }}
                                     >
-                                        {orderDetail.paymentTime
-                                            ? new Date(orderDetail.paymentTime).toLocaleDateString('vi-VN', {
+                                        {orderDetail.payment.time
+                                            ? new Date(orderDetail.payment.time).toLocaleDateString('vi-VN', {
                                                   year: 'numeric',
                                                   month: '2-digit',
                                                   day: '2-digit',
@@ -1120,7 +1083,7 @@ export default function OrderDetailPage() {
                             </Box>
                         )}
 
-                        {orderDetail.paymentMethod === 'cod' && (
+                        {orderDetail.payment.method === 'cod' && (
                             <Box
                                 sx={{
                                     mt: '20px',
@@ -1156,8 +1119,8 @@ export default function OrderDetailPage() {
                                             color: 'var(--label-title-color)'
                                         }}
                                     >
-                                        {orderDetail.paymentTime
-                                            ? new Date(orderDetail.paymentTime).toLocaleDateString('vi-VN', {
+                                        {orderDetail.payment.time
+                                            ? new Date(orderDetail.payment.time).toLocaleDateString('vi-VN', {
                                                   year: 'numeric',
                                                   month: '2-digit',
                                                   day: '2-digit',

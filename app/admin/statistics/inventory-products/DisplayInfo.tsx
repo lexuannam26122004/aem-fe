@@ -3,35 +3,21 @@
 import { Avatar, Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/common/format'
+import { IResponse } from '@/models/Common'
 
-const responseData = {
-    data: {
-        statsByDay: [
-            {
-                totalProducts: 280,
-                totalInventory: 420,
-                valueInventory: 12850000,
-                auditCount: 6
-            }
-        ],
-        rate: {
-            totalProducts: 5.2,
-            totalInventory: -12.8,
-            valueInventory: -8.4,
-            auditCount: 12
-        }
-    }
+interface IProps {
+    responseData: IResponse
 }
 
-function Page() {
+function Page({ responseData }: IProps) {
     const { t } = useTranslation('common')
 
     // const { data: responseData, isLoading } = useStatsDisplayQuery(currentDate.toISOString().split('T')[0])
 
-    const totalProducts = responseData?.data?.statsByDay[0]?.totalProducts || 0
-    const totalInventory = responseData?.data?.statsByDay[0]?.totalInventory || 0
-    const valueInventory = responseData?.data?.statsByDay[0]?.valueInventory || 0
-    const auditCount = responseData?.data?.statsByDay[0]?.auditCount || 0
+    const totalProducts = responseData?.data?.statsByDay?.totalProducts || 0
+    const totalInventory = responseData?.data?.statsByDay?.totalInventory || 0
+    const valueInventory = responseData?.data?.statsByDay?.valueInventory || 0
+    const auditCount = responseData?.data?.statsByDay?.auditCount || 0
     const totalProductsRate = responseData?.data?.rate.totalProducts
     const totalInventoryRate = responseData?.data?.rate.totalInventory
     const valueInventoryRate = responseData?.data?.rate.valueInventory

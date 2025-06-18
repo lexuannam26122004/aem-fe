@@ -4,24 +4,13 @@ import { Box, Paper } from '@mui/material'
 import { Typography } from '@mui/material'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
+import { IResponse } from '@/models/Common'
 
-const responseData = {
-    data: {
-        totalOrders: 200,
-        byStatus: {
-            success: 100, // Đơn hàng thành công
-            cancelled: 60, // Đơn hàng bị hủy
-            returned: 40 // Đơn hàng bị trả
-        },
-        percentage: {
-            success: 50,
-            cancelled: 30,
-            returned: 20
-        }
-    }
+interface IOrdersStatusChartProps {
+    responseData: IResponse
 }
 
-const OrdersStatusChart = () => {
+const OrdersStatusChart = ({ responseData }: IOrdersStatusChartProps) => {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
 

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Truck, Package, NotepadText, Banknote, Star, Clock, CreditCard } from 'lucide-react'
+import { Truck, Package, NotepadText, Banknote, Star, Clock, CreditCard, Hourglass } from 'lucide-react'
 import { IOrderDetail } from '@/models/Order'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/common/format'
@@ -77,15 +77,16 @@ export default function OrderDetailPage() {
 
     const user = useSelector(userSelector).userInfo
 
-    const step = !orderDetail?.paymentTime
-        ? 1
-        : !orderDetail?.carrierDeliveryTime
-        ? 2
-        : !orderDetail?.deliveryTime
-        ? 3
-        : !orderDetail?.reviewTime
-        ? 4
-        : 0
+    const step =
+        !orderDetail?.paymentTime && orderDetail?.orderStatus === 'pending'
+            ? 1
+            : !orderDetail?.carrierDeliveryTime
+            ? 2
+            : !orderDetail?.deliveryTime
+            ? 3
+            : !orderDetail?.reviewTime
+            ? 4
+            : 0
 
     if (
         errorOrderDetail &&
@@ -227,10 +228,20 @@ export default function OrderDetailPage() {
                                                 time: orderDetail.orderDate
                                             },
                                             {
-                                                icon: <Banknote color={iconColor} />,
-                                                label: orderDetail.paymentTime
-                                                    ? t('COMMON.ORDER.ORDER_PAID')
-                                                    : t('COMMON.ORDER.PENDING_PAYMENT'),
+                                                icon:
+                                                    orderDetail.paymentMethod !== 'cod' ? (
+                                                        <Banknote color={iconColor} />
+                                                    ) : (
+                                                        <Hourglass color={iconColor} />
+                                                    ),
+                                                label:
+                                                    orderDetail.paymentMethod === 'cod'
+                                                        ? orderDetail.orderStatus === 'pending'
+                                                            ? t('COMMON.ORDER.ORDER_PENDING')
+                                                            : t('COMMON.ORDER.PROCESSED')
+                                                        : orderDetail.paymentTime
+                                                        ? t('COMMON.ORDER.ORDER_PAID')
+                                                        : t('COMMON.ORDER.PENDING_PAYMENT'),
                                                 time: orderDetail.paymentTime
                                             },
                                             {

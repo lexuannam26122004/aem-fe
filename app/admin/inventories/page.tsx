@@ -30,109 +30,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime } from '@/common/format'
 
-const inventories: IInventory[] = [
-    {
-        id: 1,
-        assigneeName: 'John Doe',
-        itemCount: 10,
-        assigneeId: 'EMP001',
-        assigneeAvatarPath: undefined,
-        assigneePhone: '+84123456789',
-        notes: 'Kiểm kho định kỳ',
-        lastStockUpdate: '2025-04-15T10:00:00Z'
-    },
-    {
-        id: 2,
-        assigneeName: 'Jane Smith',
-        itemCount: 10,
-        assigneeId: 'EMP002',
-        assigneeAvatarPath: undefined,
-        assigneePhone: '+84987654321',
-        notes: 'Sai lệch kiểm kho',
-        lastStockUpdate: '2025-04-10T09:30:00Z'
-    },
-    {
-        id: 3,
-        assigneeName: 'Tommy Nguyen',
-        itemCount: 10,
-        assigneeId: 'EMP003',
-        assigneeAvatarPath: undefined,
-        assigneePhone: '+84911223344',
-        notes: 'Kiểm kho cuối tháng',
-        lastStockUpdate: '2025-04-20T11:00:00Z'
-    },
-    {
-        id: 4,
-        assigneeName: 'Lily Tran',
-        itemCount: 10,
-        assigneeId: 'EMP004',
-        assigneeAvatarPath: undefined,
-        assigneePhone: '+84882233445',
-        notes: 'Kiểm kho phát sinh',
-        lastStockUpdate: '2025-04-18T08:45:00Z'
-    },
-    {
-        id: 5,
-        assigneeName: 'David Pham',
-        itemCount: 10,
-        assigneeId: 'EMP005',
-        assigneeAvatarPath: undefined,
-        assigneePhone: '+84998877665',
-        notes: 'Kiểm kê nhập kho mới',
-        lastStockUpdate: '2025-04-22T07:20:00Z'
-    },
-    {
-        id: 6,
-        assigneeName: 'Sophia Le',
-        itemCount: 10,
-        assigneeId: 'EMP006',
-        assigneeAvatarPath: undefined,
-        assigneePhone: '+84887766554',
-        notes: 'Điều chỉnh tồn kho',
-        lastStockUpdate: '2025-04-12T16:10:00Z'
-    },
-    {
-        id: 7,
-        assigneeName: 'Chris Vu',
-        itemCount: 10,
-        assigneeId: 'EMP007',
-        assigneeAvatarPath: undefined,
-        assigneePhone: '+84915553322',
-        notes: 'Kiểm kho định kỳ',
-        lastStockUpdate: '2025-04-19T12:00:00Z'
-    },
-    {
-        id: 8,
-        assigneeName: 'Anna Nguyen',
-        itemCount: 10,
-        assigneeId: 'EMP008',
-        assigneeAvatarPath: undefined,
-        assigneePhone: '+84889977661',
-        notes: 'Đếm lại tồn kho',
-        lastStockUpdate: '2025-04-17T14:30:00Z'
-    },
-    {
-        id: 9,
-        assigneeName: 'Kevin Hoang',
-        itemCount: 10,
-        assigneeId: 'EMP009',
-        assigneeAvatarPath: undefined,
-        assigneePhone: '+84996655331',
-        notes: 'Điều chỉnh kiểm kê',
-        lastStockUpdate: '2025-04-14T15:15:00Z'
-    },
-    {
-        id: 10,
-        assigneeName: 'Emily Phan',
-        itemCount: 10,
-        assigneeId: 'EMP010',
-        assigneeAvatarPath: undefined,
-        assigneePhone: '+84883322119',
-        notes: 'Kiểm tra tồn kho lẻ',
-        lastStockUpdate: '2025-04-13T13:50:00Z'
-    }
-]
-
 function Page() {
     const router = useRouter()
     const { t } = useTranslation('common')
@@ -142,7 +39,7 @@ function Page() {
     const [to, setTo] = useState(10)
     const [filter, setFilter] = useState<IInventoryFilter>({
         pageSize: 10,
-        pageNumber: 1,
+        page: 1,
         fromDate: dayjs().format('YYYY-MM-DD'),
         toDate: dayjs().format('YYYY-MM-DD')
     })
@@ -150,7 +47,7 @@ function Page() {
 
     const { data: dataResponse, isLoading, isFetching, refetch } = useSearchInventoryQuery(filter)
 
-    const inventoryData = dataResponse?.data?.records || (inventories as IInventory[])
+    const inventoryData = (dataResponse?.data?.records as IInventory[]) || []
 
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
@@ -159,7 +56,7 @@ function Page() {
         setFilter(prev => {
             return {
                 ...prev,
-                pageNumber: newPage
+                page: newPage
             }
         })
     }
@@ -171,7 +68,7 @@ function Page() {
             return {
                 ...prev,
                 pageSize: Number(event.target.value),
-                pageNumber: 1
+                page: 1
             }
         })
     }
@@ -185,7 +82,7 @@ function Page() {
             setFilter(prev => ({
                 ...prev,
                 keyword: value,
-                pageNumber: 1
+                page: 1
             }))
         }, 100),
         []
@@ -210,25 +107,6 @@ function Page() {
     useEffect(() => {
         refetch()
     }, [filter])
-
-    const [currentTab, setCurrentTab] = useState(0)
-
-    const handleChangeTabs = (newValue: number) => {
-        setCurrentTab(newValue)
-        if (newValue !== undefined) {
-            setFilter(prev => ({
-                ...prev,
-                isType: newValue
-            }))
-        } else {
-            setFilter(prev => ({
-                ...prev,
-                isType: undefined
-            }))
-        }
-    }
-
-    useEffect(() => {}, [currentTab, handleChangeTabs])
 
     if (isLoading) {
         return <Loading />

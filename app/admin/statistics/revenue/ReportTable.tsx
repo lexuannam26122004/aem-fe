@@ -27,169 +27,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime, formatCurrency } from '@/common/format'
 import { Download } from 'lucide-react'
-
-const revenueReportData: IRevenueReports[] = [
-    {
-        date: '04/05/2025',
-        orderCount: 40,
-        revenue: 58316160,
-        discountValue: 613968,
-        netRevenue: 57702192,
-        costOfGoods: 29696921,
-        grossProfit: 28005271,
-        grossProfitRate: 48.02,
-        averageOrderValue: 1457904,
-        discountOrderCount: 16,
-        discountOrderRate: 40.0,
-        quoteCount: 44,
-        quoteConvertedCount: 28,
-        quoteConversionRate: 63.64
-    },
-    {
-        date: '05/05/2025',
-        orderCount: 22,
-        revenue: 21612712,
-        discountValue: 96476,
-        netRevenue: 21516236,
-        costOfGoods: 11829505,
-        grossProfit: 9686731,
-        grossProfitRate: 44.82,
-        averageOrderValue: 982396,
-        discountOrderCount: 2,
-        discountOrderRate: 9.09,
-        quoteCount: 34,
-        quoteConvertedCount: 21,
-        quoteConversionRate: 61.76
-    },
-    {
-        date: '06/05/2025',
-        orderCount: 28,
-        revenue: 22500212,
-        discountValue: 59344,
-        netRevenue: 22440868,
-        costOfGoods: 11921701,
-        grossProfit: 10519167,
-        grossProfitRate: 46.75,
-        averageOrderValue: 803579,
-        discountOrderCount: 2,
-        discountOrderRate: 7.14,
-        quoteCount: 48,
-        quoteConvertedCount: 37,
-        quoteConversionRate: 77.08
-    },
-    {
-        date: '07/05/2025',
-        orderCount: 26,
-        revenue: 23019230,
-        discountValue: 169040,
-        netRevenue: 22850190,
-        costOfGoods: 13229584,
-        grossProfit: 9620606,
-        grossProfitRate: 41.79,
-        averageOrderValue: 885355,
-        discountOrderCount: 5,
-        discountOrderRate: 19.23,
-        quoteCount: 45,
-        quoteConvertedCount: 25,
-        quoteConversionRate: 55.56
-    },
-    {
-        date: '08/05/2025',
-        orderCount: 33,
-        revenue: 48009786,
-        discountValue: 0,
-        netRevenue: 48009786,
-        costOfGoods: 30942620,
-        grossProfit: 17067166,
-        grossProfitRate: 35.55,
-        averageOrderValue: 1454842,
-        discountOrderCount: 0,
-        discountOrderRate: 0.0,
-        quoteCount: 42,
-        quoteConvertedCount: 16,
-        quoteConversionRate: 38.1
-    },
-    {
-        date: '09/05/2025',
-        orderCount: 40,
-        revenue: 58316160,
-        discountValue: 613968,
-        netRevenue: 57702192,
-        costOfGoods: 29696921,
-        grossProfit: 28005271,
-        grossProfitRate: 48.02,
-        averageOrderValue: 1457904,
-        discountOrderCount: 16,
-        discountOrderRate: 40.0,
-        quoteCount: 44,
-        quoteConvertedCount: 28,
-        quoteConversionRate: 63.64
-    },
-    {
-        date: '10/05/2025',
-        orderCount: 22,
-        revenue: 21612712,
-        discountValue: 96476,
-        netRevenue: 21516236,
-        costOfGoods: 11829505,
-        grossProfit: 9686731,
-        grossProfitRate: 44.82,
-        averageOrderValue: 982396,
-        discountOrderCount: 2,
-        discountOrderRate: 9.09,
-        quoteCount: 34,
-        quoteConvertedCount: 21,
-        quoteConversionRate: 61.76
-    },
-    {
-        date: '11/05/2025',
-        orderCount: 28,
-        revenue: 22500212,
-        discountValue: 59344,
-        netRevenue: 22440868,
-        costOfGoods: 11921701,
-        grossProfit: 10519167,
-        grossProfitRate: 46.75,
-        averageOrderValue: 803579,
-        discountOrderCount: 2,
-        discountOrderRate: 7.14,
-        quoteCount: 48,
-        quoteConvertedCount: 37,
-        quoteConversionRate: 77.08
-    },
-    {
-        date: '12/05/2025',
-        orderCount: 26,
-        revenue: 23019230,
-        discountValue: 169040,
-        netRevenue: 22850190,
-        costOfGoods: 13229584,
-        grossProfit: 9620606,
-        grossProfitRate: 41.79,
-        averageOrderValue: 885355,
-        discountOrderCount: 5,
-        discountOrderRate: 19.23,
-        quoteCount: 45,
-        quoteConvertedCount: 25,
-        quoteConversionRate: 55.56
-    },
-    {
-        date: '13/05/2025',
-        orderCount: 33,
-        revenue: 48009786,
-        discountValue: 0,
-        netRevenue: 48009786,
-        costOfGoods: 30942620,
-        grossProfit: 17067166,
-        grossProfitRate: 35.55,
-        averageOrderValue: 1454842,
-        discountOrderCount: 0,
-        discountOrderRate: 0.0,
-        quoteCount: 42,
-        quoteConvertedCount: 16,
-        quoteConversionRate: 38.1
-    }
-]
+import { useGetRevenuePerformanceReportQuery } from '@/services/RevenueServices'
+import Loading from '@/components/Loading'
 
 function ReportTable() {
     const { t } = useTranslation('common')
@@ -206,7 +45,11 @@ function ReportTable() {
         toDate: dayjs().format('YYYY-MM-DD')
     })
 
-    const totalRecords = revenueReportData.length
+    const { data: revenueReportResponse, isLoading, isFetching } = useGetRevenuePerformanceReportQuery(filter)
+
+    const revenueReportData = revenueReportResponse?.data.records || []
+
+    const totalRecords = revenueReportResponse?.data.totalRecords || 0
 
     const handleSort = (property: string) => {
         setFilter(prev => ({
@@ -223,14 +66,14 @@ function ReportTable() {
     }
 
     useEffect(() => {
-        if (/*!isFetching && */ revenueReportData) {
+        if (!isFetching && revenueReportData) {
             const from = (page - 1) * Number(rowsPerPage) + Math.min(1, revenueReportData?.length)
             setFrom(from)
 
             const to = Math.min(revenueReportData?.length + (page - 1) * Number(rowsPerPage), totalRecords)
             setTo(to)
         }
-    }, [, /*isFetching*/ revenueReportData, page, rowsPerPage])
+    }, [isFetching, revenueReportData, page, rowsPerPage])
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -254,6 +97,10 @@ function ReportTable() {
         })
     }
 
+    if (isLoading) {
+        return <Loading />
+    }
+
     return (
         <Paper
             elevation={0}
@@ -261,7 +108,7 @@ function ReportTable() {
                 width: '100%',
                 boxShadow: 'var(--box-shadow-paper)',
                 overflow: 'hidden',
-                borderRadius: '20px',
+                borderRadius: '15px',
                 backgroundColor: 'var(--background-color-item)'
             }}
         >
@@ -421,11 +268,11 @@ function ReportTable() {
                         <Select
                             defaultValue='all'
                             label={t('COMMON.REVENUE.ORDER_STATUS')}
-                            value={filter.statusOrder === undefined ? 'all' : filter.statusOrder}
+                            value={filter.orderStatus === undefined ? 'all' : filter.orderStatus}
                             onChange={e =>
                                 setFilter({
                                     ...filter,
-                                    statusOrder: e.target.value
+                                    orderStatus: e.target.value
                                 })
                             }
                             sx={{

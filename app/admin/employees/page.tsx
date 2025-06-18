@@ -11,168 +11,25 @@ import {
     TextField,
     InputAdornment,
     Divider,
-    FormControl,
-    InputLabel,
     Button
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import SearchIcon from '@mui/icons-material/Search'
-import CustomerTable from './EmployeeTable'
+import EmployeeTable from './EmployeeTable'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { debounce } from 'lodash'
 import { useCallback } from 'react'
 import Loading from '@/components/Loading'
 import { CirclePlus } from 'lucide-react'
-import { useSearchCouponQuery, useGetCountTypeQuery } from '@/services/CouponService'
 import { IEmployee, IEmployeeFilter } from '@/models/Employee'
-
-const customers: IEmployee[] = [
-    {
-        id: 1,
-        fullName: 'Nguyễn Văn An',
-        username: 'nguyenvanan',
-        email: 'an.nguyen@gmail.com',
-        phoneNumber: '0987654321',
-        address: '123 Đường Lê Lợi, Quận 1, TP.HCM',
-        birthday: '1995-05-12',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2024-03-01T10:30:00',
-        roles: ['admin'],
-        isActive: true
-    },
-    {
-        id: 2,
-        fullName: 'Trần Thị Bích Ngọc',
-        username: 'bichngoc',
-        email: 'ngoc.tran@gmail.com',
-        phoneNumber: '0912345678',
-        address: '45 Đường Hoàng Diệu, Đà Nẵng',
-        birthday: '1998-09-22',
-        avatarPath: undefined,
-        gender: false,
-        createdAt: '2024-03-01T10:30:00',
-        roles: ['admin'],
-        isActive: false
-    },
-    {
-        id: 3,
-        fullName: 'Lê Minh Tuấn',
-        username: 'leminhtuan',
-        email: 'tuan.le@gmail.com',
-        phoneNumber: '0978123456',
-        address: '90 Đường Phạm Ngũ Lão, Hà Nội',
-        birthday: '1990-12-05',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2024-03-01T10:30:00',
-        roles: ['admin'],
-        isActive: true
-    },
-    {
-        id: 4,
-        fullName: 'Phạm Hồng Nhung',
-        username: 'hongnhung',
-        email: 'nhung.pham@gmail.com',
-        phoneNumber: '0934567890',
-        address: '12 Đường Trần Phú, Nha Trang',
-        birthday: '2000-03-08',
-        avatarPath: undefined,
-        gender: false,
-        createdAt: '2024-01-05T13:15:00',
-        roles: ['admin'],
-        isActive: false
-    },
-    {
-        id: 5,
-        fullName: 'Đặng Quốc Bảo',
-        username: 'quocbao',
-        email: 'bao.dang@gmail.com',
-        phoneNumber: '0965432109',
-        address: '78 Đường Nguyễn Huệ, TP.HCM',
-        birthday: '1988-07-20',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2023-10-15T17:00:00',
-        roles: ['admin'],
-        isActive: false
-    },
-    {
-        id: 6,
-        fullName: 'Vũ Thị Lan',
-        username: 'vuthilan',
-        email: 'lan.vu@gmail.com',
-        phoneNumber: '0956781234',
-        address: '56 Đường Lê Duẩn, Huế',
-        birthday: '1997-11-12',
-        avatarPath: undefined,
-        gender: false,
-        createdAt: '2024-02-22T08:30:00',
-        roles: ['admin'],
-        isActive: true
-    },
-    {
-        id: 7,
-        fullName: 'Trịnh Công Minh',
-        username: 'congminh',
-        email: 'minh.trinh@gmail.com',
-        phoneNumber: '0923456789',
-        address: '33 Đường Phan Chu Trinh, Đà Nẵng',
-        birthday: '1994-04-25',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2024-01-30T12:45:00',
-        roles: ['admin'],
-        isActive: false
-    },
-    {
-        id: 8,
-        fullName: 'Hoàng Thị Mai',
-        username: 'hoangmai',
-        email: 'mai.hoang@gmail.com',
-        phoneNumber: '0909876543',
-        address: '22 Đường Lý Thường Kiệt, Cần Thơ',
-        birthday: '1999-06-30',
-        avatarPath: undefined,
-        gender: false,
-        createdAt: '2024-03-01T10:00:00',
-        roles: ['admin'],
-        isActive: true
-    },
-    {
-        id: 9,
-        fullName: 'Ngô Đức Thịnh',
-        username: 'ngoducthinh',
-        email: 'thinh.ngo@gmail.com',
-        phoneNumber: '0943216789',
-        address: '67 Đường Bạch Đằng, Hải Phòng',
-        birthday: '1985-01-15',
-        avatarPath: undefined,
-        gender: true,
-        createdAt: '2023-09-10T15:00:00',
-        roles: ['admin'],
-        isActive: true
-    },
-    {
-        id: 10,
-        fullName: 'Lý Thị Thanh',
-        username: 'lythithanh',
-        email: 'thanh.ly@gmail.com',
-        phoneNumber: '0911234567',
-        address: '88 Đường Hùng Vương, Hà Nội',
-        birthday: '1992-02-18',
-        avatarPath: undefined,
-        gender: false,
-        createdAt: '2024-03-05T14:20:00',
-        roles: ['admin'],
-        isActive: true
-    }
-]
+import { useSearchEmployeeQuery, useGetCountTypeQuery } from '@/services/EmployeeService'
+import { useRouter } from 'next/navigation'
 
 function Page() {
     const { t } = useTranslation('common')
+    const router = useRouter()
     const [page, setPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState('10')
     const [from, setFrom] = useState(1)
@@ -182,22 +39,22 @@ function Page() {
         pageNumber: 1
     })
     const [keyword, setKeyword] = useState('')
-    const [open, setOpen] = useState(false)
 
-    // DELETE
-    useEffect(() => {}, [open])
+    const {
+        data: dataResponse,
+        isLoading: isLoading,
+        refetch
+    } = useSearchEmployeeQuery(filter, {
+        refetchOnMountOrArgChange: true
+    })
 
-    const { data: dataResponse, isLoading, isFetching, refetch } = useSearchCouponQuery(filter)
+    const { data: countResponse, isLoading: countLoading, isFetching, refetch: countRefetch } = useGetCountTypeQuery()
 
-    const { data: countResponse, isLoading: countLoading, refetch: countRefetch } = useGetCountTypeQuery()
-
-    const couponData = dataResponse?.data?.records || (customers as IEmployee[])
-
+    const employees = (dataResponse?.data?.records as IEmployee[]) || []
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
-    const countSilver = countResponse?.data.countSilver || 0
-    const countGold = countResponse?.data.countGold || 0
-    const countNew = countResponse?.data.countNew || 0
+    const countActive = countResponse?.data.countActive || 0
+    const countInactive = countResponse?.data.countInactive || 0
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -244,14 +101,14 @@ function Page() {
     }
 
     useEffect(() => {
-        if (!isFetching && couponData) {
-            const from = (page - 1) * Number(rowsPerPage) + Math.min(1, couponData?.length)
+        if (!isFetching && employees) {
+            const from = (page - 1) * Number(rowsPerPage) + Math.min(1, employees?.length)
             setFrom(from)
 
-            const to = Math.min(couponData?.length + (page - 1) * Number(rowsPerPage), totalRecords)
+            const to = Math.min(employees?.length + (page - 1) * Number(rowsPerPage), totalRecords)
             setTo(to)
         }
-    }, [isFetching, couponData, page, rowsPerPage])
+    }, [isFetching, employees, page, rowsPerPage])
 
     useEffect(() => {
         refetch()
@@ -264,12 +121,12 @@ function Page() {
         if (newValue !== undefined) {
             setFilter(prev => ({
                 ...prev,
-                isType: newValue
+                isActive: newValue === 1 ? true : newValue === 2 ? false : undefined
             }))
         } else {
             setFilter(prev => ({
                 ...prev,
-                isType: undefined
+                isActive: undefined
             }))
         }
     }
@@ -315,23 +172,53 @@ function Page() {
                             padding: '20px 24px'
                         }}
                     >
-                        {t('COMMON.EMPLOYEE.EMPLOYEE')}
+                        {t('COMMON.EMPLOYEES.EMPLOYEE')}
                     </Typography>
 
                     <Divider
                         sx={{
-                            borderColor: 'var(--border-color)'
+                            borderColor: 'var(--border-color)',
+                            borderStyle: 'dashed'
                         }}
                     />
 
                     <Box>
                         <Tabs
                             value={currentTab}
-                            onChange={(event, newValue) => handleChangeTabs(newValue)}
+                            onChange={(e, newValue) => handleChangeTabs(newValue)}
+                            variant='scrollable'
+                            scrollButtons={false}
+                            sx={{
+                                overflowX: 'auto',
+                                '& .MuiTabs-flexContainer': {
+                                    flexWrap: 'nowrap'
+                                },
+                                '&::-webkit-scrollbar': {
+                                    height: '6px'
+                                },
+                                '&::-webkit-scrollbar-thumb': {
+                                    backgroundColor: '#ccc',
+                                    borderRadius: '4px'
+                                },
+                                position: 'relative',
+                                '::after': {
+                                    content: '""',
+                                    display: 'block',
+                                    width: '100%',
+                                    bottom: '0',
+                                    zIndex: 0,
+                                    borderRadius: '1px',
+                                    left: '0',
+                                    position: 'absolute',
+                                    height: '2px',
+                                    backgroundColor: 'var(--border-tab)'
+                                }
+                            }}
                             slotProps={{
                                 indicator: {
                                     sx: {
-                                        background: 'linear-gradient(to right,rgb(103, 255, 164),rgb(255, 182, 127))', // Màu của thanh indicator
+                                        zIndex: 1,
+                                        background: 'linear-gradient(to right,rgb(103, 255, 164),rgb(255, 182, 127))',
                                         height: '2px',
                                         borderRadius: '1px'
                                     }
@@ -351,7 +238,7 @@ function Page() {
                                 }}
                                 label={
                                     <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {t('COMMON.EMPLOYEE.ALL')}
+                                        {t('COMMON.EMPLOYEES.ALL')}
                                         <Box
                                             style={{
                                                 ...badgeStyle,
@@ -365,7 +252,7 @@ function Page() {
                                                         : 'var(--text-color-all)'
                                             }}
                                         >
-                                            {countGold + countSilver + countNew}
+                                            {countActive + countInactive}
                                         </Box>
                                     </Box>
                                 }
@@ -398,7 +285,7 @@ function Page() {
                                                         : 'var(--text-color-success)'
                                             }}
                                         >
-                                            {countGold}
+                                            {countActive}
                                         </Box>
                                     </Box>
                                 }
@@ -431,7 +318,7 @@ function Page() {
                                                         : 'var(--text-color-cancel)'
                                             }}
                                         >
-                                            {countSilver}
+                                            {countInactive}
                                         </Box>
                                     </Box>
                                 }
@@ -500,142 +387,6 @@ function Page() {
                                     }
                                 }}
                             />
-
-                            <FormControl
-                                sx={{
-                                    width: '255px',
-                                    '& .MuiOutlinedInput-root:hover fieldset': {
-                                        borderColor: 'var(--field-color-hover)'
-                                    },
-                                    '& .MuiOutlinedInput-root.Mui-error:hover fieldset': {
-                                        borderColor: 'var(--error-color)' // Màu hover khi lỗi
-                                    },
-                                    '& .MuiOutlinedInput-root.Mui-error fieldset': {
-                                        borderColor: 'var(--error-color)' // Màu viền khi lỗi
-                                    },
-                                    '& .MuiOutlinedInput-root.Mui-focused fieldset': {
-                                        border: '2px solid var(--field-color-selected)' // Màu viền khi focus
-                                    },
-                                    '& .MuiInputLabel-root': {
-                                        color: 'var(--label-title-color)' // Label mặc định
-                                    },
-                                    '&:hover .MuiInputLabel-root': {
-                                        color: 'var(--field-color-selected)' // Thay đổi màu label khi hover vào input
-                                    },
-                                    '& .MuiInputLabel-root.Mui-focused': {
-                                        fontWeight: 'bold',
-                                        color: 'var(--field-color-selected)' // Label khi focus
-                                    }
-                                }}
-                            >
-                                <InputLabel id='select-label'>{t('COMMON.CUSTOMER.STATUS')}</InputLabel>
-                                <Select
-                                    defaultValue='all_customer'
-                                    label={t('COMMON.CUSTOMER.STATUS')}
-                                    value={
-                                        filter.isActive === undefined
-                                            ? 'all_customer'
-                                            : filter.isActive
-                                            ? 'active_customer'
-                                            : 'inactive_customer'
-                                    }
-                                    onChange={e =>
-                                        setFilter({
-                                            ...filter,
-                                            isActive:
-                                                e.target.value === 'all_customer'
-                                                    ? undefined
-                                                    : e.target.value === 'active_customer'
-                                                    ? true
-                                                    : false
-                                        })
-                                    }
-                                    sx={{
-                                        width: '100%',
-                                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                                            borderColor: 'var(--border-color)'
-                                        },
-                                        '& fieldset': {
-                                            borderRadius: '8px',
-                                            borderColor: 'var(--border-color)'
-                                        },
-                                        '& .MuiSelect-icon': {
-                                            color: 'var(--text-color)'
-                                        },
-                                        '& .MuiInputBase-input': {
-                                            color: 'var(--text-color)',
-                                            padding: '14px 14px'
-                                        }
-                                    }}
-                                    MenuProps={{
-                                        PaperProps: {
-                                            elevation: 0,
-                                            sx: {
-                                                mt: '4px',
-                                                borderRadius: '8px',
-                                                padding: '0 8px',
-                                                backgroundImage:
-                                                    'url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI3BhaW50MF9yYWRpYWxfMjc0OV8xNDUxODYpIiBmaWxsLW9wYWNpdHk9IjAuMTIiLz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0icGFpbnQwX3JhZGlhbF8yNzQ5XzE0NTE4NiIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgxMjAgMS44MTgxMmUtMDUpIHJvdGF0ZSgtNDUpIHNjYWxlKDEyMy4yNSkiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMDBCOEQ5Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwQjhEOSIgc3RvcC1vcGFjaXR5PSIwIi8+CjwvcmFkaWFsR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==), url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSJ1cmwoI3BhaW50MF9yYWRpYWxfMjc0OV8xNDUxODcpIiBmaWxsLW9wYWNpdHk9IjAuMTIiLz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0icGFpbnQwX3JhZGlhbF8yNzQ5XzE0NTE4NyIgY3g9IjAiIGN5PSIwIiByPSIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSgwIDEyMCkgcm90YXRlKDEzNSkgc2NhbGUoMTIzLjI1KSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRjU2MzAiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRkY1NjMwIiBzdG9wLW9wYWNpdHk9IjAiLz4KPC9yYWRpYWxHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K)',
-                                                backgroundPosition: 'top right, bottom left',
-                                                backgroundSize: '50%, 50%',
-                                                backgroundRepeat: 'no-repeat',
-                                                backdropFilter: 'blur(20px)',
-                                                backgroundColor: 'var(--background-color-item)',
-                                                color: 'var(--text-color)',
-                                                border: '1px solid var(--border-color)',
-                                                '& .MuiMenuItem-root': {
-                                                    '&:hover': {
-                                                        backgroundColor: 'var(--background-color-item-hover)'
-                                                    },
-                                                    '&.Mui-selected': {
-                                                        backgroundColor: 'var(--background-color-item-selected)',
-                                                        '&:hover': {
-                                                            backgroundColor: 'var(--background-color-item-hover)'
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        anchorOrigin: {
-                                            vertical: 'bottom',
-                                            horizontal: 'right' // Căn chỉnh bên phải
-                                        },
-                                        transformOrigin: {
-                                            vertical: 'top',
-                                            horizontal: 'right' // Căn chỉnh bên phải
-                                        }
-                                    }}
-                                >
-                                    <MenuItem
-                                        value='all_customer'
-                                        sx={{
-                                            borderRadius: '6px'
-                                        }}
-                                    >
-                                        {t('COMMON.COUPON.ALL_CUSTOMER')}
-                                    </MenuItem>
-
-                                    <MenuItem
-                                        value='active_customer'
-                                        sx={{
-                                            mt: '3px',
-                                            borderRadius: '6px'
-                                        }}
-                                    >
-                                        {t('COMMON.CUSTOMER.ACTIVE')}
-                                    </MenuItem>
-
-                                    <MenuItem
-                                        value='inactive_customer'
-                                        sx={{
-                                            mt: '3px',
-                                            borderRadius: '6px'
-                                        }}
-                                    >
-                                        {t('COMMON.CUSTOMER.INACTIVE')}
-                                    </MenuItem>
-                                </Select>
-                            </FormControl>
                         </Box>
 
                         <Button
@@ -657,13 +408,15 @@ function Page() {
                                 whiteSpace: 'nowrap',
                                 textTransform: 'none'
                             }}
-                            onClick={() => setOpen(true)}
+                            onClick={() => {
+                                router.push('/admin/employees/create')
+                            }}
                         >
                             {t('COMMON.BUTTON.CREATE')}
                         </Button>
                     </Box>
 
-                    <CustomerTable data={couponData} refetch={refetchPage} setFilter={setFilter} />
+                    <EmployeeTable data={employees} refetch={refetchPage} setFilter={setFilter} />
 
                     <Box display='flex' alignItems='center' justifyContent='space-between' padding='24px'>
                         <Box display='flex' alignItems='center'>

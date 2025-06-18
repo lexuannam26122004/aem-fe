@@ -1,25 +1,17 @@
 import { IFilter } from './Common'
 
-export interface ICoupon {
+export interface ICoupon extends ICouponUpdate {
     id: number
-    couponCode: string
-    discountType: 'percentage' | 'fixed'
-    discountValue: number
-    minimumOrderValue: number
-    maximumDiscount: number
     usageCount: number
-    usageLimit: number
-    activationDate: string
-    expiryDate: string
     createdAt: string
     createdBy: string
-    updatedAt: string
-    updatedBy: string
 }
 
 export interface ICouponCreate {
     couponCode: string
     discountType: 'percentage' | 'fixed'
+    title: string
+    couponType: 'product' | 'shipping'
     discountValue: number
     minimumOrderValue: number
     maximumDiscount: number
@@ -29,10 +21,9 @@ export interface ICouponCreate {
     expiryDate: string
 }
 
-export interface ICouponUpdate extends ICouponCreate {
-    usageCount: number
-}
+export interface ICouponUpdate extends ICouponCreate {}
 
 export interface ICouponFilter extends IFilter {
+    typeCoupon?: 'active' | 'expired' | 'limited'
     customerType?: 'all_customer' | 'new_customer' | 'silver_customer' | 'gold_customer'
 }

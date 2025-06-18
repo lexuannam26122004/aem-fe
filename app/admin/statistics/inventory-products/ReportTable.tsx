@@ -26,129 +26,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime, formatCurrency, formatDate } from '@/common/format'
 import { CircleAlert, Download } from 'lucide-react'
 import { ISupplierReportFilter, ISupplierReports } from '@/models/SupplierReports'
-
-const orderReportData: ISupplierReports[] = [
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-1.webp',
-        supplierPhone: '0901234567',
-        supplierName: 'Cty ABC',
-        totalImportValue: 690848640,
-        importReceiptCount: 16,
-        importedProductCount: 3981,
-        importedSKUCount: 67,
-        averageUnitPrice: 174105,
-        lastImportDate: '05/05/2025',
-        importValueContributionRate: 35.43
-    },
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-2.webp',
-        supplierPhone: '0901234567',
-        supplierName: 'Cty Minh Phát',
-        totalImportValue: 675464900,
-        importReceiptCount: 22,
-        importedProductCount: 3682,
-        importedSKUCount: 51,
-        averageUnitPrice: 183850,
-        lastImportDate: '11/06/2025',
-        importValueContributionRate: 34.64
-    },
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-3.webp',
-        supplierPhone: '0901234567',
-        supplierName: 'Cty Tâm An',
-        totalImportValue: 510465780,
-        importReceiptCount: 10,
-        importedProductCount: 2972,
-        importedSKUCount: 33,
-        averageUnitPrice: 171874,
-        lastImportDate: '11/05/2025',
-        importValueContributionRate: 26.18
-    },
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-4.webp',
-        supplierPhone: '0901234567',
-        supplierName: 'Cty Hòa Bình',
-        totalImportValue: 607998636,
-        importReceiptCount: 18,
-        importedProductCount: 3478,
-        importedSKUCount: 35,
-        averageUnitPrice: 175014,
-        lastImportDate: '05/05/2025',
-        importValueContributionRate: 31.18
-    },
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-5.webp',
-        supplierPhone: '0901234567',
-        supplierName: 'Cty Đại Lợi',
-        totalImportValue: 343662480,
-        importReceiptCount: 21,
-        importedProductCount: 1900,
-        importedSKUCount: 69,
-        averageUnitPrice: 181832,
-        lastImportDate: '10/05/2025',
-        importValueContributionRate: 17.62
-    },
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-6.webp',
-        supplierPhone: '0901234567',
-        supplierName: 'Cty Nam Việt',
-        totalImportValue: 466205070,
-        importReceiptCount: 10,
-        importedProductCount: 2371,
-        importedSKUCount: 37,
-        averageUnitPrice: 196711,
-        lastImportDate: '07/05/2025',
-        importValueContributionRate: 23.91
-    },
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-7.webp',
-        supplierPhone: '0901234567',
-        supplierName: 'Cty Việt Á',
-        totalImportValue: 432588600,
-        importReceiptCount: 23,
-        importedProductCount: 2780,
-        importedSKUCount: 70,
-        averageUnitPrice: 156735,
-        lastImportDate: '08/05/2025',
-        importValueContributionRate: 22.18
-    },
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-8.webp',
-        supplierPhone: '0901234567',
-        supplierName: 'Cty Phương Đông',
-        totalImportValue: 331459578,
-        importReceiptCount: 9,
-        importedProductCount: 1822,
-        importedSKUCount: 33,
-        averageUnitPrice: 182321,
-        lastImportDate: '07/05/2025',
-        importValueContributionRate: 17.0
-    },
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-9.webp',
-        supplierPhone: '0901234567',
-        supplierName: 'Cty Ánh Dương',
-        totalImportValue: 467704950,
-        importReceiptCount: 25,
-        importedProductCount: 2855,
-        importedSKUCount: 42,
-        averageUnitPrice: 164107,
-        lastImportDate: '05/05/2025',
-        importValueContributionRate: 23.98
-    },
-    {
-        avatarPath: 'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-10.webp',
-        supplierPhone: '0901234567',
-        supplierName: 'Cty Ngọc Linh',
-        totalImportValue: 562786992,
-        importReceiptCount: 9,
-        importedProductCount: 3120,
-        importedSKUCount: 67,
-        averageUnitPrice: 180728,
-        lastImportDate: '05/05/2025',
-        importValueContributionRate: 28.86
-    }
-]
+import { useGetSupplierImportReportQuery } from '@/services/InventoryReportService'
+import Loading from '@/components/Loading'
 
 function ReportTable() {
     const { t } = useTranslation('common')
@@ -164,6 +43,10 @@ function ReportTable() {
         fromDate: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
         toDate: dayjs().format('YYYY-MM-DD')
     })
+
+    const { data: supplierData, isLoading } = useGetSupplierImportReportQuery(filter)
+
+    const orderReportData = supplierData?.data ?? []
 
     const totalRecords = orderReportData.length
 
@@ -213,6 +96,10 @@ function ReportTable() {
         })
     }
 
+    if (isLoading) {
+        return <Loading />
+    }
+
     return (
         <Paper
             elevation={0}
@@ -220,7 +107,7 @@ function ReportTable() {
                 width: '100%',
                 boxShadow: 'var(--box-shadow-paper)',
                 overflow: 'hidden',
-                borderRadius: '20px',
+                borderRadius: '15px',
                 backgroundColor: 'var(--background-color-item)'
             }}
         >

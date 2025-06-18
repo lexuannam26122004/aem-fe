@@ -35,121 +35,6 @@ function a11yProps(index: number) {
     }
 }
 
-const coupons: ICoupon[] = [
-    {
-        id: 1,
-        couponCode: 'SUMMER20',
-        discountType: 'percentage',
-        discountValue: 20,
-        minimumOrderValue: 50000,
-        maximumDiscount: 50000,
-        usageCount: 15,
-        usageLimit: 100,
-        activationDate: '2024-06-01',
-        expiryDate: '2025-08-31',
-        createdAt: '2024-05-20',
-        createdBy: '1',
-        updatedAt: '2024-06-15',
-        updatedBy: '2'
-    },
-    {
-        id: 2,
-        couponCode: 'FIXED100',
-        discountType: 'fixed',
-        discountValue: 100000,
-        minimumOrderValue: 1000000,
-        maximumDiscount: 100000,
-        usageCount: 5,
-        usageLimit: 50,
-        activationDate: '2024-07-01',
-        expiryDate: '2025-09-30',
-        createdAt: '2024-06-25',
-        createdBy: '2',
-        updatedAt: '2024-07-10',
-        updatedBy: '1'
-    },
-    {
-        id: 3,
-        couponCode: 'FREESHIP',
-        discountType: 'fixed',
-        discountValue: 30000,
-        minimumOrderValue: 200000,
-        maximumDiscount: 200000,
-        usageCount: 25,
-        usageLimit: 200,
-        activationDate: '2024-06-15',
-        expiryDate: '2024-07-31',
-        createdAt: '2024-06-10',
-        createdBy: '1',
-        updatedAt: '2024-07-01',
-        updatedBy: '2'
-    },
-    {
-        id: 4,
-        couponCode: 'NEWUSER',
-        discountType: 'percentage',
-        discountValue: 15,
-        minimumOrderValue: 0,
-        maximumDiscount: 20000,
-        usageCount: 50,
-        usageLimit: 50,
-        activationDate: '2024-01-01',
-        expiryDate: '2025-12-31',
-        createdAt: '2023-12-20',
-        createdBy: '3',
-        updatedAt: '2024-03-01',
-        updatedBy: '3'
-    },
-    {
-        id: 5,
-        couponCode: 'FLASH24H',
-        discountType: 'percentage',
-        discountValue: 25,
-        minimumOrderValue: 300000,
-        maximumDiscount: 100000,
-        usageCount: 80,
-        usageLimit: 100,
-        activationDate: '2024-07-15',
-        expiryDate: '2024-07-16',
-        createdAt: '2024-07-14',
-        createdBy: '2',
-        updatedAt: '2024-07-15',
-        updatedBy: '2'
-    },
-    {
-        id: 6,
-        couponCode: 'VIPMEMBER',
-        discountType: 'fixed',
-        discountValue: 50000,
-        minimumOrderValue: 500000,
-        maximumDiscount: 50000,
-        usageCount: 30,
-        usageLimit: 100,
-        activationDate: '2024-02-01',
-        expiryDate: '2024-12-31',
-        createdAt: '2024-01-20',
-        createdBy: '3',
-        updatedAt: '2024-05-01',
-        updatedBy: '3'
-    },
-    {
-        id: 7,
-        couponCode: 'WEEKEND',
-        discountType: 'percentage',
-        discountValue: 10,
-        minimumOrderValue: 100000,
-        maximumDiscount: 20000,
-        usageCount: 120,
-        usageLimit: 500,
-        activationDate: '2024-07-01',
-        expiryDate: '2024-07-31',
-        createdAt: '2024-06-28',
-        createdBy: '1',
-        updatedAt: '2024-07-15',
-        updatedBy: '1'
-    }
-]
-
 function Page() {
     const { t } = useTranslation('common')
     const [page, setPage] = useState(1)
@@ -167,11 +52,11 @@ function Page() {
 
     const { data: countResponse, isLoading: countLoading, refetch: countRefetch } = useGetCountTypeQuery()
 
-    const couponData = dataResponse?.data?.records || (coupons as ICoupon[])
+    const couponData = (dataResponse?.data?.records as ICoupon[]) || []
 
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
-    const countOK = countResponse?.data.countOK || 0
+    const countOK = countResponse?.data.countActive || 0
     const countExpired = countResponse?.data.countExpired || 0
     const countLimit = countResponse?.data.countLimit || 0
 
@@ -233,19 +118,20 @@ function Page() {
         refetch()
     }, [filter])
 
-    const [currentTab, setCurrentTab] = useState(0)
+    const [currentTab, setCurrentTab] = useState<number>(0)
 
     const handleChangeTabs = (newValue: number) => {
         setCurrentTab(newValue)
         if (newValue !== undefined) {
             setFilter(prev => ({
                 ...prev,
-                isType: newValue
+                typeCoupon:
+                    newValue === 0 ? undefined : newValue === 1 ? 'active' : newValue === 2 ? 'limited' : 'expired'
             }))
         } else {
             setFilter(prev => ({
                 ...prev,
-                isType: undefined
+                typeCoupon: undefined
             }))
         }
     }
@@ -296,19 +182,48 @@ function Page() {
 
                     <Divider
                         sx={{
-                            borderColor: 'var(--border-color)'
+                            borderColor: 'var(--border-color)',
+                            borderStyle: 'dashed'
                         }}
                     />
 
                     <Box>
                         <Tabs
                             value={currentTab}
-                            onChange={(event, newValue) => handleChangeTabs(newValue)}
-                            aria-label='basic tabs example'
+                            onChange={(e, newValue) => handleChangeTabs(newValue)}
+                            variant='scrollable'
+                            scrollButtons={false}
+                            sx={{
+                                overflowX: 'auto',
+                                '& .MuiTabs-flexContainer': {
+                                    flexWrap: 'nowrap'
+                                },
+                                '&::-webkit-scrollbar': {
+                                    height: '6px'
+                                },
+                                '&::-webkit-scrollbar-thumb': {
+                                    backgroundColor: '#ccc',
+                                    borderRadius: '4px'
+                                },
+                                position: 'relative',
+                                '::after': {
+                                    content: '""',
+                                    display: 'block',
+                                    width: '100%',
+                                    bottom: '0',
+                                    zIndex: 0,
+                                    borderRadius: '1px',
+                                    left: '0',
+                                    position: 'absolute',
+                                    height: '2px',
+                                    backgroundColor: 'var(--border-tab)'
+                                }
+                            }}
                             slotProps={{
                                 indicator: {
                                     sx: {
-                                        background: 'linear-gradient(to right,rgb(103, 255, 164),rgb(255, 182, 127))', // Màu của thanh indicator
+                                        zIndex: 1,
+                                        background: 'linear-gradient(to right,rgb(103, 255, 164),rgb(255, 182, 127))',
                                         height: '2px',
                                         borderRadius: '1px'
                                     }

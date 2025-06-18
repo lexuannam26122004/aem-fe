@@ -13,7 +13,7 @@ import {
     TableSortLabel,
     Avatar
 } from '@mui/material'
-import { Edit, EyeIcon, Trash2 } from 'lucide-react'
+import { EyeIcon, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
@@ -54,28 +54,6 @@ function getStatusTextColor(status: string): string {
         return 'var(--text-color-blue)'
     }
 }
-
-const avatars = [
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-1.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-2.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-3.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-4.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-5.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-6.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-7.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-8.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-9.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-10.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-11.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-12.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-13.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-14.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-15.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-16.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-17.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-18.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-19.webp'
-]
 
 interface IProps {
     data: IQuotation[]
@@ -160,7 +138,8 @@ function DataTable({ data, setFilter }: IProps) {
                                         fontWeight: 'bold',
                                         color: 'var(--text-color)',
                                         fontSize: '15px',
-                                        textAlign: 'center',
+                                        textAlign: 'left',
+                                        ml: '50px',
                                         maxWidth: '280px',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
@@ -324,7 +303,7 @@ function DataTable({ data, setFilter }: IProps) {
                                                     height: '40px',
                                                     borderRadius: '50%'
                                                 }}
-                                                src={row.customerAvatarPath || avatars[index]}
+                                                src={row.customerAvatar}
                                             />
                                             <Box
                                                 display='flex'
@@ -345,7 +324,7 @@ function DataTable({ data, setFilter }: IProps) {
                                                         color: 'var(--text-color)'
                                                     }}
                                                 >
-                                                    {row.customerName}
+                                                    {row.customerFullName}
                                                 </Typography>
 
                                                 <Typography
@@ -377,7 +356,7 @@ function DataTable({ data, setFilter }: IProps) {
                                                     fontSize: '15px'
                                                 }}
                                             >
-                                                {new Date(row.requestedDate).toLocaleDateString('vi-VN', {
+                                                {new Date(row.createdAt).toLocaleDateString('vi-VN', {
                                                     day: '2-digit',
                                                     month: '2-digit',
                                                     year: 'numeric'
@@ -390,7 +369,7 @@ function DataTable({ data, setFilter }: IProps) {
                                                     fontSize: '12px'
                                                 }}
                                             >
-                                                {new Date(row.requestedDate).toLocaleString('vi-VN', {
+                                                {new Date(row.createdAt).toLocaleString('vi-VN', {
                                                     hour: '2-digit',
                                                     minute: '2-digit',
                                                     hour12: false
@@ -413,7 +392,7 @@ function DataTable({ data, setFilter }: IProps) {
                                                     height: '40px',
                                                     borderRadius: '50%'
                                                 }}
-                                                src={row.assigneeAvatarPath || avatars[index]}
+                                                src={row.responsibleAvatar}
                                             />
                                             <Box
                                                 display='flex'
@@ -434,7 +413,7 @@ function DataTable({ data, setFilter }: IProps) {
                                                         color: 'var(--text-color)'
                                                     }}
                                                 >
-                                                    {row.assigneeName}
+                                                    {row.responsibleName}
                                                 </Typography>
 
                                                 <Typography
@@ -447,7 +426,7 @@ function DataTable({ data, setFilter }: IProps) {
                                                         whiteSpace: 'nowrap'
                                                     }}
                                                 >
-                                                    {row.assigneeId}
+                                                    {row.responsiblePhone}
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -464,7 +443,7 @@ function DataTable({ data, setFilter }: IProps) {
                                                 whiteSpace: 'nowrap'
                                             }}
                                         >
-                                            {row.itemCount}
+                                            {row.totalItems}
                                         </Typography>
                                     </TableCell>
 
@@ -499,7 +478,6 @@ function DataTable({ data, setFilter }: IProps) {
                                                 }}
                                             >
                                                 {row.status === 'pending' && t('COMMON.ORDER.PENDING')}
-                                                {row.status === 'processing' && t('COMMON.ORDER.PROCESSING')}
                                                 {row.status === 'completed' && t('COMMON.QUOTATION.COMPLETED')}
                                                 {row.status === 'cancelled' && t('COMMON.ORDER.CANCELLED')}
                                             </Typography>
@@ -532,14 +510,14 @@ function DataTable({ data, setFilter }: IProps) {
                                                         }
                                                     }}
                                                     onClick={() => {
-                                                        router.push(`/admin/quotations/detail?id=${row.id}`)
+                                                        router.push(`/admin/quotations/${row.quotationCode}`)
                                                     }}
                                                 >
                                                     <EyeIcon size={16} color='#2563eb' />
                                                 </Box>
                                             </Tooltip>
 
-                                            <Tooltip title={t('COMMON.BUTTON.UPDATE')}>
+                                            {/* <Tooltip title={t('COMMON.BUTTON.UPDATE')}>
                                                 <Box
                                                     display='flex'
                                                     alignItems='center'
@@ -559,7 +537,7 @@ function DataTable({ data, setFilter }: IProps) {
                                                 >
                                                     <Edit size={16} color='#d97706' />
                                                 </Box>
-                                            </Tooltip>
+                                            </Tooltip> */}
 
                                             <Tooltip title={t('COMMON.BUTTON.DELETE')}>
                                                 <Box

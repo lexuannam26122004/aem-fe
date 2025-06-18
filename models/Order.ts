@@ -6,9 +6,9 @@ export interface IOrder {
     orderCode: string
     customerName?: string
     customerPhone?: string
-    avatarPath?: string
+    avatar?: string
     customerId?: string
-    itemCount: number
+    productQuantity: number
     orderDate: string
     totalAmount: number
     orderStatus: string
@@ -23,7 +23,7 @@ export interface IOrderDetail extends IOrder {
     discountAmount?: number
     shippingFee: number
     customerNote?: string
-    customerEmail?: string
+    shippingEmail?: string
     customerIp: string
     shippingPhone: string
     shippingRecipient: string

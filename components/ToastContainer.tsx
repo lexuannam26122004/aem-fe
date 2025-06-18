@@ -87,7 +87,7 @@ const ToastContainer = () => {
     }
 
     return (
-        <div className='fixed top-0 right-0 pointer-events-none z-50'>
+        <div className='fixed top-0 right-0 pointer-events-none' style={{ zIndex: 9999 }}>
             {toasts.slice(0, 5).map((toast, index) => (
                 <div
                     key={toast.id}

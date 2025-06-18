@@ -91,9 +91,9 @@ const DialogDetail: React.FC<EmployeeDetailsDialogProps> = ({ employee, isOpen, 
                                         p: 0.75
                                     }}
                                 >
-                                    {employee.avatarPath ? (
+                                    {employee.avatar ? (
                                         <Avatar
-                                            src={employee.avatarPath}
+                                            src={employee.avatar}
                                             alt={employee.fullName}
                                             sx={{
                                                 height: 96,
@@ -241,7 +241,7 @@ const DialogDetail: React.FC<EmployeeDetailsDialogProps> = ({ employee, isOpen, 
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <CalendarIcon style={{ width: 16, height: 16, marginRight: 0.5 }} />
                                     <Typography variant='body2'>
-                                        {t('COMMON.CUSTOMER.CREATED_AT')} {formatDate(employee.createdAt)}
+                                        {t('COMMON.CUSTOMER.CREATED_AT')} {formatDate(employee.createdDate)}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -320,7 +320,7 @@ const DialogDetail: React.FC<EmployeeDetailsDialogProps> = ({ employee, isOpen, 
                             color: !employee.isActive ? '#e82323' : 'var(--active-color)'
                         }}
                     >
-                        {employee.isActive ? t('COMMON.EMPLOYEE.WORKING') : t('COMMON.EMPLOYEE.LEFT')}
+                        {employee.isActive ? t('COMMON.EMPLOYEES.WORKING') : t('COMMON.EMPLOYEES.LEFT')}
                     </Typography>
                 </Box>
 

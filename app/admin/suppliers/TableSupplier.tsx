@@ -497,18 +497,19 @@ function DataTable({ supplierData, setFilter, refetch }: IProps) {
                                                         alignItems='center'
                                                         justifyContent='center'
                                                         sx={{
+                                                            padding: '8px 12px',
                                                             cursor: 'pointer',
-                                                            color: '#ffa155',
-                                                            borderRadius: '50%',
-                                                            width: '42px',
-                                                            height: '42px',
+                                                            borderRadius: '8px',
+                                                            backgroundColor: '#eafff5',
+                                                            border: '1px solid #bcffe3',
                                                             '&:hover': {
-                                                                backgroundColor: 'var(--hover-color)'
+                                                                backgroundColor: '#e0fff0',
+                                                                borderColor: '#b2ffdf'
                                                             }
                                                         }}
                                                         onClick={() => handlePartnerClick(row.id)}
                                                     >
-                                                        <ClipboardCheck />
+                                                        <ClipboardCheck size={16} color='#4eeaa9' />
                                                     </Box>
                                                 </Tooltip>
                                             ) : (
@@ -518,18 +519,19 @@ function DataTable({ supplierData, setFilter, refetch }: IProps) {
                                                         alignItems='center'
                                                         justifyContent='center'
                                                         sx={{
+                                                            padding: '8px 12px',
                                                             cursor: 'pointer',
-                                                            color: '#ff0085c9',
-                                                            borderRadius: '50%',
-                                                            width: '42px',
-                                                            height: '42px',
+                                                            borderRadius: '8px',
+                                                            backgroundColor: '#ffe1ed',
+                                                            border: '1px solid #ff9ed1c9',
                                                             '&:hover': {
-                                                                backgroundColor: 'var(--hover-color)'
+                                                                backgroundColor: '#ffdae9',
+                                                                borderColor: '#ff0085c9'
                                                             }
                                                         }}
                                                         onClick={() => handlePartnerClick(row.id)}
                                                     >
-                                                        <ClipboardX />
+                                                        <ClipboardX size={16} color='#ff0085c9' />
                                                     </Box>
                                                 </Tooltip>
                                             )}

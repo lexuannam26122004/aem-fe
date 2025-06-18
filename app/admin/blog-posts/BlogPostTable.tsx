@@ -71,7 +71,7 @@ const StyledMenuItem = styled(MenuItem)(() => ({
     fontWeight: 'bold',
     color: 'var(--text-color)',
     '&:hover': {
-        backgroundColor: 'var(--background-selected-item)',
+        backgroundColor: 'var(--background-color-item-hover)',
         borderRadius: '5px'
     }
 }))

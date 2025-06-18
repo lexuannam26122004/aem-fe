@@ -18,7 +18,7 @@ export interface ICustomerUpdate {
     phoneNumber: string
     address: string
     birthday: string
-    avatarPath?: string
+    avatar: string
     gender: boolean
 }
 
@@ -36,4 +36,5 @@ export interface ICustomer extends ICustomerUpdate {
 export interface ICustomerFilter extends IFilter {
     fromDate?: string
     toDate?: string
+    rank?: 'silver_customer' | 'gold_customer' | 'new_customer' | 'all_customer'
 }

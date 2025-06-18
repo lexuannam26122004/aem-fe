@@ -3,35 +3,23 @@
 import { Avatar, Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/common/format'
+import { IResponse } from '@/models/Common'
 
-const responseData = {
-    data: {
-        statsByDay: [
-            {
-                totalCustomers: 280,
-                totalSpending: 12850000,
-                activeCustomers: 42
-            }
-        ],
-        rate: {
-            totalCustomers: 5.2,
-            totalSpending: 12.8,
-            activeCustomers: -8.4
-        }
-    }
+interface IProps {
+    responseData: IResponse
 }
 
-function Page() {
+function Page({ responseData }: IProps) {
     const { t } = useTranslation('common')
 
     // const { data: responseData, isLoading } = useStatsDisplayQuery(currentDate.toISOString().split('T')[0])
 
-    const totalCustomers = responseData?.data?.statsByDay[0]?.totalCustomers || 0
-    const totalSpending = responseData?.data?.statsByDay[0]?.totalSpending || 0
-    const activeCustomers = responseData?.data?.statsByDay[0]?.activeCustomers || 0
-    const totalCustomersRate = responseData?.data?.rate.totalCustomers
-    const totalSpendingRate = responseData?.data?.rate.totalSpending
-    const activeCustomersRate = responseData?.data?.rate.activeCustomers
+    const totalCustomers = responseData?.data?.totalCustomers || 0
+    const totalSpending = responseData?.data?.totalSpending || 0
+    const activeCustomers = responseData?.data?.totalBuyers || 0
+    const totalCustomersRate = responseData?.data?.growthCustomers || 0
+    const totalSpendingRate = responseData?.data?.growthSpending || 0
+    const activeCustomersRate = responseData?.data?.growthBuyers || 0
 
     return (
         <Box

@@ -4,18 +4,14 @@ import ReactECharts from 'echarts-for-react'
 import { Box, Divider, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
+import { IResponse } from '@/models/Common'
 //import { useGetEmployeeAttendanceQuery } from '@/services/AspNetUserService' // API mới để lấy dữ liệu tham gia
 
-const responseData = {
-    data: {
-        ordersWithCoupon: 50,
-        ordersWithoutCoupon: 18,
-        withCouponRate: 73.53,
-        withoutCouponRate: 26.47
-    }
+interface IProps {
+    responseData: IResponse
 }
 
-const Chart = () => {
+const Chart = ({ responseData }: IProps) => {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
 
@@ -23,8 +19,8 @@ const Chart = () => {
 
     const ordersWithCoupon = responseData?.data?.ordersWithCoupon || 0
     const ordersWithoutCoupon = responseData?.data?.ordersWithoutCoupon || 0
-    const withoutCouponRate = responseData?.data?.withoutCouponRate || 0
-    const withCouponRate = responseData?.data?.withCouponRate || 0
+    const withoutCouponRate = responseData?.data?.percentageWithoutCoupon || 0
+    const withCouponRate = responseData?.data?.percentageWithCoupon || 0
 
     const chartData = [
         { value: ordersWithCoupon, name: t('COMMON.REVENUE.ORDERS_WITH_COUPON') },

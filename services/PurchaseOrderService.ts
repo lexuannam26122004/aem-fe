@@ -47,7 +47,7 @@ export const PurchaseOrderApis = createApi({
                 method: 'DELETE'
             })
         }),
-        getByIdPurchaseOrder: builder.query<IResponse, number>({
+        getByIdPurchaseOrder: builder.query<IResponse, string>({
             query: id => `${id}`
         }),
         exportPurchaseOrder: builder.query<IResponse, IPurchaseOrderFilter>({

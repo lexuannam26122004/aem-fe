@@ -31,167 +31,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime } from '@/common/format'
 
-const purchaseOrders: IPurchaseOrder[] = [
-    {
-        id: 1,
-        purchaseCode: 'PO10001',
-        supplierName: 'Supply Co Ltd',
-        supplierPhone: '0987654321',
-        supplierEmail: 'contact@supplyco.com',
-        supplierAddress: '123 Supplier St, HCM City',
-        itemCount: 5,
-        purchaseDate: '2025-04-10T08:00:00Z',
-        receivedTime: '2025-04-15T10:00:00Z',
-        totalAmount: 2500000,
-        discountAmount: 50000,
-        paymentStatus: 'paid',
-        paymentTime: '2025-04-12T09:00:00Z',
-        notes: 'First order with supplier',
-        createdAt: '2025-04-10T07:50:00Z',
-        createdBy: 'admin'
-    },
-    {
-        id: 2,
-        purchaseCode: 'PO10002',
-        supplierName: 'Alpha Materials',
-        supplierPhone: '0912345678',
-        supplierEmail: 'sales@alphamaterials.com',
-        supplierAddress: '456 Alpha Rd, Ha Noi',
-        itemCount: 3,
-        purchaseDate: '2025-04-11T09:30:00Z',
-        totalAmount: 1800000,
-        paymentStatus: 'unpaid',
-        createdAt: '2025-04-11T09:20:00Z',
-        createdBy: 'admin'
-    },
-    {
-        id: 3,
-        purchaseCode: 'PO10003',
-        supplierName: 'Beta Supplies',
-        supplierPhone: '0978123456',
-        supplierEmail: 'beta@supply.com',
-        supplierAddress: '789 Beta Lane, Da Nang',
-        itemCount: 4,
-        purchaseDate: '2025-04-12T11:00:00Z',
-        receivedTime: '2025-04-17T14:00:00Z',
-        totalAmount: 2200000,
-        paymentStatus: 'paid',
-        paymentTime: '2025-04-13T10:30:00Z',
-        notes: 'Fast delivery requested',
-        createdAt: '2025-04-12T10:50:00Z',
-        createdBy: 'staff01'
-    },
-    {
-        id: 4,
-        purchaseCode: 'PO10004',
-        supplierName: 'Gamma Traders',
-        supplierPhone: '0901122334',
-        supplierEmail: 'gamma@traders.com',
-        supplierAddress: '22 Gamma St, Hue',
-        itemCount: 2,
-        purchaseDate: '2025-04-13T15:00:00Z',
-        totalAmount: 750000,
-        paymentStatus: 'unpaid',
-        createdAt: '2025-04-13T14:45:00Z',
-        createdBy: 'admin'
-    },
-    {
-        id: 5,
-        purchaseCode: 'PO10005',
-        supplierName: 'Omega Warehousing',
-        supplierPhone: '0933445566',
-        supplierEmail: 'info@omegaware.com',
-        supplierAddress: '5 Omega Way, Can Tho',
-        itemCount: 6,
-        purchaseDate: '2025-04-14T07:30:00Z',
-        receivedTime: '2025-04-19T09:00:00Z',
-        totalAmount: 3600000,
-        discountAmount: 100000,
-        paymentStatus: 'paid',
-        paymentTime: '2025-04-15T08:00:00Z',
-        notes: 'Include VAT invoice',
-        createdAt: '2025-04-14T07:20:00Z',
-        createdBy: 'staff02'
-    },
-    {
-        id: 6,
-        purchaseCode: 'PO10006',
-        supplierName: 'Delta Importers',
-        supplierPhone: '0911556677',
-        supplierEmail: 'delta@import.vn',
-        supplierAddress: '12 Delta Avenue, Bien Hoa',
-        itemCount: 8,
-        purchaseDate: '2025-04-15T10:15:00Z',
-        totalAmount: 4000000,
-        paymentStatus: 'unpaid',
-        createdAt: '2025-04-15T10:00:00Z',
-        createdBy: 'admin'
-    },
-    {
-        id: 7,
-        purchaseCode: 'PO10007',
-        supplierName: 'Sunshine Distributors',
-        supplierPhone: '0909887766',
-        supplierEmail: 'sunshine@distributors.vn',
-        supplierAddress: '88 Sunny Blvd, Nha Trang',
-        itemCount: 7,
-        purchaseDate: '2025-04-16T12:00:00Z',
-        receivedTime: '2025-04-21T15:00:00Z',
-        totalAmount: 3400000,
-        paymentStatus: 'paid',
-        paymentTime: '2025-04-17T13:00:00Z',
-        notes: 'Fragile items - handle with care',
-        createdAt: '2025-04-16T11:50:00Z',
-        createdBy: 'staff03'
-    },
-    {
-        id: 8,
-        purchaseCode: 'PO10008',
-        supplierName: 'Urban Goods',
-        supplierPhone: '0977665544',
-        supplierEmail: 'contact@urbangoods.com',
-        supplierAddress: '101 Urban Rd, HCM City',
-        itemCount: 2,
-        purchaseDate: '2025-04-17T08:45:00Z',
-        totalAmount: 1100000,
-        paymentStatus: 'unpaid',
-        createdAt: '2025-04-17T08:30:00Z',
-        createdBy: 'admin'
-    },
-    {
-        id: 9,
-        purchaseCode: 'PO10009',
-        supplierName: 'Pacific Supplies',
-        supplierPhone: '0944332211',
-        supplierEmail: 'pacific@supply.vn',
-        supplierAddress: '321 Pacific Rd, HCM City',
-        itemCount: 5,
-        purchaseDate: '2025-04-18T09:15:00Z',
-        receivedTime: '2025-04-23T11:00:00Z',
-        totalAmount: 2700000,
-        discountAmount: 30000,
-        paymentStatus: 'paid',
-        paymentTime: '2025-04-19T10:15:00Z',
-        createdAt: '2025-04-18T09:00:00Z',
-        createdBy: 'staff04'
-    },
-    {
-        id: 10,
-        purchaseCode: 'PO10010',
-        supplierName: 'Eco Imports',
-        supplierPhone: '0911778899',
-        supplierEmail: 'eco@imports.vn',
-        supplierAddress: '55 Green St, Da Lat',
-        itemCount: 1,
-        purchaseDate: '2025-04-19T07:30:00Z',
-        totalAmount: 500000,
-        paymentStatus: 'unpaid',
-        notes: 'Urgent order',
-        createdAt: '2025-04-19T07:20:00Z',
-        createdBy: 'admin'
-    }
-]
-
 function Page() {
     const { t } = useTranslation('common')
     const [page, setPage] = useState(1)
@@ -201,7 +40,7 @@ function Page() {
     const [filter, setFilter] = useState<IPurchaseOrderFilter>({
         pageSize: 10,
         pageNumber: 1,
-        fromDate: dayjs().format('YYYY-MM-DD'),
+        fromDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
         toDate: dayjs().format('YYYY-MM-DD')
     })
     const [keyword, setKeyword] = useState('')
@@ -212,12 +51,12 @@ function Page() {
 
     const { data: countResponse, isLoading: isCountLoading, refetch: countRefetch } = useGetCountTypeQuery()
 
-    const purchaseOrderData = dataResponse?.data?.records || (purchaseOrders as IPurchaseOrder[])
+    const purchaseOrderData = (dataResponse?.data?.records as IPurchaseOrder[]) || []
 
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
-    const countPaid = countResponse?.data.countPaid || 0
-    const countUnpaid = countResponse?.data.countUnpaid || 0
+    const paidCount = countResponse?.data.paidCount || 0
+    const unpaidCount = countResponse?.data.unpaidCount || 0
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -410,7 +249,7 @@ function Page() {
                                                 color: 'var(--text-color-all-selected)'
                                             }}
                                         >
-                                            {countPaid + countUnpaid}
+                                            {paidCount + unpaidCount}
                                         </Box>
                                     </Box>
                                 }
@@ -444,7 +283,7 @@ function Page() {
                                                         : 'var(--text-color-success)'
                                             }}
                                         >
-                                            {countPaid}
+                                            {paidCount}
                                         </Box>
                                     </Box>
                                 }
@@ -478,7 +317,7 @@ function Page() {
                                                         : 'var(--text-color-cancel)'
                                             }}
                                         >
-                                            {countUnpaid}
+                                            {unpaidCount}
                                         </Box>
                                     </Box>
                                 }

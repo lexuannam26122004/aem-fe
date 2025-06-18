@@ -4,290 +4,6 @@ import { Avatar, Box, Typography } from '@mui/material'
 import { Flame, ScanBarcode, StarIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { keyframes } from '@emotion/react'
-import { IWarrantyTopProducts } from '@/models/WarrantyReports'
-
-const data: IWarrantyTopProducts[] = [
-    {
-        id: 1,
-        serialNumber: 'SN-001',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-1.webp'],
-        description: 'Máy đo nhiệt độ công nghiệp chính xác cao',
-        productName: 'Cảm biến nhiệt độ PT100',
-        warrantyPeriod: 12,
-        stockQuantity: 50,
-        soldCount: 120,
-        minStockThreshold: 10,
-        rating: 4.5,
-        warrantyCount: 23,
-        warrantyRate: 0.19
-    },
-    {
-        id: 2,
-        serialNumber: 'SN-002',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-2.webp'],
-        description: 'Bộ điều khiển lập trình PLC Siemens S7-1200',
-        productName: 'PLC Siemens S7-1200',
-        warrantyPeriod: 24,
-        stockQuantity: 20,
-        soldCount: 75,
-        minStockThreshold: 10,
-        rating: 4.7,
-        warrantyCount: 2,
-        warrantyRate: 0.03
-    },
-    {
-        id: 3,
-        serialNumber: 'SN-003',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-3.webp'],
-        description: 'Cảm biến tiệm cận loại NPN 12V',
-        productName: 'Cảm biến tiệm cận Omron',
-        warrantyPeriod: 18,
-        stockQuantity: 100,
-        soldCount: 230,
-        minStockThreshold: 10,
-        rating: 4.2,
-        warrantyCount: 30,
-        warrantyRate: 0.13
-    },
-    {
-        id: 4,
-        serialNumber: 'SN-004',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-4.webp'],
-        description: 'Relay trung gian 8 chân',
-        productName: 'Relay trung gian IDEC',
-        warrantyPeriod: 6,
-        stockQuantity: 200,
-        soldCount: 310,
-        minStockThreshold: 10,
-        rating: 4.1,
-        warrantyCount: 31,
-        warrantyRate: 0.1
-    },
-    {
-        id: 5,
-        serialNumber: 'SN-005',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-5.webp'],
-        description: 'Biến tần 1 pha vào 3 pha ra',
-        productName: 'Biến tần Delta VFD007EL21A - 1 pha vào, 3 pha ra',
-        warrantyPeriod: 24,
-        stockQuantity: 30,
-        soldCount: 60,
-        minStockThreshold: 10,
-        rating: 4.6,
-        warrantyCount: 5,
-        warrantyRate: 0.08
-    },
-    {
-        id: 6,
-        serialNumber: 'SN-006',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-6.webp'],
-        description: 'Cầu chì bảo vệ mạch điện công nghiệp',
-        productName: 'Cầu chì Bussmann 10A 500V',
-        warrantyPeriod: 12,
-        stockQuantity: 100,
-        soldCount: 90,
-        minStockThreshold: 20,
-        rating: 4.4,
-        warrantyCount: 13,
-        warrantyRate: 0.14
-    },
-    {
-        id: 7,
-        serialNumber: 'SN-007',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-7.webp'],
-        description: 'Khởi động từ dùng cho điều khiển động cơ',
-        productName: 'Khởi động từ Schneider LC1D09',
-        warrantyPeriod: 18,
-        stockQuantity: 60,
-        soldCount: 150,
-        minStockThreshold: 15,
-        rating: 4.5,
-        warrantyCount: 21,
-        warrantyRate: 0.14
-    },
-    {
-        id: 8,
-        serialNumber: 'SN-008',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-8.webp'],
-        description: 'Bộ nguồn chuyển mạch 24V dùng cho tủ điện',
-        productName: 'Nguồn tổ ong Mean Well 24V 10A',
-        warrantyPeriod: 24,
-        stockQuantity: 40,
-        soldCount: 85,
-        minStockThreshold: 10,
-        rating: 4.3,
-        warrantyCount: 8,
-        warrantyRate: 0.09
-    },
-    {
-        id: 9,
-        serialNumber: 'SN-009',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-9.webp'],
-        description: 'Công tắc hành trình cơ học loại thường mở',
-        productName: 'Công tắc hành trình Omron Z-15GQ22',
-        warrantyPeriod: 12,
-        stockQuantity: 120,
-        soldCount: 140,
-        minStockThreshold: 20,
-        rating: 4.2,
-        warrantyCount: 20,
-        warrantyRate: 0.14
-    },
-    {
-        id: 10,
-        serialNumber: 'SN-010',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-10.webp'],
-        description: 'Máy đóng cắt dùng cho hệ thống tủ điện hạ thế',
-        productName: 'MCB ABB S203-C32 3P 32A',
-        warrantyPeriod: 24,
-        stockQuantity: 25,
-        soldCount: 55,
-        minStockThreshold: 5,
-        rating: 4.6,
-        warrantyCount: 9,
-        warrantyRate: 0.16
-    },
-    {
-        id: 11,
-        serialNumber: 'SN-0011',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-11.webp'],
-        description: 'Máy đo nhiệt độ công nghiệp chính xác cao',
-        productName: 'Cảm biến nhiệt độ PT100',
-        warrantyPeriod: 12,
-        stockQuantity: 50,
-        soldCount: 120,
-        minStockThreshold: 10,
-        rating: 4.5,
-        warrantyCount: 23,
-        warrantyRate: 0.19
-    },
-    {
-        id: 12,
-        serialNumber: 'SN-0012',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-12.webp'],
-        description: 'Bộ điều khiển lập trình PLC Siemens S7-1200',
-        productName: 'PLC Siemens S7-1200',
-        warrantyPeriod: 24,
-        stockQuantity: 20,
-        soldCount: 75,
-        minStockThreshold: 10,
-        rating: 4.7,
-        warrantyCount: 2,
-        warrantyRate: 0.03
-    },
-    {
-        id: 13,
-        serialNumber: 'SN-0013',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-13.webp'],
-        description: 'Cảm biến tiệm cận loại NPN 12V',
-        productName: 'Cảm biến tiệm cận Omron',
-        warrantyPeriod: 18,
-        stockQuantity: 100,
-        soldCount: 230,
-        minStockThreshold: 10,
-        rating: 4.2,
-        warrantyCount: 30,
-        warrantyRate: 0.13
-    },
-    {
-        id: 14,
-        serialNumber: 'SN-0014',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-14.webp'],
-        description: 'Relay trung gian 8 chân',
-        productName: 'Relay trung gian IDEC',
-        warrantyPeriod: 6,
-        stockQuantity: 200,
-        soldCount: 310,
-        minStockThreshold: 10,
-        rating: 4.1,
-        warrantyCount: 31,
-        warrantyRate: 0.1
-    },
-    {
-        id: 15,
-        serialNumber: 'SN-0015',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-15.webp'],
-        description: 'Biến tần 1 pha vào 3 pha ra',
-        productName: 'Biến tần Delta VFD007EL21A - 1 pha vào, 3 pha ra',
-        warrantyPeriod: 24,
-        stockQuantity: 30,
-        soldCount: 60,
-        minStockThreshold: 10,
-        rating: 4.6,
-        warrantyCount: 5,
-        warrantyRate: 0.08
-    },
-    {
-        id: 16,
-        serialNumber: 'SN-0016',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-16.webp'],
-        description: 'Cầu chì bảo vệ mạch điện công nghiệp',
-        productName: 'Cầu chì Bussmann 10A 500V',
-        warrantyPeriod: 12,
-        stockQuantity: 100,
-        soldCount: 90,
-        minStockThreshold: 20,
-        rating: 4.4,
-        warrantyCount: 13,
-        warrantyRate: 0.14
-    },
-    {
-        id: 17,
-        serialNumber: 'SN-0017',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-17.webp'],
-        description: 'Khởi động từ dùng cho điều khiển động cơ',
-        productName: 'Khởi động từ Schneider LC1D09',
-        warrantyPeriod: 18,
-        stockQuantity: 60,
-        soldCount: 150,
-        minStockThreshold: 15,
-        rating: 4.5,
-        warrantyCount: 21,
-        warrantyRate: 0.14
-    },
-    {
-        id: 18,
-        serialNumber: 'SN-0018',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-18.webp'],
-        description: 'Bộ nguồn chuyển mạch 24V dùng cho tủ điện',
-        productName: 'Nguồn tổ ong Mean Well 24V 10A',
-        warrantyPeriod: 24,
-        stockQuantity: 40,
-        soldCount: 85,
-        minStockThreshold: 10,
-        rating: 4.3,
-        warrantyCount: 8,
-        warrantyRate: 0.09
-    },
-    {
-        id: 19,
-        serialNumber: 'SN-0019',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-19.webp'],
-        description: 'Công tắc hành trình cơ học loại thường mở',
-        productName: 'Công tắc hành trình Omron Z-15GQ22',
-        warrantyPeriod: 12,
-        stockQuantity: 120,
-        soldCount: 140,
-        minStockThreshold: 20,
-        rating: 4.2,
-        warrantyCount: 20,
-        warrantyRate: 0.14
-    },
-    {
-        id: 20,
-        serialNumber: 'SN-020',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-20.webp'],
-        description: 'Máy đóng cắt dùng cho hệ thống tủ điện hạ thế',
-        productName: 'MCB ABB S203-C32 3P 32A',
-        warrantyPeriod: 24,
-        stockQuantity: 25,
-        soldCount: 55,
-        minStockThreshold: 5,
-        rating: 4.6,
-        warrantyCount: 9,
-        warrantyRate: 0.16
-    }
-]
 
 const pulse = keyframes`
   0% {
@@ -303,38 +19,50 @@ const pulse = keyframes`
     opacity: 1;
   }
 `
+export interface ITopProduct {
+    productName: string
+    sku: string
+    soldCount: number
+    rating: number
+    status: 'in_stock' | 'low_stock' | 'out_of_stock'
+    image: string
+}
 
-function getStatusBgColor(row: IWarrantyTopProducts): string {
-    if (row.stockQuantity === 0) {
+interface IProps {
+    data: ITopProduct[]
+}
+
+function getStatusBgColor(row: ITopProduct): string {
+    if (row.status === 'out_of_stock') {
         return 'var(--background-color-cancel)'
-    } else if (row.stockQuantity <= row.minStockThreshold) {
+    } else if (row.status === 'low_stock') {
         return 'var(--background-color-pending)'
     } else {
         return 'var(--background-color-success)'
     }
 }
 
-function getBorderColor(row: IWarrantyTopProducts): string {
-    if (row.stockQuantity === 0) {
+function getBorderColor(row: ITopProduct): string {
+    if (row.status === 'out_of_stock') {
         return '1px solid var(--border-color-cancel)'
-    } else if (row.stockQuantity <= row.minStockThreshold) {
+    } else if (row.status === 'low_stock') {
         return '1px solid var(--border-color-pending)'
     } else {
         return '1px solid var(--border-color-success)'
     }
 }
 
-function getStatusTextColor(row: IWarrantyTopProducts): string {
-    if (row.stockQuantity === 0) {
+function getStatusTextColor(row: ITopProduct): string {
+    if (row.status === 'out_of_stock') {
         return 'var(--text-color-cancel)'
-    } else if (row.stockQuantity <= row.minStockThreshold) {
+    } else if (row.status === 'low_stock') {
         return 'var(--text-color-pending)'
     } else {
         return 'var(--text-color-success)'
     }
 }
 
-export default function TopSellingProducts() {
+export default function TopSellingProducts({ data }: IProps) {
     const { t } = useTranslation('common')
     return (
         <Box
@@ -377,7 +105,7 @@ export default function TopSellingProducts() {
             >
                 {data.map((item, index) => (
                     <Box
-                        key={item.id}
+                        key={index}
                         sx={{
                             display: 'flex',
                             alignItems: 'center',
@@ -386,7 +114,7 @@ export default function TopSellingProducts() {
                         }}
                     >
                         <Avatar
-                            src={item.images[0]}
+                            src={item.image}
                             sx={{
                                 width: '48px',
                                 height: '48px',
@@ -432,9 +160,9 @@ export default function TopSellingProducts() {
                                             whiteSpace: 'nowrap'
                                         }}
                                     >
-                                        {item.minStockThreshold < item.stockQuantity
+                                        {item.status === 'in_stock'
                                             ? t('COMMON.PRODUCT.IN_STOCK')
-                                            : item.stockQuantity === 0
+                                            : item.status === 'out_of_stock'
                                             ? t('COMMON.PRODUCT.OUT_OF_STOCK')
                                             : t('COMMON.PRODUCT.LOW_STOCK')}
                                     </Typography>
@@ -468,7 +196,7 @@ export default function TopSellingProducts() {
                                             whiteSpace: 'nowrap'
                                         }}
                                     >
-                                        {item.serialNumber}
+                                        {item.sku}
                                     </Typography>
                                 </Box>
 

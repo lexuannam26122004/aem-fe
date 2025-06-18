@@ -4,15 +4,20 @@ import ReactECharts from 'echarts-for-react'
 import { Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
+import { IResponse } from '@/models/Common'
 
-const CustomerRateChart = () => {
+interface IProps {
+    responseData: IResponse
+}
+
+const CustomerRateChart = ({ responseData }: IProps) => {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
 
     const chartData = [
-        { name: t('COMMON.CUSTOMER.GOLD_CUSTOMER'), value: 40 },
-        { name: t('COMMON.CUSTOMER.SILVER_CUSTOMER'), value: 140 },
-        { name: t('COMMON.CUSTOMER.NEW_CUSTOMER'), value: 100 }
+        { name: t('COMMON.CUSTOMER.GOLD_CUSTOMER'), value: responseData.data.gold },
+        { name: t('COMMON.CUSTOMER.SILVER_CUSTOMER'), value: responseData.data.silver },
+        { name: t('COMMON.CUSTOMER.NEW_CUSTOMER'), value: responseData.data.new }
     ]
 
     const option = {

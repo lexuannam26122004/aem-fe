@@ -26,179 +26,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime, formatCurrency } from '@/common/format'
 import { Download } from 'lucide-react'
 import { IOrderReportFilter, IOrderReports } from '@/models/OrderReports'
-
-const orderReportData: IOrderReports[] = [
-    {
-        date: '01/05/2025',
-        orderCount: 120,
-        successfulOrders: 110,
-        cancelledOrders: 5,
-        returnedOrders: 5,
-        totalRevenue: 58000000,
-        successRate: 91.67,
-        cancelRate: 4.17,
-        averageOrderValue: 483333,
-        returnValue: 2500000,
-        totalProductQuantity: 320,
-        productTypeCount: 24,
-        productName: 'Tai nghe Bluetooth Sony WH-1000XM5',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-1.webp'],
-        serialNumber: 'SN20250501-001'
-    },
-    {
-        date: '02/05/2025',
-        orderCount: 98,
-        successfulOrders: 90,
-        cancelledOrders: 4,
-        returnedOrders: 4,
-        totalRevenue: 47000000,
-        successRate: 91.84,
-        cancelRate: 4.08,
-        averageOrderValue: 479592,
-        returnValue: 1800000,
-        totalProductQuantity: 270,
-        productTypeCount: 21,
-        productName: 'Máy ảnh Canon EOS R6',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-2.webp'],
-        serialNumber: 'SN20250502-002'
-    },
-    {
-        date: '03/05/2025',
-        orderCount: 135,
-        successfulOrders: 130,
-        cancelledOrders: 3,
-        returnedOrders: 2,
-        totalRevenue: 69000000,
-        successRate: 96.3,
-        cancelRate: 2.22,
-        averageOrderValue: 511111,
-        returnValue: 2200000,
-        totalProductQuantity: 340,
-        productTypeCount: 26,
-        productName: 'Laptop Dell XPS 13',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-3.webp'],
-        serialNumber: 'SN20250503-003'
-    },
-    {
-        date: '04/05/2025',
-        orderCount: 85,
-        successfulOrders: 80,
-        cancelledOrders: 3,
-        returnedOrders: 2,
-        totalRevenue: 41000000,
-        successRate: 94.12,
-        cancelRate: 3.53,
-        averageOrderValue: 482353,
-        returnValue: 1500000,
-        totalProductQuantity: 230,
-        productTypeCount: 19,
-        productName: 'Smartwatch Apple Watch Series 9',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-4.webp'],
-        serialNumber: 'SN20250504-004'
-    },
-    {
-        date: '05/05/2025',
-        orderCount: 150,
-        successfulOrders: 140,
-        cancelledOrders: 6,
-        returnedOrders: 4,
-        totalRevenue: 75000000,
-        successRate: 93.33,
-        cancelRate: 4.0,
-        averageOrderValue: 500000,
-        returnValue: 3000000,
-        totalProductQuantity: 400,
-        productTypeCount: 30,
-        productName: 'Điện thoại Samsung Galaxy S24 Ultra',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-5.webp'],
-        serialNumber: 'SN20250505-005'
-    },
-    {
-        date: '06/05/2025',
-        orderCount: 112,
-        successfulOrders: 106,
-        cancelledOrders: 4,
-        returnedOrders: 2,
-        totalRevenue: 56500000,
-        successRate: 94.64,
-        cancelRate: 3.57,
-        averageOrderValue: 504464,
-        returnValue: 1600000,
-        totalProductQuantity: 290,
-        productTypeCount: 23,
-        productName: 'Máy chơi game Nintendo Switch OLED',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-6.webp'],
-        serialNumber: 'SN20250506-006'
-    },
-    {
-        date: '07/05/2025',
-        orderCount: 103,
-        successfulOrders: 98,
-        cancelledOrders: 3,
-        returnedOrders: 2,
-        totalRevenue: 49500000,
-        successRate: 95.15,
-        cancelRate: 2.91,
-        averageOrderValue: 480583,
-        returnValue: 1700000,
-        totalProductQuantity: 280,
-        productTypeCount: 22,
-        productName: 'Camera hành trình GoPro HERO12',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-7.webp'],
-        serialNumber: 'SN20250507-007'
-    },
-    {
-        date: '08/05/2025',
-        orderCount: 140,
-        successfulOrders: 132,
-        cancelledOrders: 5,
-        returnedOrders: 3,
-        totalRevenue: 71500000,
-        successRate: 94.29,
-        cancelRate: 3.57,
-        averageOrderValue: 510714,
-        returnValue: 2500000,
-        totalProductQuantity: 360,
-        productTypeCount: 27,
-        productName: 'Tivi LG OLED evo C3 55 inch',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-8.webp'],
-        serialNumber: 'SN20250508-008'
-    },
-    {
-        date: '09/05/2025',
-        orderCount: 95,
-        successfulOrders: 90,
-        cancelledOrders: 3,
-        returnedOrders: 2,
-        totalRevenue: 46000000,
-        successRate: 94.74,
-        cancelRate: 3.16,
-        averageOrderValue: 484211,
-        returnValue: 1400000,
-        totalProductQuantity: 250,
-        productTypeCount: 20,
-        productName: 'Máy chiếu Xiaomi Mi Smart Projector 2',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-9.webp'],
-        serialNumber: 'SN20250509-009'
-    },
-    {
-        date: '10/05/2025',
-        orderCount: 100,
-        successfulOrders: 95,
-        cancelledOrders: 4,
-        returnedOrders: 1,
-        totalRevenue: 50000000,
-        successRate: 95.0,
-        cancelRate: 4.0,
-        averageOrderValue: 500000,
-        returnValue: 1000000,
-        totalProductQuantity: 270,
-        productTypeCount: 21,
-        productName: 'Loa thông minh Google Nest Audio',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-11.webp'],
-        serialNumber: 'SN20250510-010'
-    }
-]
+import { useGetDetailedOrderReportQuery } from '@/services/OrderInsightsService'
+import Loading from '@/components/Loading'
 
 function ReportTable() {
     const { t } = useTranslation('common')
@@ -215,6 +44,9 @@ function ReportTable() {
         toDate: dayjs().format('YYYY-MM-DD')
     })
 
+    const { data: orderReportResponse, isLoading: isOrderReportLoading } = useGetDetailedOrderReportQuery(filter)
+
+    const orderReportData = orderReportResponse?.data || []
     const totalRecords = orderReportData.length
 
     const handleSort = (property: string) => {
@@ -263,6 +95,10 @@ function ReportTable() {
         })
     }
 
+    if (isOrderReportLoading) {
+        return <Loading />
+    }
+
     return (
         <Paper
             elevation={0}
@@ -270,7 +106,7 @@ function ReportTable() {
                 width: '100%',
                 boxShadow: 'var(--box-shadow-paper)',
                 overflow: 'hidden',
-                borderRadius: '20px',
+                borderRadius: '15px',
                 backgroundColor: 'var(--background-color-item)'
             }}
         >
@@ -977,7 +813,7 @@ function ReportTable() {
                                                 color: 'var(--report-text-color)'
                                             }}
                                         >
-                                            {formatCurrency(row.returnValue)}
+                                            {formatCurrency(row.totalRevenue)}
                                         </Typography>
                                     </TableCell>
 
@@ -1077,7 +913,7 @@ function ReportTable() {
                                             }}
                                         >
                                             <Avatar
-                                                src={row.images[0]}
+                                                src={row.bestSellingProduct.image}
                                                 sx={{
                                                     width: '42px',
                                                     height: '42px',
@@ -1103,7 +939,7 @@ function ReportTable() {
                                                         color: 'var(--primary-color)'
                                                     }}
                                                 >
-                                                    {row.productName}
+                                                    {row.bestSellingProduct.name}
                                                 </Typography>
 
                                                 <Typography
@@ -1118,7 +954,7 @@ function ReportTable() {
                                                 >
                                                     {t('COMMON.PRODUCT.SERIAL_NUMBER')}
                                                     {': '}
-                                                    {row.serialNumber}
+                                                    {row.bestSellingProduct.serial}
                                                 </Typography>
                                             </Box>
                                         </Box>

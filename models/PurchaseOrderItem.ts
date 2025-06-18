@@ -2,9 +2,9 @@ export interface IPurchaseOrderItem {
     id: number
     productId: string
     productName: string
-    productImage: string
+    image: string
     quantity: number
-    purchasePrice: number
+    totalPrice: number
     subtotal: number
     taxAmount: number
     discountType: number

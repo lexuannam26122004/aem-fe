@@ -3,36 +3,61 @@ import { IPurchaseOrderItem } from './PurchaseOrderItem'
 
 export interface IPurchaseOrder {
     id: number
-    supplierAvatarPath?: string
-    purchaseCode: string
+    supplierAvatar?: string
+    orderCode: string
     supplierName: string
     supplierPhone?: string
     supplierEmail?: string
     supplierAddress?: string
-    itemCount: number
+    totalItems: number
     purchaseDate: string
-    receivedTime?: string
-    receivedBy?: string
-    receivedId?: string
+    deliveryDate?: string
     totalAmount: number
     discountAmount?: number
-    paymentStatus: 'unpaid' | 'paid'
+    orderStatus: 'unpaid' | 'paid'
     paymentTime?: string
-    notes?: string
-    createdAt: string
-    createdBy: string
+    description?: string
 }
 
-export interface IPurchaseOrderDetail extends IPurchaseOrder {
-    itemList: IPurchaseOrderItem[]
-    shippingFee: number
-    supplierTaxID?: string
-    receivedPhone?: string
-    employeeAvatarPath?: string
+export interface IPurchaseOrderDetail {
+    items: IPurchaseOrderItem[]
+    supplier: ISupplierInfo
+    receiver: IReceiverInfo
+    orderCode: string
+    orderDate: string
+    deliveryDate?: string
+    orderStatus: string
+    description?: string
     subTotal: number
-    discountShippingFee?: number
-    paymentMethod: string
-    taxes?: number
+    shippingCost: number
+    discountShipping?: number
+    discountAmount?: number
+    payment: IPaymentInfo
+    taxAmount?: number
+    totalAmount: number
+}
+
+interface IPaymentInfo {
+    method: string
+    time: string
+}
+
+interface IReceiverInfo {
+    fullName: string
+    avatar?: string
+    phone: string
+    code: string
+    receiveTime: string
+}
+
+interface ISupplierInfo {
+    id: string
+    name: string
+    avatar?: string
+    phone: string
+    email: string
+    address: string
+    taxCode: string
 }
 
 export interface IPurchaseOrderCreate {

@@ -8,8 +8,35 @@ import { TopProducts } from './TopProducts'
 import { TopCustomers } from './TopCustomers'
 import ComponentButtons from './ComponentButtons'
 import ChartOrderRevenue from './ChartOrderRevenue'
+import {
+    useGetDashboardCardsQuery,
+    useGetFinancialOverviewQuery,
+    useGetOrderStatusRatioQuery,
+    useGetRevenueAndOrdersQuery,
+    useGetTodayStatsQuery,
+    useGetTopSalesSummaryQuery
+} from '@/services/HomeService'
+import Loading from '@/components/Loading'
 
 export default function HomePage() {
+    const { data: todayResponse, isLoading } = useGetTodayStatsQuery()
+    const { data: topSalesResponse, isLoading: isTopSalesLoading } = useGetTopSalesSummaryQuery()
+    const { data: revenueResponse, isLoading: isRevenueLoading } = useGetRevenueAndOrdersQuery(14)
+    const { data: financialResponse, isLoading: isFinancialLoading } = useGetFinancialOverviewQuery()
+    const { data: dashboardResponse, isLoading: isDashboardLoading } = useGetDashboardCardsQuery()
+    const { data: orderStatusResponse, isLoading: isOrderStatusLoading } = useGetOrderStatusRatioQuery()
+
+    if (
+        isLoading ||
+        isTopSalesLoading ||
+        isRevenueLoading ||
+        isFinancialLoading ||
+        isDashboardLoading ||
+        isOrderStatusLoading
+    ) {
+        return <Loading />
+    }
+
     return (
         <Box
             sx={{
@@ -17,7 +44,7 @@ export default function HomePage() {
                 margin: '0 auto'
             }}
         >
-            <DisplayInfo />
+            <DisplayInfo dataResponse={todayResponse} />
 
             <Box
                 sx={{
@@ -37,7 +64,7 @@ export default function HomePage() {
                         overflow: 'hidden'
                     }}
                 >
-                    <FinancialOverviewChart />
+                    <FinancialOverviewChart responseData={financialResponse} />
                 </Box>
 
                 <Box
@@ -47,7 +74,7 @@ export default function HomePage() {
                         borderRadius: '15px'
                     }}
                 >
-                    <OrdersStatusChart />
+                    <OrdersStatusChart responseData={orderStatusResponse} />
                 </Box>
             </Box>
 
@@ -66,7 +93,7 @@ export default function HomePage() {
                         borderRadius: '15px'
                     }}
                 >
-                    <ComponentButtons />
+                    <ComponentButtons responseData={dashboardResponse} />
                 </Box>
 
                 <Box
@@ -78,7 +105,7 @@ export default function HomePage() {
                         padding: '24px'
                     }}
                 >
-                    <ChartOrderRevenue />
+                    <ChartOrderRevenue responseData={revenueResponse} />
                 </Box>
             </Box>
 
@@ -100,7 +127,7 @@ export default function HomePage() {
                         padding: '24px'
                     }}
                 >
-                    <TopProducts />
+                    <TopProducts data={topSalesResponse.data.topProducts} />
                 </Box>
 
                 <Box
@@ -112,7 +139,7 @@ export default function HomePage() {
                         padding: '24px'
                     }}
                 >
-                    <TopCustomers />
+                    <TopCustomers data={topSalesResponse.data.topCustomers} />
                 </Box>
             </Box>
         </Box>

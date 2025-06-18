@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react'
 
 import { TicketIcon, UsersIcon, CalendarIcon, TrendingUpIcon, TagIcon, DiamondMinus, DiamondPlus } from 'lucide-react'
@@ -24,90 +26,12 @@ import {
 } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency, formatDate, formatDivision } from '@/common/format'
+import { useGetStatisticOrdersByCouponQuery } from '@/services/CouponService'
 
 interface CouponDetailDialogProps {
     isOpen: boolean
     onClose: () => void
     coupon: ICoupon | null
-}
-
-const getCouponOrders = () => {
-    const mockOrders = [
-        {
-            id: 'order1',
-            orderCode: 'DH001',
-            customerName: 'Nguyễn Văn A',
-            orderDate: '2024-03-01',
-            totalAmount: 1500000,
-            discountAmount: 150000
-        },
-        {
-            id: 'order2',
-            orderCode: 'DH002',
-            customerName: 'Trần Thị B',
-            orderDate: '2024-03-05',
-            totalAmount: 2300000,
-            discountAmount: 230000
-        },
-        {
-            id: 'order3',
-            orderCode: 'DH003',
-            customerName: 'Lê Văn C',
-            orderDate: '2024-03-10',
-            totalAmount: 1800000,
-            discountAmount: 180000
-        },
-        {
-            id: 'order4',
-            orderCode: 'DH001',
-            customerName: 'Nguyễn Văn A',
-            orderDate: '2024-03-01',
-            totalAmount: 1500000,
-            discountAmount: 150000
-        },
-        {
-            id: 'order5',
-            orderCode: 'DH002',
-            customerName: 'Trần Thị B',
-            orderDate: '2024-03-05',
-            totalAmount: 2300000,
-            discountAmount: 230000
-        },
-        {
-            id: 'order6',
-            orderCode: 'DH003',
-            customerName: 'Lê Văn C',
-            orderDate: '2024-03-10',
-            totalAmount: 1800000,
-            discountAmount: 180000
-        },
-        {
-            id: 'order7',
-            orderCode: 'DH001',
-            customerName: 'Nguyễn Văn A',
-            orderDate: '2024-03-01',
-            totalAmount: 1500000,
-            discountAmount: 150000
-        },
-        {
-            id: 'order8',
-            orderCode: 'DH002',
-            customerName: 'Trần Thị B',
-            orderDate: '2024-03-05',
-            totalAmount: 2300000,
-            discountAmount: 230000
-        },
-        {
-            id: 'order9',
-            orderCode: 'DH003',
-            customerName: 'Lê Văn C',
-            orderDate: '2024-03-10',
-            totalAmount: 1800000,
-            discountAmount: 180000
-        }
-    ]
-
-    return mockOrders
 }
 
 interface InfoCardProps {
@@ -122,15 +46,16 @@ const CouponDetailDialog: React.FC<CouponDetailDialogProps> = ({ isOpen, onClose
     const { t } = useTranslation('common')
     const [tab, setTab] = useState('info')
 
+    const { data: statistics } = useGetStatisticOrdersByCouponQuery(coupon.id)
+    const couponOrders = statistics?.data?.orders || []
+    const totalDiscount = statistics?.data?.totalDiscount || 0
+    const averageDiscount = statistics?.data?.averageDiscount || 0
+
     if (!coupon) return null
 
     const isExpired = new Date(coupon.expiryDate) < new Date()
 
     const isLimited = coupon.usageLimit && coupon.usageLimit === coupon.usageCount
-
-    const couponOrders = getCouponOrders()
-
-    const average = 12312313
 
     const InfoCard: React.FC<InfoCardProps> = ({ label, value, icon, highlight = false }) => {
         return (
@@ -165,7 +90,7 @@ const CouponDetailDialog: React.FC<CouponDetailDialogProps> = ({ isOpen, onClose
                     sx={{
                         fontSize: '15px',
                         fontWeight: 'bold',
-                        color: highlight ? '#0099ff' : 'var(--text-color)',
+                        color: highlight ? 'var(--primary-color)' : 'var(--text-color)',
                         marginTop: '7px'
                     }}
                 >
@@ -609,7 +534,7 @@ const CouponDetailDialog: React.FC<CouponDetailDialogProps> = ({ isOpen, onClose
                                     fontSize: '30px'
                                 }}
                             >
-                                {formatCurrency(coupon.discountValue)}
+                                {formatCurrency(totalDiscount)}
                             </Typography>
 
                             <Box
@@ -626,7 +551,7 @@ const CouponDetailDialog: React.FC<CouponDetailDialogProps> = ({ isOpen, onClose
                                         color: 'var(--label-title-color)'
                                     }}
                                 >
-                                    {t('COMMON.COUPON.AVERAGE', { 0: formatCurrency(average) })}
+                                    {t('COMMON.COUPON.AVERAGE', { 0: formatCurrency(averageDiscount) })}
                                 </Typography>
                             </Box>
                         </Paper>
@@ -815,7 +740,7 @@ const CouponDetailDialog: React.FC<CouponDetailDialogProps> = ({ isOpen, onClose
                                                             color: '#16a34a'
                                                         }}
                                                     >
-                                                        -{formatCurrency(order.discountAmount)}
+                                                        -{formatCurrency(order.discount)}
                                                     </TableCell>
                                                 </TableRow>
                                             ))

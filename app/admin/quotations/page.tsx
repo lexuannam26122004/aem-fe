@@ -10,8 +10,7 @@ import {
     Paper,
     TextField,
     InputAdornment,
-    Divider,
-    Button
+    Divider
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -22,167 +21,13 @@ import Tab from '@mui/material/Tab'
 import { debounce } from 'lodash'
 import { useCallback } from 'react'
 import Loading from '@/components/Loading'
-import { CirclePlus } from 'lucide-react'
-import { useSearchQuotationQuery, useGetCountTypeQuery } from '@/services/QuotationService'
+import { useSearchQuotationQuery, useGetCountQuotesTypeQuery } from '@/services/QuotationService'
 import { IQuotation, IQuotationFilter } from '@/models/Quotation'
 import dayjs from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime } from '@/common/format'
-
-const quotations: IQuotation[] = [
-    {
-        id: 'f11edc73-e3c0-4fb5-bdbb-f2b2d00fa427',
-        quotationCode: 'Q-3979',
-        assigneeName: 'Nguyen Van A',
-        assigneeId: 'EM0001',
-        customerName: 'Nguyen Van A',
-        customerEmail: 'nguyenvana@gmail.com',
-        customerAvatarPath: undefined,
-        phone: '+84588519564',
-        itemCount: 1,
-        requestedDate: '2025-04-16T05:10:06.541Z',
-        status: 'cancelled',
-        createdAt: '2025-04-16T05:10:06.541Z',
-        updatedAt: '2025-04-18T05:10:06.541Z'
-    },
-    {
-        id: 'af456d01-0729-42d6-8ff3-17d822e473ca',
-        quotationCode: 'Q-7037',
-        assigneeName: 'Nguyen Van A',
-        assigneeId: 'EM0001',
-        customerName: 'Tran Thi B',
-        customerEmail: 'tranthib@outlook.com',
-        customerAvatarPath: undefined,
-        phone: '+84837246368',
-        itemCount: 5,
-        requestedDate: '2025-04-10T05:10:06.542Z',
-        status: 'pending',
-        createdAt: '2025-04-08T05:10:06.542Z',
-        updatedAt: '2025-04-11T05:10:06.542Z'
-    },
-    {
-        id: 'cf86982b-d8a7-44dc-bdf2-ff41f3ce6a3c',
-        quotationCode: 'Q-6163',
-        assigneeName: 'Nguyen Van A',
-        assigneeId: 'EM0001',
-        customerName: 'Le Van C',
-        customerEmail: 'levanc@yahoo.com',
-        customerAvatarPath: undefined,
-        phone: '+84772756015',
-        itemCount: 10,
-        requestedDate: '2025-04-06T05:10:06.542Z',
-        status: 'completed',
-        createdAt: '2025-04-05T05:10:06.542Z',
-        updatedAt: '2025-04-06T05:10:06.542Z'
-    },
-    {
-        id: '32c50e69-3c00-4909-a96b-70000ef47c07',
-        quotationCode: 'Q-6480',
-        assigneeName: 'Nguyen Van A',
-        assigneeId: 'EM0001',
-        customerName: 'Pham Thi D',
-        customerEmail: 'phamthid@gmail.com',
-        customerAvatarPath: undefined,
-        phone: '+84540287703',
-        itemCount: 5,
-        requestedDate: '2025-04-09T05:10:06.542Z',
-        status: 'pending',
-        createdAt: '2025-04-07T05:10:06.542Z',
-        updatedAt: '2025-04-09T05:10:06.542Z'
-    },
-    {
-        id: '30060350-9bc0-4ae1-a5db-85c74c1be71b',
-        quotationCode: 'Q-4365',
-        assigneeName: 'Nguyen Van A',
-        assigneeId: 'EM0001',
-        customerName: 'Hoang Van E',
-        customerEmail: 'hoangvane@yahoo.com',
-        customerAvatarPath: undefined,
-        phone: '+84960418945',
-        itemCount: 5,
-        requestedDate: '2025-04-04T05:10:06.542Z',
-        status: 'pending',
-        createdAt: '2025-04-02T05:10:06.542Z',
-        updatedAt: '2025-04-07T05:10:06.542Z'
-    },
-    {
-        id: '2b7e3057-12d9-46b2-8f3b-f49c2d00b859',
-        quotationCode: 'Q-5129',
-        assigneeName: 'Nguyen Van A',
-        assigneeId: 'EM0001',
-        customerName: 'Dang Thi F',
-        customerEmail: 'dangthif@gmail.com',
-        customerAvatarPath: undefined,
-        phone: '+84972615289',
-        itemCount: 8,
-        requestedDate: '2025-04-12T05:10:06.542Z',
-        status: 'processing',
-        createdAt: '2025-04-10T05:10:06.542Z',
-        updatedAt: '2025-04-14T05:10:06.542Z'
-    },
-    {
-        id: '5a9cf0cb-65d4-46fb-b4fa-569e46c9dbef',
-        quotationCode: 'Q-2845',
-        assigneeName: 'Nguyen Van A',
-        assigneeId: 'EM0001',
-        customerName: 'Bui Van G',
-        customerEmail: 'buivang@yahoo.com',
-        customerAvatarPath: undefined,
-        phone: '+84788845219',
-        itemCount: 2,
-        requestedDate: '2025-04-07T05:10:06.542Z',
-        status: 'completed',
-        createdAt: '2025-04-05T05:10:06.542Z',
-        updatedAt: '2025-04-08T05:10:06.542Z'
-    },
-    {
-        id: '3fa3c2d0-3897-4ef4-8c10-b508d2d2f3ab',
-        quotationCode: 'Q-1257',
-        assigneeName: 'Nguyen Van A',
-        assigneeId: 'EM0001',
-        customerName: 'Do Thi H',
-        customerEmail: 'dothih@gmail.com',
-        customerAvatarPath: undefined,
-        phone: '+84919284572',
-        itemCount: 6,
-        requestedDate: '2025-04-11T05:10:06.542Z',
-        status: 'pending',
-        createdAt: '2025-04-09T05:10:06.542Z',
-        updatedAt: '2025-04-12T05:10:06.542Z'
-    },
-    {
-        id: '04b17a2e-c9b8-46aa-90f3-5ed7e5c4e7e3',
-        quotationCode: 'Q-5932',
-        assigneeName: 'Nguyen Van A',
-        assigneeId: 'EM0001',
-        customerName: 'Vo Van I',
-        customerEmail: 'vovani@outlook.com',
-        customerAvatarPath: undefined,
-        phone: '+84872615023',
-        itemCount: 9,
-        requestedDate: '2025-04-08T05:10:06.542Z',
-        status: 'processing',
-        createdAt: '2025-04-06T05:10:06.542Z',
-        updatedAt: '2025-04-09T05:10:06.542Z'
-    },
-    {
-        id: '9f44570a-8c4a-45f2-823c-967b9fd9f572',
-        quotationCode: 'Q-1983',
-        assigneeName: 'Nguyen Van A',
-        assigneeId: 'EM0001',
-        customerName: 'Nguyen Thi J',
-        customerEmail: 'nguyenthij@gmail.com',
-        customerAvatarPath: undefined,
-        phone: '+84919846273',
-        itemCount: 4,
-        requestedDate: '2025-04-14T05:10:06.542Z',
-        status: 'cancelled',
-        createdAt: '2025-04-12T05:10:06.542Z',
-        updatedAt: '2025-04-16T05:10:06.542Z'
-    }
-]
 
 function Page() {
     const { t } = useTranslation('common')
@@ -193,25 +38,22 @@ function Page() {
     const [filter, setFilter] = useState<IQuotationFilter>({
         pageSize: 10,
         pageNumber: 1,
-        fromDate: dayjs().format('YYYY-MM-DD'),
+        fromDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
         toDate: dayjs().format('YYYY-MM-DD')
     })
     const [keyword, setKeyword] = useState('')
-    const [open, setOpen] = useState(false)
-    useEffect(() => {}, [open])
 
     const { data: dataResponse, isLoading, isFetching, refetch } = useSearchQuotationQuery(filter)
 
-    const { data: countResponse, isLoading: isCountLoading, refetch: countRefetch } = useGetCountTypeQuery()
+    const { data: countResponse, isLoading: isCountLoading, refetch: countRefetch } = useGetCountQuotesTypeQuery()
 
-    const quotationData = dataResponse?.data?.records || (quotations as IQuotation[])
+    const quotationData = (dataResponse?.data?.records as IQuotation[]) || []
 
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
-    const countPending = countResponse?.data.countPending || 0
-    const countProcessing = countResponse?.data.countProcessing || 0
-    const countCompleted = countResponse?.data.countCompleted || 0
-    const countCancelled = countResponse?.data.countCancelled || 0
+    const countPending = countResponse?.data.pendingCount || 0
+    const countCompleted = countResponse?.data.completedCount || 0
+    const countCancelled = countResponse?.data.cancelledCount || 0
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -278,12 +120,13 @@ function Page() {
         if (newValue !== undefined) {
             setFilter(prev => ({
                 ...prev,
-                isType: newValue
+                status:
+                    newValue === 0 ? undefined : newValue === 1 ? 'pending' : newValue === 2 ? 'completed' : 'cancelled'
             }))
         } else {
             setFilter(prev => ({
                 ...prev,
-                isType: undefined
+                status: undefined
             }))
         }
     }
@@ -404,7 +247,7 @@ function Page() {
                                                 color: 'var(--text-color-all-selected)'
                                             }}
                                         >
-                                            {countCancelled + countPending + countCompleted + countProcessing}
+                                            {countCancelled + countPending + countCompleted}
                                         </Box>
                                     </Box>
                                 }
@@ -445,7 +288,7 @@ function Page() {
                                 value={1}
                             />
 
-                            <Tab
+                            {/* <Tab
                                 sx={{
                                     textTransform: 'none',
                                     color: 'var(--label-title-color)',
@@ -477,7 +320,7 @@ function Page() {
                                     </Box>
                                 }
                                 value={2}
-                            />
+                            /> */}
 
                             <Tab
                                 sx={{
@@ -701,7 +544,7 @@ function Page() {
                             </LocalizationProvider>
                         </Box>
 
-                        <Button
+                        {/* <Button
                             variant='contained'
                             startIcon={<CirclePlus />}
                             sx={{
@@ -723,7 +566,7 @@ function Page() {
                             onClick={() => setOpen(true)}
                         >
                             {t('COMMON.BUTTON.CREATE')}
-                        </Button>
+                        </Button> */}
                     </Box>
 
                     <QuotationTable data={quotationData} refetch={refetchPage} setFilter={setFilter} />

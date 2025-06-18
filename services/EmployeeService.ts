@@ -5,7 +5,8 @@ import { createBaseQuery } from './api'
 
 export const EmployeeApis = createApi({
     reducerPath: 'EmployeeApis',
-    baseQuery: createBaseQuery('admin/employee'),
+    baseQuery: createBaseQuery('admin/employees'),
+    tagTypes: ['Employee'],
     endpoints: builder => ({
         searchEmployee: builder.query<IResponse, IEmployeeFilter>({
             query: filter => {
@@ -17,12 +18,14 @@ export const EmployeeApis = createApi({
                     if (filter.keyword) params.append('Keyword', filter.keyword)
                     if (filter.isDesc) params.append('IsDescending', filter.isDesc.toString())
                     if (filter.sortBy) params.append('SortBy', filter.sortBy)
-                    if (filter.isActive != undefined) params.append('IsActive', filter.isActive.toString())
+                    if (filter.keyword) params.append('Keyword', filter.keyword)
+                    if (filter.isActive !== undefined) params.append('IsActive', filter.isActive.toString())
                 }
 
                 const queryString = params.toString()
                 return queryString ? `?${queryString}` : ''
-            }
+            },
+            providesTags: ['Employee']
         }),
 
         createEmployee: builder.mutation<void, IEmployeeCreate>({
@@ -30,7 +33,8 @@ export const EmployeeApis = createApi({
                 url: ``,
                 method: 'POST',
                 body: body
-            })
+            }),
+            invalidatesTags: ['Employee']
         }),
 
         updateEmployee: builder.mutation<void, { id: string; data: IEmployeeUpdate }>({
@@ -38,18 +42,24 @@ export const EmployeeApis = createApi({
                 url: `${id}`,
                 method: 'PUT',
                 body: data
-            })
+            }),
+            invalidatesTags: ['Employee']
         }),
 
-        getByIdEmployee: builder.query<IResponse, number>({
+        getByIdEmployee: builder.query<IResponse, string>({
             query: id => `${id}`
         }),
 
-        deleteEmployee: builder.mutation<void, number>({
+        getCountType: builder.query<IResponse, void>({
+            query: () => `count-type`
+        }),
+
+        deleteEmployee: builder.mutation<void, string>({
             query: id => ({
                 url: `${id}`,
                 method: 'DELETE'
-            })
+            }),
+            invalidatesTags: ['Employee']
         }),
 
         changeStatusEmployee: builder.mutation<void, number>({
@@ -67,5 +77,6 @@ export const {
     useUpdateEmployeeMutation,
     useGetByIdEmployeeQuery,
     useDeleteEmployeeMutation,
+    useGetCountTypeQuery,
     useChangeStatusEmployeeMutation
 } = EmployeeApis

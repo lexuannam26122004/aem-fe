@@ -3,35 +3,21 @@
 import { Avatar, Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/common/format'
+import { IResponse } from '@/models/Common'
 
-const responseData = {
-    data: {
-        statsByDay: [
-            {
-                totalOrders: 280,
-                totalRevenue: 12850000,
-                successRate: 42
-            }
-        ],
-        rate: {
-            totalOrders: 5.2,
-            totalRevenue: 12.8,
-            successRate: -8.4
-        }
-    }
+interface IProps {
+    responseData: IResponse
 }
 
-function Page() {
+function Page({ responseData }: IProps) {
     const { t } = useTranslation('common')
 
-    // const { data: responseData, isLoading } = useStatsDisplayQuery(currentDate.toISOString().split('T')[0])
-
-    const totalOrders = responseData?.data?.statsByDay[0]?.totalOrders || 0
-    const totalRevenue = responseData?.data?.statsByDay[0]?.totalRevenue || 0
-    const successRate = responseData?.data?.statsByDay[0]?.successRate || 0
-    const totalOrdersRate = responseData?.data?.rate.totalOrders
-    const totalRevenueRate = responseData?.data?.rate.totalRevenue
-    const successRateRate = responseData?.data?.rate.successRate
+    const totalOrders = responseData?.data?.totalOrders || 0
+    const totalRevenue = responseData?.data?.revenue || 0
+    const successRate = responseData?.data?.successRate || 0
+    const totalOrdersRate = responseData?.data?.ordersChange
+    const totalRevenueRate = responseData?.data?.revenueChange
+    const successRateRate = responseData?.data?.successRateChange
 
     return (
         <Box

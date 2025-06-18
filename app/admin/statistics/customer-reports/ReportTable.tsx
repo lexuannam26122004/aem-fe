@@ -25,159 +25,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { convertToVietnamTime, formatCurrency } from '@/common/format'
 import { Download } from 'lucide-react'
 import { ICustomerReportFilter, ICustomerReports } from '@/models/CustomerReports'
-
-const customerReportData: ICustomerReports[] = [
-    {
-        date: '05/05/2025',
-        customerCount: 105,
-        newCustomerCount: 35,
-        returningCustomerCount: 70,
-        returningRate: 66.7,
-        repeatCustomerCount: 15,
-        newCustomerRate: 33.3,
-        sameDayRepeatRate: 10,
-        orderCount: 130,
-        averageOrderPerCustomer: 1.24,
-        revenue: 104500000,
-        averageSpendPerCustomer: 995238,
-        averageSpendPerOrder: 803846
-    },
-    {
-        date: '06/05/2025',
-        customerCount: 112,
-        newCustomerCount: 40,
-        returningCustomerCount: 72,
-        returningRate: 64.3,
-        repeatCustomerCount: 18,
-        newCustomerRate: 35.7,
-        sameDayRepeatRate: 8.9,
-        orderCount: 145,
-        averageOrderPerCustomer: 1.29,
-        revenue: 110200000,
-        averageSpendPerCustomer: 983929,
-        averageSpendPerOrder: 760000
-    },
-    {
-        date: '07/05/2025',
-        customerCount: 98,
-        newCustomerCount: 30,
-        returningCustomerCount: 68,
-        returningRate: 69.4,
-        repeatCustomerCount: 12,
-        newCustomerRate: 30.6,
-        sameDayRepeatRate: 6.1,
-        orderCount: 120,
-        averageOrderPerCustomer: 1.22,
-        revenue: 94500000,
-        averageSpendPerCustomer: 964286,
-        averageSpendPerOrder: 787500
-    },
-    {
-        date: '08/05/2025',
-        customerCount: 123,
-        newCustomerCount: 50,
-        returningCustomerCount: 73,
-        returningRate: 59.3,
-        repeatCustomerCount: 20,
-        newCustomerRate: 40.7,
-        sameDayRepeatRate: 11.4,
-        orderCount: 160,
-        averageOrderPerCustomer: 1.3,
-        revenue: 125000000,
-        averageSpendPerCustomer: 1016260,
-        averageSpendPerOrder: 781250
-    },
-    {
-        date: '09/05/2025',
-        customerCount: 90,
-        newCustomerCount: 20,
-        returningCustomerCount: 70,
-        returningRate: 77.8,
-        repeatCustomerCount: 22,
-        newCustomerRate: 22.2,
-        sameDayRepeatRate: 14,
-        orderCount: 115,
-        averageOrderPerCustomer: 1.28,
-        revenue: 91500000,
-        averageSpendPerCustomer: 1016667,
-        averageSpendPerOrder: 795652
-    },
-    {
-        date: '10/05/2025',
-        customerCount: 87,
-        newCustomerCount: 33,
-        returningCustomerCount: 54,
-        returningRate: 62.1,
-        repeatCustomerCount: 13,
-        newCustomerRate: 37.9,
-        sameDayRepeatRate: 9.2,
-        orderCount: 108,
-        averageOrderPerCustomer: 1.24,
-        revenue: 83000000,
-        averageSpendPerCustomer: 954023,
-        averageSpendPerOrder: 768519
-    },
-    {
-        date: '11/05/2025',
-        customerCount: 100,
-        newCustomerCount: 36,
-        returningCustomerCount: 64,
-        returningRate: 64,
-        repeatCustomerCount: 16,
-        newCustomerRate: 36,
-        sameDayRepeatRate: 10,
-        orderCount: 125,
-        averageOrderPerCustomer: 1.25,
-        revenue: 97000000,
-        averageSpendPerCustomer: 970000,
-        averageSpendPerOrder: 776000
-    },
-    {
-        date: '12/05/2025',
-        customerCount: 115,
-        newCustomerCount: 45,
-        returningCustomerCount: 70,
-        returningRate: 60.9,
-        repeatCustomerCount: 19,
-        newCustomerRate: 39.1,
-        sameDayRepeatRate: 9.6,
-        orderCount: 140,
-        averageOrderPerCustomer: 1.22,
-        revenue: 112000000,
-        averageSpendPerCustomer: 973913,
-        averageSpendPerOrder: 800000
-    },
-    {
-        date: '13/05/2025',
-        customerCount: 109,
-        newCustomerCount: 38,
-        returningCustomerCount: 71,
-        returningRate: 65.1,
-        repeatCustomerCount: 17,
-        newCustomerRate: 34.9,
-        sameDayRepeatRate: 10.1,
-        orderCount: 135,
-        averageOrderPerCustomer: 1.24,
-        revenue: 105000000,
-        averageSpendPerCustomer: 963303,
-        averageSpendPerOrder: 777778
-    },
-    {
-        date: '14/05/2025',
-        customerCount: 120,
-        newCustomerCount: 40,
-        returningCustomerCount: 80,
-        returningRate: 66.7,
-        repeatCustomerCount: 20,
-        newCustomerRate: 33.3,
-        sameDayRepeatRate: 10,
-        orderCount: 150,
-        averageOrderPerCustomer: 1.25,
-        revenue: 120000000,
-        averageSpendPerCustomer: 1000000,
-        averageSpendPerOrder: 800000
-    }
-]
+import { useGetCustomerTableReportQuery } from '@/services/CustomerReportService'
+import Loading from '@/components/Loading'
 
 function ReportTable() {
     const { t } = useTranslation('common')
@@ -194,7 +43,14 @@ function ReportTable() {
         toDate: dayjs().format('YYYY-MM-DD')
     })
 
-    const totalRecords = customerReportData.length
+    const {
+        data: tableReportResponse,
+        isLoading: isTableReportLoading,
+        isFetching
+    } = useGetCustomerTableReportQuery(filter)
+    const customerReportData = tableReportResponse?.data || []
+
+    const totalRecords = customerReportData.length || 0
 
     const handleSort = (property: string) => {
         setFilter(prev => ({
@@ -211,14 +67,14 @@ function ReportTable() {
     }
 
     useEffect(() => {
-        if (/*!isFetching && */ customerReportData) {
+        if (!isFetching && customerReportData) {
             const from = (page - 1) * Number(rowsPerPage) + Math.min(1, customerReportData?.length)
             setFrom(from)
 
             const to = Math.min(customerReportData?.length + (page - 1) * Number(rowsPerPage), totalRecords)
             setTo(to)
         }
-    }, [, /*isFetching*/ customerReportData, page, rowsPerPage])
+    }, [isFetching, customerReportData, page, rowsPerPage])
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -242,6 +98,10 @@ function ReportTable() {
         })
     }
 
+    if (isTableReportLoading) {
+        return <Loading />
+    }
+
     return (
         <Paper
             elevation={0}
@@ -249,7 +109,7 @@ function ReportTable() {
                 width: '100%',
                 boxShadow: 'var(--box-shadow-paper)',
                 overflow: 'hidden',
-                borderRadius: '20px',
+                borderRadius: '15px',
                 backgroundColor: 'var(--background-color-item)'
             }}
         >
@@ -596,26 +456,6 @@ function ReportTable() {
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    {t('COMMON.CUSTOMER_REPORTS.REPEAT_CUSTOMER_COUNT')}
-                                </Typography>
-                            </TableCell>
-
-                            <TableCell
-                                sx={{
-                                    backgroundColor: 'var(--background-color-table-header)',
-                                    borderColor: 'var(--border-color)'
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontWeight: 'bold',
-                                        color: 'var(--text-color)',
-                                        fontSize: '15px',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
                                     {t('COMMON.CUSTOMER_REPORTS.NEW_CUSTOMER_RATE')}
                                 </Typography>
                             </TableCell>
@@ -637,6 +477,26 @@ function ReportTable() {
                                     }}
                                 >
                                     {t('COMMON.CUSTOMER_REPORTS.SAME_DAY_REPEAT_RATE')}
+                                </Typography>
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    backgroundColor: 'var(--background-color-table-header)',
+                                    borderColor: 'var(--border-color)'
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        color: 'var(--text-color)',
+                                        fontSize: '15px',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {t('COMMON.CUSTOMER_REPORTS.REPEAT_CUSTOMER_COUNT')}
                                 </Typography>
                             </TableCell>
 
@@ -831,7 +691,7 @@ function ReportTable() {
                                                 color: '#00B85E'
                                             }}
                                         >
-                                            {row.customerCount}
+                                            {row.totalCustomers}
                                         </Typography>
                                     </TableCell>
 
@@ -853,7 +713,7 @@ function ReportTable() {
                                                 color: 'var(--report-text-color)'
                                             }}
                                         >
-                                            {row.newCustomerCount}
+                                            {row.newCustomers}
                                         </Typography>
                                     </TableCell>
 
@@ -873,7 +733,7 @@ function ReportTable() {
                                                 color: 'var(--text-color)'
                                             }}
                                         >
-                                            {row.returningCustomerCount}
+                                            {row.returningCustomers}
                                         </Typography>
                                     </TableCell>
 
@@ -895,27 +755,7 @@ function ReportTable() {
                                                 color: 'var(--report-text-color)'
                                             }}
                                         >
-                                            {row.returningRate}%
-                                        </Typography>
-                                    </TableCell>
-
-                                    <TableCell
-                                        sx={{
-                                            borderColor: 'var(--border-color)',
-                                            borderStyle: 'dashed'
-                                        }}
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontSize: '15px',
-                                                overflow: 'hidden',
-                                                textAlign: 'center',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                color: 'var(--text-color)'
-                                            }}
-                                        >
-                                            {row.repeatCustomerCount}
+                                            {row.repeatRate}%
                                         </Typography>
                                     </TableCell>
 
@@ -955,7 +795,27 @@ function ReportTable() {
                                                 color: 'var(--text-color)'
                                             }}
                                         >
-                                            {row.sameDayRepeatRate}%
+                                            {row.dailyRepeatRate}%
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell
+                                        sx={{
+                                            borderColor: 'var(--border-color)',
+                                            borderStyle: 'dashed'
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '15px',
+                                                overflow: 'hidden',
+                                                textAlign: 'center',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                color: 'var(--text-color)'
+                                            }}
+                                        >
+                                            {row.customersWith2OrMoreOrders}
                                         </Typography>
                                     </TableCell>
 
@@ -977,7 +837,7 @@ function ReportTable() {
                                                 color: 'var(--report-text-color)'
                                             }}
                                         >
-                                            {row.orderCount}
+                                            {row.totalOrders}
                                         </Typography>
                                     </TableCell>
 
@@ -998,7 +858,7 @@ function ReportTable() {
                                                 color: 'var(--text-color)'
                                             }}
                                         >
-                                            {row.averageOrderPerCustomer}
+                                            {row.ordersPerCustomer}
                                         </Typography>
                                     </TableCell>
 
@@ -1019,7 +879,7 @@ function ReportTable() {
                                                 color: '#00B85E'
                                             }}
                                         >
-                                            {formatCurrency(row.revenue)}
+                                            {formatCurrency(row.totalSpending)}
                                         </Typography>
                                     </TableCell>
 
@@ -1039,7 +899,7 @@ function ReportTable() {
                                                 color: 'var(--report-text-color)'
                                             }}
                                         >
-                                            {formatCurrency(row.averageSpendPerCustomer)}
+                                            {formatCurrency(row.spendingPerCustomer)}
                                         </Typography>
                                     </TableCell>
 
@@ -1058,7 +918,7 @@ function ReportTable() {
                                                 color: 'var(--text-color)'
                                             }}
                                         >
-                                            {formatCurrency(row.averageSpendPerOrder)}
+                                            {formatCurrency(row.spendingPerOrder)}
                                         </Typography>
                                     </TableCell>
                                 </TableRow>

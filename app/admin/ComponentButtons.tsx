@@ -3,23 +3,20 @@
 import { Avatar, Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { ExternalLink } from 'lucide-react'
+import { IResponse } from '@/models/Common'
 
-const responseData = {
-    data: {
-        pendingQuotations: 10,
-        pendingOrders: 0,
-        unpaidPurchases: 3
-    }
+interface IComponentButtonsProps {
+    responseData: IResponse
 }
 
-function ComponentButtons() {
+function ComponentButtons({ responseData }: IComponentButtonsProps) {
     const { t } = useTranslation('common')
 
     // const { data: responseData, isLoading } = useStatsDisplayQuery(currentDate.toISOString().split('T')[0])
 
     const pendingQuotations = responseData?.data?.pendingQuotations || 0
     const pendingOrders = responseData?.data?.pendingOrders || 0
-    const unpaidPurchases = responseData?.data?.unpaidPurchases || 0
+    const unpaidPurchaseOrders = responseData?.data?.unpaidPurchaseOrders || 0
 
     // if (isLoading) {
     //     return <Loading />
@@ -389,7 +386,7 @@ function ComponentButtons() {
                                         fontWeight: 'bold'
                                     }}
                                 >
-                                    {unpaidPurchases}
+                                    {unpaidPurchaseOrders}
                                 </Typography>
 
                                 <Typography

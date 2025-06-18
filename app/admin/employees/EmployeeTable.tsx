@@ -21,6 +21,7 @@ import AlertDialog from '@/components/AlertDialog'
 import { useToast } from '@/hooks/useToast'
 import { IEmployee, IEmployeeFilter } from '@/models/Employee'
 import DialogDetail from './DialogDetail'
+import { useDeleteEmployeeMutation } from '@/services/EmployeeService'
 
 function getStatusBgColor(status: boolean): string {
     if (!status) {
@@ -46,28 +47,6 @@ function getStatusTextColor(status: boolean): string {
     }
 }
 
-const avatars = [
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-1.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-2.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-3.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-4.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-5.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-6.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-7.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-8.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-9.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-10.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-11.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-12.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-13.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-14.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-15.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-16.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-17.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-18.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-19.webp'
-]
-
 interface IProps {
     data: IEmployee[]
     refetch: () => void
@@ -81,12 +60,35 @@ function DataTable({ data, setFilter, refetch }: IProps) {
     const [order, setOrder] = useState<'asc' | 'desc'>('asc')
     const [orderBy, setOrderBy] = useState<string>('')
     const [openDialog, setOpenDialog] = useState(false)
-    const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null)
+    const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null)
     const [employee, setEmployee] = useState<IEmployee | null>(null)
     const [typeAlert, setTypeAlert] = useState<number | null>(null)
 
-    const handleButtonUpdateClick = (id: number) => {
-        router.push(`/admin/employees/update?id=${id}`)
+    const handleButtonUpdateClick = (id: string) => {
+        router.push(`/admin/employees/${id}`)
+    }
+
+    const [deleteEmployee] = useDeleteEmployeeMutation()
+
+    const handleDeleteClick = async (id: string) => {
+        setTypeAlert(0)
+        setSelectedDeleteId(id)
+        setOpenDialog(true)
+    }
+
+    const handleDeleteEmployee = async () => {
+        if (selectedDeleteId) {
+            try {
+                await deleteEmployee(selectedDeleteId).unwrap()
+                refetch()
+                toast(t('COMMON.EMPLOYEES.DELETE_EMPLOYEE_SUCCESS'), 'success')
+            } catch (error) {
+                toast(error.data?.detail || 'Failed to delete employee', 'error')
+            }
+        }
+        setOpenDialog(false)
+        setSelectedDeleteId(null)
+        setTypeAlert(null)
     }
 
     const handleSort = (property: string) => {
@@ -101,27 +103,6 @@ function DataTable({ data, setFilter, refetch }: IProps) {
             setOrder('asc')
         }
         setOrderBy(property)
-    }
-
-    const handleDeleteClick = async (id: number) => {
-        setTypeAlert(0)
-        setSelectedDeleteId(id)
-        setOpenDialog(true)
-    }
-
-    const handleDeleteSupplier = async () => {
-        if (selectedDeleteId) {
-            try {
-                // await changeStatusSupplierMutation(selectedDeleteId).unwrap()
-                refetch()
-                toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_SUCCESS'), 'success')
-            } catch {
-                toast(t('COMMON.SUPPLIERS.DELETE_SUPPLIER_FAIL'), 'error')
-            }
-        }
-        setOpenDialog(false)
-        setSelectedDeleteId(null)
-        setTypeAlert(null)
     }
 
     return (
@@ -368,7 +349,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                     height: '40px',
                                                     borderRadius: '50%'
                                                 }}
-                                                src={row.avatarPath || avatars[index]}
+                                                src={row.avatar}
                                             />
                                             <Box
                                                 display='flex'
@@ -519,7 +500,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                             fontSize: '15px'
                                         }}
                                     >
-                                        {new Date(row.createdAt).toLocaleDateString('vi-VN', {
+                                        {new Date(row.createdDate).toLocaleDateString('vi-VN', {
                                             day: '2-digit',
                                             month: '2-digit',
                                             year: 'numeric'
@@ -681,21 +662,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                     setOpen={setOpenDialog}
                     buttonCancel={t('COMMON.ALERT_DIALOG.CANCEL')}
                     buttonConfirm={t('COMMON.ALERT_DIALOG.DELETE')}
-                    onConfirm={() => handleDeleteSupplier()}
-                />
-            )}
-
-            {typeAlert === 1 && (
-                <AlertDialog
-                    title={t('COMMON.ALERT_DIALOG.CONFIRM')}
-                    isLoading={false} //{isLoadingChange}
-                    content={t('COMMON.SUPPLIERS.CONFIRM_UPDATE_PARTNER')}
-                    type='warning'
-                    open={openDialog}
-                    setOpen={setOpenDialog}
-                    buttonCancel={t('COMMON.ALERT_DIALOG.CANCEL')}
-                    buttonConfirm={t('COMMON.ALERT_DIALOG.OK')}
-                    onConfirm={() => {}}
+                    onConfirm={() => handleDeleteEmployee()}
                 />
             )}
         </>

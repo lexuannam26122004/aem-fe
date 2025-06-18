@@ -26,7 +26,7 @@ export function formatDivision(a: number, b: number) {
 }
 
 export const convertToVietnamTime = (date: Date) => {
-    if (isNaN(date.getTime())) {
+    if (isNaN(date?.getTime())) {
         throw new Error('Invalid Date')
     }
 

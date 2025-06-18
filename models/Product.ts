@@ -6,7 +6,7 @@ export interface IProduct {
     discountRate: number
     discountPrice: number
     price: number
-    images: string[]
+    image: string
     description: string
     productName: string
     categoryName: string
@@ -23,14 +23,14 @@ export interface IProduct {
 
 export interface IProductCreate {
     productName: string
-    description?: string
+    description: string
     categoryId: number
     supplierId: number
     price: number
     discountPrice: number
-    unit?: string
-    warrantyPeriod?: number
-    stockQuantity?: number
+    unit: string
+    warrantyPeriod: number
+    stockQuantity: number
     serialNumber: string
     minStockThreshold: number
     brand?: string
@@ -66,16 +66,17 @@ export interface ProductVariantWithOptions {
 }
 
 export interface VariantOptionWithValues {
-    id: number
+    id?: number
     isHasImage: boolean
     optionName: string
     values: VariantOptionDetail[]
 }
 
 export interface VariantOptionDetail {
-    id: number
+    id?: number
     value: string
     image?: string
+    file?: File
 }
 
 export interface VariantCombinationWithDetails {
@@ -102,6 +103,12 @@ export interface IProductShort {
     discountPrice: number
     discountRate: number
     quantity: number
+}
+
+export interface IProductCompare extends IProductShort {
+    rating: number
+    descriptionDetail: string
+    description: string
 }
 
 export interface IProductUpdate extends IProductCreate {}
@@ -138,4 +145,8 @@ export interface IProductFilter extends IFilter {
     stockStatus?: string
     priceRange?: string
     featureIds?: number[]
+}
+
+export interface IProductAdminFilter extends IFilter {
+    categoryId?: number
 }

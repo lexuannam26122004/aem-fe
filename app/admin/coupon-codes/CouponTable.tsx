@@ -16,12 +16,12 @@ import { Badge } from '@/components/ui/badge'
 import { Edit, EyeIcon, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRouter } from 'next/navigation'
 import AlertDialog from '@/components/AlertDialog'
 import { useChangeIsPartnerSupplierMutation, useChangeStatusSupplierMutation } from '@/services/SupplierService'
 import { useToast } from '@/hooks/useToast'
 import { ICoupon, ICouponFilter } from '@/models/Coupon'
 import CouponDetailDialog from './DialogDetail'
+import DialogUpdate from './DialogUpdate'
 
 function getStatusBgColor(row: ICoupon): string {
     if (isPastDate(row.expiryDate)) {
@@ -81,7 +81,6 @@ interface IProps {
 
 function DataTable({ data, setFilter, refetch }: IProps) {
     const { t } = useTranslation('common')
-    const router = useRouter()
     const toast = useToast()
     const [order, setOrder] = useState<'asc' | 'desc'>('asc')
     const [orderBy, setOrderBy] = useState<string>('')
@@ -92,10 +91,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
     const [changeStatusSupplierMutation, { isLoading: isLoadingDelete }] = useChangeStatusSupplierMutation()
     const [changePartner, { isLoading: isLoadingChange }] = useChangeIsPartnerSupplierMutation()
     const [coupon, setCoupon] = useState<ICoupon | null>(null)
-
-    const handleButtonUpdateClick = (id: number) => {
-        router.push(`/admin/suppliers/update?id=${id}`)
-    }
+    const [updateId, setUpdateId] = useState<number | null>(null)
 
     const handleSort = (property: string) => {
         setFilter(prev => ({
@@ -569,7 +565,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                     whiteSpace: 'nowrap'
                                                 }}
                                             >
-                                                {row.usageCount === row.usageLimit
+                                                {row.usageCount >= row.usageLimit
                                                     ? t('COMMON.COUPON.LIMIT_REACHED')
                                                     : isPastDate(row.expiryDate)
                                                     ? t('COMMON.COUPON.EXPIRED')
@@ -625,7 +621,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                             borderColor: '#fadc5e'
                                                         }
                                                     }}
-                                                    onClick={() => handleButtonUpdateClick(row.id)}
+                                                    onClick={() => setUpdateId(row.id)}
                                                 >
                                                     <Edit size={16} color='#d97706' />
                                                 </Box>
@@ -688,6 +684,8 @@ function DataTable({ data, setFilter, refetch }: IProps) {
             )}
 
             {coupon && <CouponDetailDialog isOpen={coupon !== null} onClose={() => setCoupon(null)} coupon={coupon} />}
+
+            {updateId && <DialogUpdate open={updateId !== null} handleClose={() => setUpdateId(null)} id={updateId} />}
         </>
     )
 }

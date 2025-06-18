@@ -1,113 +1,9 @@
 'use client'
 
-import { IProduct } from '@/models/Product'
 import { Avatar, Box, Typography } from '@mui/material'
 import { Flame, ScanBarcode, StarIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { keyframes } from '@emotion/react'
-
-const data: IProduct[] = [
-    {
-        id: 1,
-        serialNumber: 'SN-001',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-1.webp'],
-        discountRate: 10,
-        discountPrice: 900000,
-        price: 1000000,
-        description: 'Máy đo nhiệt độ công nghiệp chính xác cao',
-        productName: 'Cảm biến nhiệt độ PT100',
-        categoryName: 'Cảm biến',
-        supplierName: 'SensorTech VN',
-        unit: 'cái',
-        warrantyPeriod: 12,
-        stockQuantity: 50,
-        soldCount: 120,
-        rating: 4.5,
-        createdAt: '2024-09-01T10:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 2,
-        serialNumber: 'SN-002',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-2.webp'],
-        discountRate: 5,
-        discountPrice: 1900000,
-        price: 2000000,
-        description: 'Bộ điều khiển lập trình PLC Siemens S7-1200',
-        productName: 'PLC Siemens S7-1200',
-        categoryName: 'PLC',
-        supplierName: 'Siemens Vietnam',
-        unit: 'bộ',
-        warrantyPeriod: 24,
-        stockQuantity: 20,
-        soldCount: 75,
-        rating: 4.7,
-        createdAt: '2024-09-05T09:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 3,
-        serialNumber: 'SN-003',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-3.webp'],
-        discountRate: 15,
-        discountPrice: 850000,
-        price: 1000000,
-        description: 'Cảm biến tiệm cận loại NPN 12V',
-        productName: 'Cảm biến tiệm cận Omron',
-        categoryName: 'Cảm biến',
-        supplierName: 'Omron',
-        unit: 'cái',
-        warrantyPeriod: 18,
-        stockQuantity: 100,
-        soldCount: 230,
-        rating: 4.2,
-        createdAt: '2024-08-21T14:30:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 4,
-        serialNumber: 'SN-004',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-4.webp'],
-        discountRate: 20,
-        discountPrice: 400000,
-        price: 500000,
-        description: 'Relay trung gian 8 chân',
-        productName: 'Relay trung gian IDEC',
-        categoryName: 'Relay',
-        supplierName: 'IDEC Japan',
-        unit: 'cái',
-        warrantyPeriod: 6,
-        stockQuantity: 200,
-        soldCount: 310,
-        rating: 4.1,
-        createdAt: '2024-08-11T08:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 5,
-        serialNumber: 'SN-005',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-5.webp'],
-        discountRate: 0,
-        discountPrice: 1500000,
-        price: 1500000,
-        description: 'Biến tần 1 pha vào 3 pha ra',
-        productName: 'Biến tần Delta VFD007EL21A',
-        categoryName: 'Biến tần',
-        supplierName: 'Delta Electronics',
-        unit: 'cái',
-        warrantyPeriod: 24,
-        stockQuantity: 30,
-        soldCount: 60,
-        rating: 4.6,
-        createdAt: '2024-07-30T16:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    }
-]
 
 const pulse = keyframes`
   0% {
@@ -124,37 +20,50 @@ const pulse = keyframes`
   }
 `
 
-function getStatusBgColor(row: IProduct): string {
-    if (row.stockQuantity === 0) {
+function getStatusBgColor(status: string): string {
+    if (status === 'out_of_stock') {
         return 'var(--background-color-cancel)'
-    } else if (row.stockQuantity <= row.minStockThreshold) {
+    } else if (status === 'low_stock') {
         return 'var(--background-color-pending)'
     } else {
         return 'var(--background-color-success)'
     }
 }
 
-function getBorderColor(row: IProduct): string {
-    if (row.stockQuantity === 0) {
+function getBorderColor(status: string): string {
+    if (status === 'out_of_stock') {
         return '1px solid var(--border-color-cancel)'
-    } else if (row.stockQuantity <= row.minStockThreshold) {
+    } else if (status === 'low_stock') {
         return '1px solid var(--border-color-pending)'
     } else {
         return '1px solid var(--border-color-success)'
     }
 }
 
-function getStatusTextColor(row: IProduct): string {
-    if (row.stockQuantity === 0) {
+function getStatusTextColor(status: string): string {
+    if (status === 'out_of_stock') {
         return 'var(--text-color-cancel)'
-    } else if (row.stockQuantity <= row.minStockThreshold) {
+    } else if (status === 'low_stock') {
         return 'var(--text-color-pending)'
     } else {
         return 'var(--text-color-success)'
     }
 }
 
-export function TopProducts() {
+interface ITopProduct {
+    productName: string
+    sku: string
+    soldCount: number
+    rating: number
+    status: string
+    image: string
+}
+
+interface TopProductsProps {
+    data: ITopProduct[]
+}
+
+export function TopProducts({ data }: TopProductsProps) {
     const { t } = useTranslation('common')
     return (
         <>
@@ -173,7 +82,7 @@ export function TopProducts() {
 
             {data.map((item, index) => (
                 <Box
-                    key={item.id}
+                    key={index}
                     sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -182,7 +91,7 @@ export function TopProducts() {
                     }}
                 >
                     <Avatar
-                        src={item.images[0]}
+                        src={item.image}
                         sx={{
                             width: '48px',
                             height: '48px',
@@ -210,17 +119,17 @@ export function TopProducts() {
                                 sx={{
                                     borderRadius: '6px',
                                     padding: '3px 7px',
-                                    border: getBorderColor(item),
+                                    border: getBorderColor(item.status),
                                     display: 'flex',
                                     justifyContent: 'center',
-                                    backgroundColor: getStatusBgColor(item)
+                                    backgroundColor: getStatusBgColor(item.status)
                                 }}
                             >
                                 <Typography
                                     sx={{
                                         fontSize: '13px',
                                         overflow: 'hidden',
-                                        color: getStatusTextColor(item),
+                                        color: getStatusTextColor(item.status),
                                         width: 'auto',
                                         fontWeight: 'bold',
                                         display: 'inline-block',
@@ -228,9 +137,9 @@ export function TopProducts() {
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    {item.minStockThreshold < item.stockQuantity
+                                    {item.status === 'in_stock'
                                         ? t('COMMON.PRODUCT.IN_STOCK')
-                                        : item.stockQuantity === 0
+                                        : item.status === 'out_of_stock'
                                         ? t('COMMON.PRODUCT.OUT_OF_STOCK')
                                         : t('COMMON.PRODUCT.LOW_STOCK')}
                                 </Typography>
@@ -264,7 +173,7 @@ export function TopProducts() {
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    {item.serialNumber}
+                                    {item.sku}
                                 </Typography>
                             </Box>
 

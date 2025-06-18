@@ -69,28 +69,6 @@ function getStatusTextColor(status: string): string {
     }
 }
 
-const avatars = [
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-1.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-2.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-3.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-4.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-5.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-6.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-7.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-8.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-9.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-10.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-11.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-12.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-13.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-14.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-15.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-16.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-17.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-18.webp',
-    'https://api-prod-minimal-v700.pages.dev/assets/images/avatar/avatar-19.webp'
-]
-
 interface IProps {
     data: IOrder[]
     refetch: () => void
@@ -385,7 +363,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                     height: '40px',
                                                     borderRadius: '50%'
                                                 }}
-                                                src={row.avatarPath || avatars[index]}
+                                                src={row.avatar}
                                             />
                                             <Box
                                                 display='flex'
@@ -471,7 +449,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                 whiteSpace: 'nowrap'
                                             }}
                                         >
-                                            {row.itemCount}
+                                            {row.productQuantity}
                                         </Typography>
                                     </TableCell>
 
@@ -501,7 +479,11 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                 whiteSpace: 'nowrap'
                                             }}
                                         >
-                                            {row.paymentMethod}
+                                            {row.paymentMethod === 'cod'
+                                                ? t('COMMON.ORDER.COD')
+                                                : row.paymentMethod === 'vnpay'
+                                                ? t('COMMON.ORDER.VN_PAY')
+                                                : t('COMMON.ORDER.MOMO')}
                                         </Typography>
                                     </TableCell>
 
@@ -571,7 +553,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                         }
                                                     }}
                                                     onClick={() => {
-                                                        router.push(`/admin/orders/detail?id=${row.id}`)
+                                                        router.push(`/admin/orders/${row.orderCode}`)
                                                     }}
                                                 >
                                                     <EyeIcon size={16} color='#2563eb' />

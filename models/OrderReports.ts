@@ -20,7 +20,9 @@ export interface IOrderReports {
     returnValue: number
     totalProductQuantity: number
     productTypeCount: number
-    productName: string
-    images: string[]
-    serialNumber: string
+    bestSellingProduct: {
+        name: string
+        image: string
+        serial: string
+    }
 }

@@ -1,39 +1,36 @@
 // src/components/EmployeeCountChart.js
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Box, Paper, Typography, FormControl, Select, MenuItem, InputLabel } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { SelectChangeEvent } from '@mui/material' // Import SelectChangeEvent
+import { IResponse } from '@/models/Common'
 
-const generateRandomData = (t: any) => {
-    const types = [
-        t('COMMON.ORDER.PENDING'),
-        t('COMMON.ORDER.PROCESSING'),
-        t('COMMON.ORDER.SHIPPING'),
-        t('COMMON.ORDER.DELIVERED'),
-        t('COMMON.ORDER.CANCELLED'),
-        t('COMMON.ORDER.RETURNED')
-    ]
-
-    return [
-        ['score', 'amount', 'product'],
-        ...types.map(type => {
-            const value = Math.floor(Math.random() * 15) + 1
-            return [value, value, type]
-        })
-    ]
+interface IProps {
+    responseData: IResponse
 }
 
-const OrderStatusChart = () => {
+const OrderStatusChart = ({ responseData }: IProps) => {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
     const [type, setType] = useState(0)
-    const [chartData, setChartData] = useState(generateRandomData(t))
+
+    const chartData = responseData?.data
+
+    const translatedChartData = useMemo(() => {
+        if (!chartData) return []
+
+        return chartData.map(row => {
+            if (typeof row.status === 'string') {
+                return { name: t(row.status), value: row.value }
+            }
+            return row
+        })
+    }, [chartData, t])
 
     const handleTypeChange = (event: SelectChangeEvent<number>) => {
         setType(event.target.value as number)
-        setChartData(generateRandomData(t)) // cập nhật data mới
     }
 
     const option = {
@@ -50,7 +47,7 @@ const OrderStatusChart = () => {
             }
         },
         dataset: {
-            source: chartData
+            source: translatedChartData
         },
         calculable: true,
         grid: {

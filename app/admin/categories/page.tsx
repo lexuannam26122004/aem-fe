@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
     DndContext,
     closestCenter,
@@ -31,34 +31,33 @@ import {
     HiOutlineChevronRight,
     HiOutlineChevronDown
 } from 'react-icons/hi'
+import { ICategory, ICategoryCreate, ICategoryUpdate } from '@/models/Category'
+import {
+    useSearchCategoryQuery,
+    useCreateCategoryMutation,
+    useUpdateCategoryMutation,
+    useDeleteCategoryMutation,
+    useReorderCategoriesMutation,
+    useChangeExpandedMutation
+} from '@/services/CategoryService'
+import Loading from '@/components/Loading'
+import { useToast } from '@/hooks/useToast'
+import AlertDialog from '@/components/AlertDialog'
 
-// Định nghĩa kiểu dữ liệu cho danh mục
-interface Category {
-    id: string
-    name: string
-    description?: string
-    order: number
-    parentId?: string
-    children?: Category[]
-    level: 1 | 2 | 3
-    isExpanded?: boolean
-}
-
-// Component hiển thị danh mục có thể kéo thả
 const SortableCategory = ({
     category,
     onEdit,
-    onDelete,
+    onSetSelectedDelete,
     onToggleExpand,
     onAddChild,
     level,
     isDragging
 }: {
-    category: Category
-    onEdit: (id: string) => void
-    onDelete: (id: string) => void
-    onToggleExpand: (id: string) => void
-    onAddChild: (parentId: string, level: number) => void
+    category: ICategory
+    onEdit: (id: number) => void
+    onSetSelectedDelete: (category: ICategory) => void
+    onToggleExpand: (id: number) => void
+    onAddChild: (parentId: number, level: number) => void
     level: number
     isDragging?: boolean
 }) => {
@@ -100,7 +99,7 @@ const SortableCategory = ({
                     <span className='text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-600 mr-2'>
                         Cấp {level}
                     </span>
-                    <h3 className='font-medium text-gray-800'>{category.name}</h3>
+                    <h3 className='font-medium text-gray-800'>{category.categoryName}</h3>
                 </div>
                 {category.description && <p className='text-sm text-gray-600 mt-1'>{category.description}</p>}
             </div>
@@ -123,7 +122,7 @@ const SortableCategory = ({
                     <HiOutlinePencil size={18} />
                 </button>
                 <button
-                    onClick={() => onDelete(category.id)}
+                    onClick={() => onSetSelectedDelete(category)}
                     className='p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors'
                     title='Xóa'
                 >
@@ -134,21 +133,22 @@ const SortableCategory = ({
     )
 }
 
-// Form chỉnh sửa danh mục
 const CategoryForm = ({
     category,
     onSave,
     onCancel,
-    parentCategories
+    parentCategories,
+    isLoading
 }: {
-    category: Category
-    onSave: (category: Category) => void
+    category: ICategory
+    onSave: (category: ICategory) => void
     onCancel: () => void
-    parentCategories?: Category[]
+    parentCategories?: ICategory[]
+    isLoading?: boolean
 }) => {
-    const [name, setName] = useState(category.name)
+    const [name, setName] = useState(category.categoryName)
     const [description, setDescription] = useState(category.description || '')
-    const [parentId, setParentId] = useState(category.parentId || '')
+    const [parentId, setParentId] = useState(category.parentId || undefined)
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -165,19 +165,16 @@ const CategoryForm = ({
 
         onSave({
             ...category,
-            name,
+            categoryName: name.trim(),
             description: description.trim() === '' ? undefined : description,
             parentId: parentId || undefined,
             level: newLevel
         })
     }
 
-    // Lọc danh mục cha phù hợp với cấp hiện tại
     const eligibleParents = parentCategories?.filter(cat => {
-        // Không thể chọn chính mình làm cha
         if (cat.id === category.id) return false
 
-        // Chỉ có thể chọn danh mục ở cấp cao hơn làm cha
         return cat.level < category.level
     })
 
@@ -203,6 +200,7 @@ const CategoryForm = ({
                     onChange={e => setName(e.target.value)}
                     className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                     required
+                    disabled={isLoading}
                 />
             </div>
 
@@ -214,14 +212,15 @@ const CategoryForm = ({
                     <select
                         id='parentId'
                         value={parentId}
-                        onChange={e => setParentId(e.target.value)}
+                        onChange={e => setParentId(Number(e.target.value))}
                         className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                         required
+                        disabled={isLoading}
                     >
                         <option value=''>Chọn danh mục cha</option>
                         {eligibleParents?.map(parent => (
                             <option key={parent.id} value={parent.id}>
-                                {parent.name} (Cấp {parent.level})
+                                {parent.categoryName} (Cấp {parent.level})
                             </option>
                         ))}
                     </select>
@@ -238,6 +237,7 @@ const CategoryForm = ({
                     onChange={e => setDescription(e.target.value)}
                     className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                     rows={2}
+                    disabled={isLoading}
                 />
             </div>
 
@@ -246,6 +246,7 @@ const CategoryForm = ({
                     type='button'
                     onClick={onCancel}
                     className='px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500'
+                    disabled={isLoading}
                 >
                     <span className='flex items-center'>
                         <HiOutlineX size={16} className='mr-1' />
@@ -254,11 +255,12 @@ const CategoryForm = ({
                 </button>
                 <button
                     type='submit'
-                    className='px-4 py-2 border border-transparent rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    className='px-4 py-2 border border-transparent rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50'
+                    disabled={isLoading}
                 >
                     <span className='flex items-center'>
                         <HiOutlineSave size={16} className='mr-1' />
-                        Lưu
+                        {isLoading ? 'Đang lưu...' : 'Lưu'}
                     </span>
                 </button>
             </div>
@@ -266,8 +268,7 @@ const CategoryForm = ({
     )
 }
 
-// Hàm helper để tìm danh mục theo ID trong cấu trúc phân cấp
-const findCategoryById = (categories: Category[], id: string): { category: Category | null; path: string[] } => {
+const findCategoryById = (categories: ICategory[], id: number): { category: ICategory | null; path: number[] } => {
     for (const category of categories) {
         if (category.id === id) {
             return { category, path: [category.id] }
@@ -285,8 +286,8 @@ const findCategoryById = (categories: Category[], id: string): { category: Categ
 }
 
 // Hàm helper để lấy danh sách phẳng của tất cả danh mục
-const getAllCategories = (categories: Category[]): Category[] => {
-    let result: Category[] = []
+const getAllCategories = (categories: ICategory[]): ICategory[] => {
+    let result: ICategory[] = []
 
     for (const category of categories) {
         result.push(category)
@@ -299,112 +300,78 @@ const getAllCategories = (categories: Category[]): Category[] => {
     return result
 }
 
+// Hàm helper để build cây danh mục từ flat list
+const buildCategoryTree = (categories: ICategory[]): ICategory[] => {
+    const categoryMap = new Map<number, ICategory>()
+    const rootCategories: ICategory[] = []
+
+    // Tạo map và khởi tạo children array
+    categories.forEach(category => {
+        categoryMap.set(category.id, { ...category, children: [], isExpanded: category.isExpanded || false })
+    })
+
+    // Xây dựng cây
+    categories.forEach(category => {
+        const categoryWithChildren = categoryMap.get(category.id)!
+
+        if (category.parentId && categoryMap.has(category.parentId)) {
+            const parent = categoryMap.get(category.parentId)!
+            parent.children!.push(categoryWithChildren)
+        } else {
+            rootCategories.push(categoryWithChildren)
+        }
+    })
+
+    // Sắp xếp theo order
+    const sortByOrder = (cats: ICategory[]) => {
+        cats.sort((a, b) => (a.order || 0) - (b.order || 0))
+        cats.forEach(cat => {
+            if (cat.children && cat.children.length > 0) {
+                sortByOrder(cat.children)
+            }
+        })
+    }
+
+    sortByOrder(rootCategories)
+    return rootCategories
+}
+
 // Component chính quản lý danh mục
 const CategoryManager = () => {
-    const [categories, setCategories] = useState<Category[]>([
-        {
-            id: '1',
-            name: 'Điện thoại & Máy tính bảng',
-            description: 'Các thiết bị di động',
-            order: 0,
-            level: 1,
-            isExpanded: true,
-            children: [
-                {
-                    id: '1-1',
-                    name: 'Điện thoại',
-                    description: 'Điện thoại di động các loại',
-                    order: 0,
-                    parentId: '1',
-                    level: 2,
-                    isExpanded: true,
-                    children: [
-                        { id: '1-1-1', name: 'iPhone', order: 0, parentId: '1-1', level: 3 },
-                        { id: '1-1-2', name: 'Samsung', order: 1, parentId: '1-1', level: 3 },
-                        { id: '1-1-3', name: 'Xiaomi', order: 2, parentId: '1-1', level: 3 }
-                    ]
-                },
-                {
-                    id: '1-2',
-                    name: 'Máy tính bảng',
-                    description: 'iPad, Samsung Galaxy Tab, và các sản phẩm tương tự',
-                    order: 1,
-                    parentId: '1',
-                    level: 2,
-                    isExpanded: false,
-                    children: [
-                        { id: '1-2-1', name: 'iPad', order: 0, parentId: '1-2', level: 3 },
-                        { id: '1-2-2', name: 'Samsung Galaxy Tab', order: 1, parentId: '1-2', level: 3 }
-                    ]
-                }
-            ]
-        },
-        {
-            id: '2',
-            name: 'Máy tính & Laptop',
-            description: 'Các thiết bị tính toán',
-            order: 1,
-            level: 1,
-            isExpanded: false,
-            children: [
-                {
-                    id: '2-1',
-                    name: 'Laptop',
-                    description: 'Máy tính xách tay các loại',
-                    order: 0,
-                    parentId: '2',
-                    level: 2,
-                    children: [
-                        { id: '2-1-1', name: 'Gaming', order: 0, parentId: '2-1', level: 3 },
-                        { id: '2-1-2', name: 'Văn phòng', order: 1, parentId: '2-1', level: 3 }
-                    ]
-                },
-                {
-                    id: '2-2',
-                    name: 'Máy tính để bàn',
-                    order: 1,
-                    parentId: '2',
-                    level: 2
-                }
-            ]
-        },
-        {
-            id: '3',
-            name: 'Phụ kiện',
-            description: 'Các phụ kiện công nghệ',
-            order: 2,
-            level: 1,
-            isExpanded: false,
-            children: [
-                {
-                    id: '3-1',
-                    name: 'Tai nghe',
-                    order: 0,
-                    parentId: '3',
-                    level: 2,
-                    children: [
-                        { id: '3-1-1', name: 'Tai nghe có dây', order: 0, parentId: '3-1', level: 3 },
-                        { id: '3-1-2', name: 'Tai nghe không dây', order: 1, parentId: '3-1', level: 3 }
-                    ]
-                },
-                {
-                    id: '3-2',
-                    name: 'Sạc & Cáp',
-                    order: 1,
-                    parentId: '3',
-                    level: 2,
-                    children: [
-                        { id: '3-2-1', name: 'Sạc dự phòng', order: 0, parentId: '3-2', level: 3 },
-                        { id: '3-2-2', name: 'Cáp USB', order: 1, parentId: '3-2', level: 3 }
-                    ]
-                }
-            ]
-        }
-    ])
+    const [editingId, setEditingId] = useState<number | null>(null)
+    const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null)
+    const [activeCategory, setActiveCategory] = useState<ICategory | null>(null)
+    const [categories, setCategories] = useState<ICategory[]>([])
+    const [isAddingNew, setIsAddingNew] = useState(false)
+    const toast = useToast()
+    const [selectedDelete, setSelectedDelete] = useState<ICategory | null>(null)
 
-    const [editingId, setEditingId] = useState<string | null>(null)
-    const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null)
-    const [activeCategory, setActiveCategory] = useState<Category | null>(null)
+    // API hooks
+    const {
+        data: categoriesResponse,
+        isLoading: isLoadingCategories,
+        refetch
+    } = useSearchCategoryQuery({
+        pageSize: 1000,
+        pageNumber: 1,
+        isActive: true
+    })
+
+    const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation()
+    const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation()
+    const [deleteCategory, { isLoading: isDeleting }] = useDeleteCategoryMutation()
+    const [reorderCategories] = useReorderCategoriesMutation()
+    const [changeExpanded] = useChangeExpandedMutation()
+
+    const categoriesData = (categoriesResponse?.data?.records as ICategory[]) || []
+
+    useEffect(() => {
+        const newTree = buildCategoryTree(categoriesData)
+
+        if (JSON.stringify(categories) !== JSON.stringify(newTree)) {
+            setCategories(newTree)
+        }
+    }, [categoriesData])
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -425,270 +392,183 @@ const CategoryManager = () => {
         const { active } = event
         const { id } = active
 
-        const result = findCategoryById(categories, id as string)
+        const result = findCategoryById(categories, Number(id))
         if (result.category) {
-            setActiveCategoryId(id as string)
+            setActiveCategoryId(Number(id))
             setActiveCategory(result.category)
         }
     }
 
     // Kết thúc kéo thả
-    const handleDragEnd = (event: DragEndEvent) => {
+    const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event
         setActiveCategoryId(null)
         setActiveCategory(null)
 
         if (over && active.id !== over.id) {
-            const activeId = active.id as string
-            const overId = over.id as string
+            const activeId = active.id as number
+            const overId = over.id as number
 
             const activeResult = findCategoryById(categories, activeId)
             const overResult = findCategoryById(categories, overId)
 
             if (!activeResult.category || !overResult.category) return
 
-            // Chỉ cho phép kéo thả trong cùng một cấp
-            if (activeResult.category.level !== overResult.category.level) return
+            // Chỉ cho phép kéo thả trong cùng một cấp và cùng parent
+            if (
+                activeResult.category.level !== overResult.category.level ||
+                activeResult.category.parentId !== overResult.category.parentId
+            )
+                return
 
-            // Nếu activeCategory có parentId, tìm parent
-            if (activeResult.category.parentId) {
-                // Tìm danh mục cha
-                const parentResult = findCategoryById(categories, activeResult.category.parentId)
-                if (parentResult.category && parentResult.category.children) {
-                    // Sắp xếp lại các danh mục con
-                    setCategories(prevCategories => {
-                        const newCategories = [...prevCategories]
-                        const updatedParentCategory: Category = { ...parentResult.category } as Category
+            try {
+                // Lấy danh sách categories cùng level và parent
+                let siblingCategories: ICategory[] = []
 
-                        if (updatedParentCategory.children) {
-                            const oldIndex = updatedParentCategory.children.findIndex(cat => cat.id === activeId)
-                            const newIndex = updatedParentCategory.children.findIndex(cat => cat.id === overId)
-
-                            if (oldIndex !== -1 && newIndex !== -1) {
-                                updatedParentCategory.children = arrayMove(
-                                    updatedParentCategory.children,
-                                    oldIndex,
-                                    newIndex
-                                )
-                                // Cập nhật lại thứ tự
-                                updatedParentCategory.children = updatedParentCategory.children.map((cat, index) => ({
-                                    ...cat,
-                                    order: index
-                                }))
-                            }
-                        }
-
-                        // Cập nhật lại cây danh mục
-                        const updateCategoryInTree = (
-                            categories: Category[],
-                            parentId: string,
-                            updatedCategory: Category
-                        ): Category[] => {
-                            return categories.map(category => {
-                                if (category.id === parentId) {
-                                    return { ...updatedCategory }
-                                }
-                                if (category.children) {
-                                    return {
-                                        ...category,
-                                        children: updateCategoryInTree(category.children, parentId, updatedCategory)
-                                    }
-                                }
-                                return category
-                            })
-                        }
-
-                        if (parentResult.category && parentResult.category.id) {
-                            return updateCategoryInTree(newCategories, parentResult.category.id, updatedParentCategory)
-                        }
-                        return newCategories
-                    })
-                }
-            } else {
-                // Trường hợp danh mục cấp cao nhất
-                setCategories(prevCategories => {
-                    const oldIndex = prevCategories.findIndex(cat => cat.id === activeId)
-                    const newIndex = prevCategories.findIndex(cat => cat.id === overId)
-
-                    if (oldIndex !== -1 && newIndex !== -1) {
-                        const newCategories = arrayMove(prevCategories, oldIndex, newIndex)
-                        // Cập nhật lại thứ tự
-                        return newCategories.map((cat, index) => ({
-                            ...cat,
-                            order: index
-                        }))
+                if (activeResult.category.parentId) {
+                    const parentResult = findCategoryById(categories, activeResult.category.parentId)
+                    if (parentResult.category && parentResult.category.children) {
+                        siblingCategories = parentResult.category.children
                     }
+                } else {
+                    siblingCategories = categories
+                }
 
-                    return prevCategories
-                })
+                const oldIndex = siblingCategories.findIndex(cat => cat.id === activeId)
+                const newIndex = siblingCategories.findIndex(cat => cat.id === overId)
+
+                if (oldIndex !== -1 && newIndex !== -1) {
+                    const reorderedIds = arrayMove(siblingCategories, oldIndex, newIndex).map(cat => cat.id)
+
+                    // Gọi API reorder
+                    await reorderCategories({
+                        parentId: activeResult.category.parentId,
+                        categoryIds: reorderedIds
+                    }).unwrap()
+
+                    // Refresh data
+                    refetch()
+                }
+            } catch (error) {
+                console.error('Error reordering categories:', error)
+                alert('Có lỗi xảy ra khi sắp xếp danh mục')
             }
         }
     }
 
     // Chỉnh sửa danh mục
-    const handleEdit = (id: string) => {
+    const handleEdit = (id: number) => {
         setEditingId(id)
     }
 
     // Xóa danh mục
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: number) => {
         const result = findCategoryById(categories, id)
         if (!result.category) return
 
-        let message = `Bạn có chắc chắn muốn xóa danh mục "${result.category.name}"?`
-
-        // Nếu có danh mục con, hiển thị cảnh báo
-        if (result.category.children && result.category.children.length > 0) {
-            message += `\nCảnh báo: ${result.category.children.length} danh mục con cũng sẽ bị xóa.`
-        }
-
-        if (window.confirm(message)) {
-            if (result.category.parentId) {
-                // Xóa danh mục con
-                setCategories(prevCategories => {
-                    const deleteFromChildren = (
-                        categories: Category[],
-                        parentId: string,
-                        deleteId: string
-                    ): Category[] => {
-                        return categories.map(category => {
-                            if (category.id === parentId) {
-                                return {
-                                    ...category,
-                                    children: category.children
-                                        ? category.children.filter(child => child.id !== deleteId)
-                                        : []
-                                }
-                            }
-                            if (category.children) {
-                                return {
-                                    ...category,
-                                    children: deleteFromChildren(category.children, parentId, deleteId)
-                                }
-                            }
-                            return category
-                        })
-                    }
-
-                    return deleteFromChildren(prevCategories, result.category!.parentId!, id)
-                })
-            } else {
-                // Xóa danh mục cấp cao nhất
-                setCategories(prevCategories => prevCategories.filter(cat => cat.id !== id))
-            }
+        try {
+            await deleteCategory(id).unwrap()
+            toast('Xóa danh mục thành công', 'success')
+            refetch()
+        } catch {
+            toast('Có lỗi xảy ra khi xóa danh mục', 'error')
+        } finally {
+            setSelectedDelete(null)
         }
     }
 
     // Lưu danh mục
-    const handleSave = (updatedCategory: Category) => {
-        if (updatedCategory.parentId) {
-            // Cập nhật danh mục con
-            setCategories(prevCategories => {
-                const updateChildInTree = (
-                    categories: Category[],
-                    parentId: string,
-                    updatedChild: Category
-                ): Category[] => {
-                    return categories.map(category => {
-                        if (category.id === parentId) {
-                            return {
-                                ...category,
-                                children: category.children
-                                    ? category.children.map(child =>
-                                          child.id === updatedChild.id ? updatedChild : child
-                                      )
-                                    : [updatedChild]
-                            }
-                        }
-                        if (category.children) {
-                            return {
-                                ...category,
-                                children: updateChildInTree(category.children, parentId, updatedChild)
-                            }
-                        }
-                        return category
-                    })
+    const handleSave = async (updatedCategory: ICategory) => {
+        try {
+            if (updatedCategory.id) {
+                // Update existing category
+                const updateData: ICategoryUpdate = {
+                    id: updatedCategory.id,
+                    isExpanded: updatedCategory.isExpanded || false,
+                    categoryName: updatedCategory.categoryName,
+                    description: updatedCategory.description,
+                    parentId: updatedCategory.parentId,
+                    level: updatedCategory.level,
+                    order: updatedCategory.order
                 }
+                await updateCategory({ id: updatedCategory.id, body: updateData }).unwrap()
+            } else {
+                // Create new category
+                const createData: ICategoryCreate = {
+                    categoryName: updatedCategory.categoryName,
+                    description: updatedCategory.description,
+                    parentId: updatedCategory.parentId,
+                    level: updatedCategory.level,
+                    order: updatedCategory.order || 0
+                }
+                await createCategory(createData).unwrap()
+                setIsAddingNew(false)
+            }
 
-                return updateChildInTree(prevCategories, updatedCategory.parentId ?? '', updatedCategory)
-            })
-        } else {
-            // Cập nhật danh mục cấp cao nhất
-            setCategories(prevCategories =>
-                prevCategories.map(cat => (cat.id === updatedCategory.id ? updatedCategory : cat))
-            )
+            setEditingId(null)
+            refetch()
+        } catch {
+            toast('Có lỗi xảy ra khi lưu danh mục', 'error')
         }
-
-        setEditingId(null)
     }
 
     // Hủy chỉnh sửa
     const handleCancel = () => {
         setEditingId(null)
+        setIsAddingNew(false)
     }
 
     // Thêm danh mục mới
-    const handleAddNew = (level: number = 1, parentId?: string) => {
-        const newId = `new-${Date.now()}`
-        const newCategory: Category = {
-            id: newId,
-            name: '',
+    const handleAddNew = (level: number = 1, parentId?: number) => {
+        const newCategory: ICategory = {
+            id: 0, // Temporary ID for new category
+            categoryName: '',
             description: '',
             order: 0,
             level: level as 1 | 2 | 3,
-            parentId
+            parentId,
+            children: []
         }
+        setIsAddingNew(true)
+        setEditingId(0)
 
         if (parentId) {
-            // Thêm danh mục con
             setCategories(prevCategories => {
-                const addChildToTree = (
-                    categories: Category[],
-                    targetParentId: string,
-                    childToAdd: Category
-                ): Category[] => {
+                const addTempCategory = (categories: ICategory[]): ICategory[] => {
                     return categories.map(category => {
-                        if (category.id === targetParentId) {
-                            const updatedChild = {
-                                ...childToAdd,
-                                order: category.children ? category.children.length : 0
-                            }
+                        if (category.id === parentId) {
                             return {
                                 ...category,
-                                children: category.children ? [...category.children, updatedChild] : [updatedChild],
-                                isExpanded: true // Mở rộng danh mục cha khi thêm con
+                                children: category.children ? [...category.children, newCategory] : [newCategory],
+                                isExpanded: true
                             }
                         }
                         if (category.children) {
                             return {
                                 ...category,
-                                children: addChildToTree(category.children, targetParentId, childToAdd)
+                                children: addTempCategory(category.children)
                             }
                         }
                         return category
                     })
                 }
-
-                return addChildToTree(prevCategories, parentId, newCategory)
+                return addTempCategory(prevCategories)
             })
         } else {
-            // Thêm danh mục cấp cao nhất
-            newCategory.order = categories.length
-            setCategories([...categories, newCategory])
+            setCategories(prev => [...prev, newCategory])
         }
-
-        setEditingId(newId)
     }
 
     // Thêm danh mục con
-    const handleAddChild = (parentId: string, level: number) => {
+    const handleAddChild = (parentId: number, level: number) => {
         handleAddNew(level, parentId)
     }
 
     // Mở rộng/thu gọn danh mục
-    const handleToggleExpand = (id: string) => {
+    const handleToggleExpand = (id: number) => {
+        changeExpanded(id)
         setCategories(prevCategories => {
-            const toggleInTree = (categories: Category[], id: string): Category[] => {
+            const toggleInTree = (categories: ICategory[], id: number): ICategory[] => {
                 return categories.map(category => {
                     if (category.id === id) {
                         return {
@@ -710,24 +590,41 @@ const CategoryManager = () => {
         })
     }
 
-    // Render danh mục và các con của nó
-    const renderCategoryTree = (category: Category, isRoot: boolean = false) => {
+    const renderCategoryTree = (category: ICategory, isRoot: boolean = false) => {
         const isEditing = editingId === category.id
+        const isNewCategory = category.id === 0
 
         return (
-            <div key={category.id} className={isRoot ? '' : 'ml-6'}>
+            <div key={category.id || 'new'} className={isRoot ? '' : 'ml-6'}>
                 {isEditing ? (
                     <CategoryForm
                         category={category}
                         onSave={handleSave}
-                        onCancel={handleCancel}
+                        onCancel={() => {
+                            handleCancel()
+                            if (isNewCategory) {
+                                // Remove temp category from state
+                                setCategories(prev => {
+                                    const removeTempCategory = (categories: ICategory[]): ICategory[] => {
+                                        return categories
+                                            .filter(cat => cat.id !== 0)
+                                            .map(cat => ({
+                                                ...cat,
+                                                children: cat.children ? removeTempCategory(cat.children) : []
+                                            }))
+                                    }
+                                    return removeTempCategory(prev)
+                                })
+                            }
+                        }}
                         parentCategories={allCategories}
+                        isLoading={isCreating || isUpdating}
                     />
                 ) : (
                     <SortableCategory
                         category={category}
                         onEdit={handleEdit}
-                        onDelete={handleDelete}
+                        onSetSelectedDelete={setSelectedDelete}
                         onToggleExpand={handleToggleExpand}
                         onAddChild={handleAddChild}
                         level={category.level}
@@ -742,6 +639,10 @@ const CategoryManager = () => {
         )
     }
 
+    if (isLoadingCategories) {
+        return <Loading />
+    }
+
     return (
         <div className='max-w-4xl mx-auto py-8 px-4'>
             <div className='flex justify-between items-center mb-6'>
@@ -751,14 +652,71 @@ const CategoryManager = () => {
                 </div>
                 <button
                     onClick={() => handleAddNew()}
-                    className='px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center'
+                    className='px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center disabled:opacity-50'
+                    disabled={isCreating || isAddingNew}
                 >
                     <HiOutlinePlus size={18} className='mr-1' />
-                    Thêm danh mục
+                    {isCreating ? 'Đang thêm...' : 'Thêm danh mục'}
                 </button>
             </div>
 
-            <div className='bg-gray-50 p-6 rounded-xl border border-gray-200'>
+            {/* Phần hiển thị thống kê */}
+            <div className='mt-6 grid grid-cols-1 md:grid-cols-3 gap-4'>
+                <div className='bg-white p-4 rounded-lg shadow border-l-4 border-blue-500'>
+                    <h3 className='font-medium text-gray-700'>Tổng số danh mục</h3>
+                    <p className='text-2xl font-bold mt-2'>{allCategories.length}</p>
+                    <div className='mt-2 flex flex-wrap gap-2'>
+                        <span className='px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full'>
+                            Cấp 1: {allCategories.filter(c => c.level === 1).length}
+                        </span>
+                        <span className='px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full'>
+                            Cấp 2: {allCategories.filter(c => c.level === 2).length}
+                        </span>
+                        <span className='px-2 py-1 text-xs bg-amber-100 text-amber-800 rounded-full'>
+                            Cấp 3: {allCategories.filter(c => c.level === 3).length}
+                        </span>
+                    </div>
+                </div>
+
+                <div className='bg-white p-4 rounded-lg shadow border-l-4 border-green-500'>
+                    <h3 className='font-medium text-gray-700'>Danh mục đã mở rộng</h3>
+                    <p className='text-2xl font-bold mt-2'>
+                        {allCategories.filter(c => c.isExpanded).length}/
+                        {allCategories.filter(c => c.children && c.children.length > 0).length}
+                    </p>
+                    <div className='mt-2'>
+                        <div className='w-full bg-gray-200 rounded-full h-2'>
+                            <div
+                                className='bg-green-500 h-2 rounded-full'
+                                style={{
+                                    width: `${
+                                        allCategories.filter(c => c.children && c.children.length > 0).length === 0
+                                            ? 0
+                                            : (allCategories.filter(c => c.isExpanded).length /
+                                                  allCategories.filter(c => c.children && c.children.length > 0)
+                                                      .length) *
+                                              100
+                                    }%`
+                                }}
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className='bg-white p-4 rounded-lg shadow border-l-4 border-purple-500'>
+                    <h3 className='font-medium text-gray-700'>Danh mục đang chỉnh sửa</h3>
+                    <p className='text-2xl font-bold mt-2'>{editingId ? 1 : 0}</p>
+                    <p className='text-sm text-gray-600 mt-2'>
+                        {editingId
+                            ? `Đang chỉnh sửa: ${
+                                  allCategories.find(c => c.id === editingId)?.categoryName || 'Danh mục mới'
+                              }`
+                            : 'Không có danh mục nào đang được chỉnh sửa'}
+                    </p>
+                </div>
+            </div>
+
+            <div className='bg-gray-50 mt-6 p-6 rounded-xl border border-gray-200'>
                 <div className='flex mb-4 gap-4'>
                     <div className='flex items-center px-3 py-2 bg-blue-100 rounded-lg'>
                         <div className='w-4 h-4 bg-blue-500 rounded-full mr-2'></div>
@@ -816,7 +774,7 @@ const CategoryManager = () => {
                                             <span className='text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-600 mr-2'>
                                                 Cấp {activeCategory.level}
                                             </span>
-                                            <h3 className='font-medium text-gray-800'>{activeCategory.name}</h3>
+                                            <h3 className='font-medium text-gray-800'>{activeCategory.categoryName}</h3>
                                         </div>
                                     </div>
                                 </div>
@@ -843,59 +801,21 @@ const CategoryManager = () => {
                 )}
             </div>
 
-            {/* Phần hiển thị thống kê */}
-            <div className='mt-8 grid grid-cols-1 md:grid-cols-3 gap-4'>
-                <div className='bg-white p-4 rounded-lg shadow border-l-4 border-blue-500'>
-                    <h3 className='font-medium text-gray-700'>Tổng số danh mục</h3>
-                    <p className='text-2xl font-bold mt-2'>{allCategories.length}</p>
-                    <div className='mt-2 flex flex-wrap gap-2'>
-                        <span className='px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full'>
-                            Cấp 1: {allCategories.filter(c => c.level === 1).length}
-                        </span>
-                        <span className='px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full'>
-                            Cấp 2: {allCategories.filter(c => c.level === 2).length}
-                        </span>
-                        <span className='px-2 py-1 text-xs bg-amber-100 text-amber-800 rounded-full'>
-                            Cấp 3: {allCategories.filter(c => c.level === 3).length}
-                        </span>
-                    </div>
-                </div>
-
-                <div className='bg-white p-4 rounded-lg shadow border-l-4 border-green-500'>
-                    <h3 className='font-medium text-gray-700'>Danh mục đã mở rộng</h3>
-                    <p className='text-2xl font-bold mt-2'>
-                        {allCategories.filter(c => c.isExpanded).length}/
-                        {allCategories.filter(c => c.children && c.children.length > 0).length}
-                    </p>
-                    <div className='mt-2'>
-                        <div className='w-full bg-gray-200 rounded-full h-2'>
-                            <div
-                                className='bg-green-500 h-2 rounded-full'
-                                style={{
-                                    width: `${
-                                        allCategories.filter(c => c.children && c.children.length > 0).length === 0
-                                            ? 0
-                                            : (allCategories.filter(c => c.isExpanded).length /
-                                                  allCategories.filter(c => c.children && c.children.length > 0)
-                                                      .length) *
-                                              100
-                                    }%`
-                                }}
-                            ></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className='bg-white p-4 rounded-lg shadow border-l-4 border-purple-500'>
-                    <h3 className='font-medium text-gray-700'>Danh mục đang chỉnh sửa</h3>
-                    <p className='text-2xl font-bold mt-2'>{editingId ? 1 : 0}</p>
-                    <p className='text-sm text-gray-600 mt-2'>
-                        {editingId
-                            ? `Đang chỉnh sửa: ${allCategories.find(c => c.id === editingId)?.name || 'Danh mục mới'}`
-                            : 'Không có danh mục nào đang được chỉnh sửa'}
-                    </p>
-                </div>
-            </div>
+            {selectedDelete && (
+                <AlertDialog
+                    isLoading={isDeleting}
+                    buttonConfirm='Xóa'
+                    buttonCancel='Hủy'
+                    open={!!selectedDelete}
+                    setOpen={() => setSelectedDelete(null)}
+                    title='Bạn có chắc chắn muốn xóa danh mục này?'
+                    content={`Cảnh báo: Danh mục con của ${selectedDelete.categoryName} cũng sẽ bị xóa.`}
+                    type='warning'
+                    onConfirm={() => {
+                        handleDelete(selectedDelete.id)
+                    }}
+                />
+            )}
         </div>
     )
 }

@@ -19,6 +19,7 @@ export const CouponApis = createApi({
                     if (filter.sortBy) params.append('SortBy', filter.sortBy)
                     if (filter.isActive != undefined) params.append('IsActive', filter.isActive.toString())
                     if (filter.customerType !== undefined) params.append('CustomerType', filter.customerType.toString())
+                    if (filter.typeCoupon) params.append('TypeCoupon', filter.typeCoupon)
                 }
 
                 const queryString = params.toString()
@@ -67,13 +68,17 @@ export const CouponApis = createApi({
             }
         }),
         getCountType: builder.query<IResponse, void>({
-            query: () => '/count-type'
+            query: () => '/type-count'
+        }),
+        getStatisticOrdersByCoupon: builder.query<IResponse, number>({
+            query: id => `/${id}/statistic-by-coupon`
         })
     })
 })
 
 export const {
     useSearchCouponQuery,
+    useGetStatisticOrdersByCouponQuery,
     useCreateCouponMutation,
     useUpdateCouponMutation,
     useDeleteCouponMutation,

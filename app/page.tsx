@@ -22,6 +22,7 @@ import InstagramIcon from '@mui/icons-material/Instagram'
 import TwitterIcon from '@mui/icons-material/Twitter'
 import GitHubIcon from '@mui/icons-material/GitHub'
 import { useRouter } from 'next/navigation'
+import { useAuthCheck } from '@/hooks/useAuthCheck'
 
 // Custom hook for intersection observer (animation on scroll)
 function useIntersectionObserver(options = {}): [React.RefObject<HTMLDivElement>, boolean] {
@@ -53,6 +54,7 @@ const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
     const router = useRouter()
+    const { isAuthChecked, isAuthenticated } = useAuthCheck()
 
     useEffect(() => {
         const handleScroll = () => {
@@ -109,12 +111,14 @@ const Header = () => {
                             3
                         </span>
                     </button> */}
-                    <button
-                        onClick={() => router.push('/login')}
-                        className='bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors'
-                    >
-                        Đăng nhập
-                    </button>
+                    {isAuthChecked && !isAuthenticated && (
+                        <button
+                            onClick={() => router.push('/login')}
+                            className='bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors'
+                        >
+                            Đăng nhập
+                        </button>
+                    )}
                 </div>
 
                 <button className='md:hidden' onClick={() => setIsMenuOpen(!isMenuOpen)}>

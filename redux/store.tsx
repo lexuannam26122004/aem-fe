@@ -30,6 +30,17 @@ import { UserQuoteApis } from '@/services/UserQuoteService'
 import { productSlice } from './slices/productSlice'
 import { UserCouponApis } from '@/services/UserCouponService'
 import { cartSlice } from './slices/cartSlice'
+import { tablePermissionSlice } from './slices/tablePermissionSlice'
+import { roleApi } from '@/services/AspNetRoleService'
+import { sysFunctionApi } from '@/services/SysFunctionService'
+import { CustomerApis } from '@/services/CustomerService'
+import { UserProductApis } from '@/services/UserProductService'
+import { HomeApis } from '@/services/HomeService'
+import { RevenueApis } from '@/services/RevenueServices'
+import { OrderInsightsApis } from '@/services/OrderInsightsService'
+import { CustomerReportApis } from '@/services/CustomerReportService'
+import { ActivityLogApis } from '@/services/ActivityLogService'
+import { InventoryReportApis } from '@/services/InventoryReportService'
 
 const persistConfig = {
     key: 'root',
@@ -64,7 +75,18 @@ const rootReducer = combineReducers({
     [UserQuoteApis.reducerPath]: UserQuoteApis.reducer,
     [productSlice.name]: productSlice.reducer,
     [cartSlice.name]: cartSlice.reducer,
-    [UserCouponApis.reducerPath]: UserCouponApis.reducer
+    [UserCouponApis.reducerPath]: UserCouponApis.reducer,
+    [tablePermissionSlice.name]: tablePermissionSlice.reducer,
+    [roleApi.reducerPath]: roleApi.reducer,
+    [sysFunctionApi.reducerPath]: sysFunctionApi.reducer,
+    [CustomerApis.reducerPath]: CustomerApis.reducer,
+    [UserProductApis.reducerPath]: UserProductApis.reducer,
+    [HomeApis.reducerPath]: HomeApis.reducer,
+    [RevenueApis.reducerPath]: RevenueApis.reducer,
+    [OrderInsightsApis.reducerPath]: OrderInsightsApis.reducer,
+    [CustomerReportApis.reducerPath]: CustomerReportApis.reducer,
+    [ActivityLogApis.reducerPath]: ActivityLogApis.reducer,
+    [InventoryReportApis.reducerPath]: InventoryReportApis.reducer
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
@@ -97,7 +119,17 @@ export const store = configureStore({
             UserOrderApis.middleware,
             UserProjectApis.middleware,
             UserQuoteApis.middleware,
-            UserCouponApis.middleware
+            UserCouponApis.middleware,
+            roleApi.middleware,
+            sysFunctionApi.middleware,
+            CustomerApis.middleware,
+            UserProductApis.middleware,
+            OrderInsightsApis.middleware,
+            HomeApis.middleware,
+            RevenueApis.middleware,
+            CustomerReportApis.middleware,
+            ActivityLogApis.middleware,
+            InventoryReportApis.middleware
         ) as any
 })
 

@@ -8,7 +8,7 @@ import { IProductFilter, IProductSearch } from '@/models/Product'
 import EmptyItem from '@/components/EmptyItem'
 import EnhancedPagination from '@/components/EnhancedPagination'
 import { useTranslation } from 'react-i18next'
-import { useGetRecommendedProductsQuery, useSearchProductQuery } from '@/services/ProductService'
+import { useGetRecommendedProductsQuery, useSearchProductQuery } from '@/services/UserProductService'
 import Loading from '@/components/Loading'
 import { useSearchCategoryQuery } from '@/services/CategoryService'
 import { useSearchBrandQuery } from '@/services/BrandService'
@@ -39,7 +39,8 @@ export default function AutomationShop() {
 
     const { data: categoryResponse, isLoading: isLoadingCategory } = useSearchCategoryQuery({
         pageSize: 50,
-        pageNumber: 1
+        pageNumber: 1,
+        level: 2
     })
 
     const { data: brandResponse, isLoading: isLoadingBrand } = useSearchBrandQuery({
@@ -335,6 +336,20 @@ export default function AutomationShop() {
         })
     }
 
+    const handleCategoryClick = (catId: number, isSelected: boolean) => {
+        setFilterProductSearch(prev => {
+            const categoryIds = prev.categoryIds ?? []
+
+            const updatedCategoryIds = isSelected ? categoryIds.filter(id => id !== catId) : [...categoryIds, catId]
+
+            return {
+                ...prev,
+                pageNumber: 1,
+                categoryIds: updatedCategoryIds
+            }
+        })
+    }
+
     if (
         isLoadingResponseAll ||
         isLoadingResponseFlashSale ||
@@ -405,19 +420,7 @@ export default function AutomationShop() {
                                                                 ? 'bg-blue-500 hover:bg-blue-600 text-white font-medium shadow-md'
                                                                 : 'hover:bg-blue-50 text-gray-700'
                                                         }`}
-                                                        onClick={() =>
-                                                            setFilterProductSearch({
-                                                                ...filterProductSearch,
-                                                                pageNumber: 1,
-                                                                categoryIds: isSelected
-                                                                    ? filterProductSearch.categoryIds.filter(
-                                                                          id => id !== cat.id
-                                                                      )
-                                                                    : filterProductSearch.categoryIds
-                                                                    ? [...filterProductSearch.categoryIds, cat.id]
-                                                                    : [cat.id]
-                                                            })
-                                                        }
+                                                        onClick={() => handleCategoryClick(cat.id, isSelected)}
                                                     >
                                                         {isSelected && (
                                                             <svg

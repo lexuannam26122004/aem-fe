@@ -23,9 +23,12 @@ import { debounce } from 'lodash'
 import { useCallback } from 'react'
 import Loading from '@/components/Loading'
 import { CirclePlus } from 'lucide-react'
-import { useSearchProductQuery } from '@/services/ProductService'
-import { IProduct, IProductFilter } from '@/models/Product'
+import { useSearchProductQuery, useGetProductCountTypeQuery } from '@/services/ProductService'
+import { IProduct, IProductAdminFilter } from '@/models/Product'
 import ProductTable from './ProductTable'
+import { ICategory } from '@/models/Category'
+import { useSearchCategoryQuery } from '@/services/CategoryService'
+import { useRouter } from 'next/navigation'
 
 function a11yProps(index: number) {
     return {
@@ -34,234 +37,40 @@ function a11yProps(index: number) {
     }
 }
 
-const products: IProduct[] = [
-    {
-        id: 1,
-        serialNumber: 'SN-001',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-1.webp'],
-        discountRate: 10,
-        discountPrice: 900000,
-        price: 1000000,
-        description: 'Máy đo nhiệt độ công nghiệp chính xác cao',
-        productName: 'Cảm biến nhiệt độ PT100',
-        categoryName: 'Cảm biến',
-        supplierName: 'SensorTech VN',
-        unit: 'cái',
-        warrantyPeriod: 12,
-        stockQuantity: 50,
-        soldCount: 120,
-        rating: 4.5,
-        createdAt: '2024-09-01T10:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 2,
-        serialNumber: 'SN-002',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-2.webp'],
-        discountRate: 5,
-        discountPrice: 1900000,
-        price: 2000000,
-        description: 'Bộ điều khiển lập trình PLC Siemens S7-1200',
-        productName: 'PLC Siemens S7-1200',
-        categoryName: 'PLC',
-        supplierName: 'Siemens Vietnam',
-        unit: 'bộ',
-        warrantyPeriod: 24,
-        stockQuantity: 20,
-        soldCount: 75,
-        rating: 4.7,
-        createdAt: '2024-09-05T09:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 3,
-        serialNumber: 'SN-003',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-3.webp'],
-        discountRate: 15,
-        discountPrice: 850000,
-        price: 1000000,
-        description: 'Cảm biến tiệm cận loại NPN 12V',
-        productName: 'Cảm biến tiệm cận Omron',
-        categoryName: 'Cảm biến',
-        supplierName: 'Omron',
-        unit: 'cái',
-        warrantyPeriod: 18,
-        stockQuantity: 100,
-        soldCount: 230,
-        rating: 4.2,
-        createdAt: '2024-08-21T14:30:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 4,
-        serialNumber: 'SN-004',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-4.webp'],
-        discountRate: 20,
-        discountPrice: 400000,
-        price: 500000,
-        description: 'Relay trung gian 8 chân',
-        productName: 'Relay trung gian IDEC',
-        categoryName: 'Relay',
-        supplierName: 'IDEC Japan',
-        unit: 'cái',
-        warrantyPeriod: 6,
-        stockQuantity: 200,
-        soldCount: 310,
-        rating: 4.1,
-        createdAt: '2024-08-11T08:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 5,
-        serialNumber: 'SN-005',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-5.webp'],
-        discountRate: 0,
-        discountPrice: 1500000,
-        price: 1500000,
-        description: 'Biến tần 1 pha vào 3 pha ra',
-        productName: 'Biến tần Delta VFD007EL21A',
-        categoryName: 'Biến tần',
-        supplierName: 'Delta Electronics',
-        unit: 'cái',
-        warrantyPeriod: 24,
-        stockQuantity: 30,
-        soldCount: 60,
-        rating: 4.6,
-        createdAt: '2024-07-30T16:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 6,
-        serialNumber: 'SN-006',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-6.webp'],
-        discountRate: 25,
-        discountPrice: 2300000,
-        price: 2500000,
-        description: 'Màn hình HMI 7 inch cảm ứng',
-        productName: 'HMI Weintek MT8071iE',
-        categoryName: 'HMI',
-        supplierName: 'Weintek',
-        unit: 'cái',
-        warrantyPeriod: 12,
-        stockQuantity: 40,
-        soldCount: 90,
-        rating: 4.3,
-        createdAt: '2024-08-15T10:15:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 7,
-        serialNumber: 'SN-007',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-7.webp'],
-        discountRate: 12,
-        discountPrice: 1320000,
-        price: 1500000,
-        description: 'Module mở rộng I/O cho PLC',
-        productName: 'I/O Module Siemens SM1223',
-        categoryName: 'PLC',
-        supplierName: 'Siemens Vietnam',
-        unit: 'cái',
-        warrantyPeriod: 12,
-        stockQuantity: 25,
-        soldCount: 50,
-        rating: 4.4,
-        createdAt: '2024-09-08T11:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 8,
-        serialNumber: 'SN-008',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-8.webp'],
-        discountRate: 18,
-        discountPrice: 820000,
-        price: 1000000,
-        description: 'Cảm biến áp suất 4-20mA',
-        productName: 'Cảm biến áp suất WIKA',
-        categoryName: 'Cảm biến',
-        supplierName: 'WIKA Germany',
-        unit: 'cái',
-        warrantyPeriod: 24,
-        stockQuantity: 60,
-        soldCount: 110,
-        rating: 4.6,
-        createdAt: '2024-08-18T13:20:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 9,
-        serialNumber: 'SN-009',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-9.webp'],
-        discountRate: 25,
-        discountPrice: 750000,
-        price: 1000000,
-        description: 'Timer đa năng đa chế độ',
-        productName: 'Timer Omron H3CR-A8',
-        categoryName: 'Timer',
-        supplierName: 'Omron',
-        unit: 'cái',
-        warrantyPeriod: 12,
-        stockQuantity: 80,
-        soldCount: 200,
-        rating: 4.5,
-        createdAt: '2024-08-12T15:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    },
-    {
-        id: 10,
-        serialNumber: 'SN-010',
-        images: ['https://api-prod-minimal-v700.pages.dev/assets/images/m-product/product-10.webp'],
-        discountRate: 10,
-        discountPrice: 1800000,
-        price: 2000000,
-        description: 'Cảm biến khoảng cách siêu âm',
-        productName: 'Cảm biến siêu âm Pepperl+Fuchs',
-        categoryName: 'Cảm biến',
-        supplierName: 'Pepperl+Fuchs',
-        unit: 'cái',
-        warrantyPeriod: 18,
-        stockQuantity: 45,
-        soldCount: 95,
-        rating: 4.3,
-        createdAt: '2024-09-10T09:00:00Z',
-        createdBy: 'admin',
-        minStockThreshold: 10
-    }
-]
-
 function Page() {
     const { t } = useTranslation('common')
     const [page, setPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState('10')
     const [from, setFrom] = useState(1)
     const [to, setTo] = useState(10)
-    const [filter, setFilter] = useState<IProductFilter>({
+    const [filter, setFilter] = useState<IProductAdminFilter>({
         pageSize: 10,
         pageNumber: 1
     })
     const [keyword, setKeyword] = useState('')
-    const [open, setOpen] = useState(false)
-    useEffect(() => {}, [open])
+    const router = useRouter()
 
     const { data: dataResponse, isLoading, isFetching, refetch } = useSearchProductQuery(filter)
 
-    // const { data: countResponse, isLoading: countLoading, refetch: countRefetch } = useGetCountTypeQuery()
+    const { data: countResponse, isLoading: countLoading, refetch: countRefetch } = useGetProductCountTypeQuery()
 
-    const productData = dataResponse?.data?.records || (products as IProduct[])
+    const { data: categoryResponse, isLoading: isLoadingCategory } = useSearchCategoryQuery({
+        pageSize: 50,
+        pageNumber: 1,
+        level: 2
+    })
+
+    const categories = Array.isArray(categoryResponse?.data?.records)
+        ? (categoryResponse?.data?.records as ICategory[])
+        : []
+
+    const productData = (dataResponse?.data?.records as IProduct[]) || []
 
     const totalRecords = (dataResponse?.data?.totalRecords as number) || 0
 
-    const countOK = productData?.data?.countOK || 0
-    const countExpired = productData?.data?.countExpired || 0
-    const countLimit = productData?.data?.countLimit || 0
+    const inStockCount = countResponse?.data?.inStockCount || 0
+    const outOfStockCount = countResponse?.data?.outOfStockCount || 0
+    const lowStockCount = countResponse?.data?.lowStockCount || 0
 
     const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage)
@@ -287,7 +96,7 @@ function Page() {
 
     const refetchPage = () => {
         refetch()
-        // countRefetch()
+        countRefetch()
     }
 
     const debouncedSetFilter = useCallback(
@@ -328,7 +137,14 @@ function Page() {
         if (newValue !== undefined) {
             setFilter(prev => ({
                 ...prev,
-                isType: newValue
+                status:
+                    newValue === 0
+                        ? undefined
+                        : newValue === 1
+                        ? 'in_stock'
+                        : newValue === 2
+                        ? 'low_stock'
+                        : 'out_of_stock'
             }))
         } else {
             setFilter(prev => ({
@@ -338,7 +154,7 @@ function Page() {
         }
     }
 
-    if (isLoading /*|| countLoading*/) {
+    if (isLoading || countLoading || isLoadingCategory) {
         return <Loading />
     }
 
@@ -353,14 +169,6 @@ function Page() {
         alignItems: 'center',
         justifyContent: 'center'
     }
-
-    const categories = [
-        { name: 'Điện thoại', id: 1 },
-        { name: 'Máy tính', id: 2 },
-        { name: 'Tivi', id: 3 },
-        { name: 'Tai nghe', id: 4 },
-        { name: 'Máy nghe nhạc', id: 5 }
-    ]
 
     return (
         <>
@@ -439,7 +247,7 @@ function Page() {
                                                         : 'var(--text-color-all)'
                                             }}
                                         >
-                                            {countExpired + countOK + countLimit}
+                                            {inStockCount + outOfStockCount + lowStockCount}
                                         </Box>
                                     </Box>
                                 }
@@ -471,7 +279,7 @@ function Page() {
                                                         : 'var(--text-color-success)'
                                             }}
                                         >
-                                            {countOK}
+                                            {inStockCount}
                                         </Box>
                                     </Box>
                                 }
@@ -503,7 +311,7 @@ function Page() {
                                                         : 'var(--text-color-pending)'
                                             }}
                                         >
-                                            {countLimit}
+                                            {lowStockCount}
                                         </Box>
                                     </Box>
                                 }
@@ -535,7 +343,7 @@ function Page() {
                                                         : 'var(--text-color-cancel)'
                                             }}
                                         >
-                                            {countExpired}
+                                            {outOfStockCount}
                                         </Box>
                                     </Box>
                                 }
@@ -710,18 +518,19 @@ function Page() {
                                     >
                                         {t('COMMON.PRODUCT.ALL')}
                                     </MenuItem>
-                                    {categories.map((item, index) => (
-                                        <MenuItem
-                                            key={index}
-                                            value={String(item.id)}
-                                            sx={{
-                                                mt: '4px',
-                                                borderRadius: '6px'
-                                            }}
-                                        >
-                                            {item.name}
-                                        </MenuItem>
-                                    ))}
+                                    {categories &&
+                                        categories.map((item, index) => (
+                                            <MenuItem
+                                                key={index}
+                                                value={String(item.id)}
+                                                sx={{
+                                                    mt: '4px',
+                                                    borderRadius: '6px'
+                                                }}
+                                            >
+                                                {item.categoryName}
+                                            </MenuItem>
+                                        ))}
                                 </Select>
                             </FormControl>
                         </Box>
@@ -746,14 +555,14 @@ function Page() {
                                 whiteSpace: 'nowrap',
                                 textTransform: 'none'
                             }}
-                            onClick={() => setOpen(true)}
+                            onClick={() => router.push('/admin/products/create')}
                         >
                             {t('COMMON.BUTTON.CREATE')}
                         </Button>
                         {/* )} */}
                     </Box>
 
-                    <ProductTable data={productData} refetch={refetchPage} setFilter={setFilter} />
+                    {productData && <ProductTable data={productData} refetch={refetchPage} setFilter={setFilter} />}
 
                     <Box display='flex' alignItems='center' justifyContent='space-between' padding='24px'>
                         <Box display='flex' alignItems='center'>
@@ -866,220 +675,6 @@ function Page() {
                     </Box>
                 </Paper>
             </Box>
-
-            {/* <Dialog open={open} onOpenChange={() => setOpen(!open)}>
-                <DialogContent className='max-w-4xl p-0 bg-white dark:bg-gray-900 shadow-2xl border-0'>
-                    <DialogHeader className='py-5 px-6 bg-gray-100 rounded-t-lg'>
-                        <DialogTitle className='text-xl font-bold text-gray-900 dark:text-gray-100'>
-                            Thêm mã giảm giá mới
-                        </DialogTitle>
-                        <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
-                            Điền thông tin chi tiết cho mã giảm giá của bạn
-                        </p>
-                    </DialogHeader>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            height: '100%',
-                            maxHeight: '70vh',
-                            padding: '2px 17px 5px 24px',
-                            scrollbarGutter: 'stable',
-                            '&::-webkit-scrollbar': {
-                                width: '7px',
-                                height: '7px',
-                                backgroundColor: 'var(--background-color)'
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                                backgroundColor: 'var(--scrollbar-color)',
-                                borderRadius: '10px'
-                            },
-                            overflowY: 'auto'
-                        }}
-                    >
-                        <div className='grid grid-cols-2 gap-x-6 gap-y-4'>
-                            <div className='flex flex-col space-y-2'>
-                                <Label
-                                    htmlFor='couponCode'
-                                    className='font-medium text-gray-900 dark:text-gray-200 text-[15px]'
-                                >
-                                    Mã giảm giá
-                                </Label>
-                                <Input
-                                    id='couponCode'
-                                    className='rounded-md border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-[15px] h-11'
-                                    placeholder='Nhập mã giảm giá'
-                                    value={newCoupon.couponCode}
-                                    onChange={e => setNewCoupon({ ...newCoupon, couponCode: e.target.value })}
-                                />
-                            </div>
-
-                            <div className='flex flex-col space-y-2'>
-                                <Label
-                                    htmlFor='discountType'
-                                    className='font-medium text-gray-900 dark:text-gray-200 text-[15px]'
-                                >
-                                    Loại giảm giá
-                                </Label>
-                                <SelectX
-                                    value={newCoupon.discountType}
-                                    onValueChange={value =>
-                                        setNewCoupon({ ...newCoupon, discountType: (value as 'percentage') || 'fixed' })
-                                    }
-                                >
-                                    <SelectTrigger className='w-full rounded-md border-gray-300 dark:border-gray-700 text-[15px] h-11'>
-                                        <SelectValue placeholder='Chọn loại giảm giá' />
-                                    </SelectTrigger>
-                                    <SelectContent className='bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md'>
-                                        <SelectItem value='percentage'>Phần trăm</SelectItem>
-                                        <SelectItem value='fixed'>Số tiền cố định</SelectItem>
-                                    </SelectContent>
-                                </SelectX>
-                            </div>
-
-                            <div className='flex flex-col space-y-2'>
-                                <Label
-                                    htmlFor='discountValue'
-                                    className='font-medium text-gray-900 dark:text-gray-200 text-[15px]'
-                                >
-                                    Giá trị giảm giá
-                                </Label>
-                                <Input
-                                    id='discountValue'
-                                    type='number'
-                                    className='rounded-md border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-[15px] h-11'
-                                    placeholder={
-                                        newCoupon.discountType === 'percentage'
-                                            ? 'Nhập % giảm giá'
-                                            : 'Nhập số tiền giảm'
-                                    }
-                                    value={newCoupon.discountValue}
-                                    onChange={e =>
-                                        setNewCoupon({ ...newCoupon, discountValue: parseFloat(e.target.value) })
-                                    }
-                                />
-                            </div>
-
-                            <div className='flex flex-col space-y-2'>
-                                <Label
-                                    htmlFor='maximumDiscount'
-                                    className='font-medium text-gray-900 dark:text-gray-200 text-[15px]'
-                                >
-                                    Giảm giá tối đa
-                                </Label>
-                                <Input
-                                    id='maximumDiscount'
-                                    type='number'
-                                    className='rounded-md border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-[15px] h-11'
-                                    placeholder='Nhập số tiền giảm tối đa'
-                                    value={newCoupon.maximumDiscount}
-                                    onChange={e =>
-                                        setNewCoupon({ ...newCoupon, maximumDiscount: parseFloat(e.target.value) })
-                                    }
-                                />
-                            </div>
-
-                            <div className='flex flex-col space-y-2'>
-                                <Label
-                                    htmlFor='minimumOrderValue'
-                                    className='font-medium text-gray-900 dark:text-gray-200 text-[15px]'
-                                >
-                                    Giá trị đơn hàng tối thiểu
-                                </Label>
-                                <Input
-                                    id='minimumOrderValue'
-                                    type='number'
-                                    className='rounded-md border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 !text-[15px] h-11'
-                                    placeholder='Nhập giá trị tối thiểu'
-                                    value={newCoupon.minimumOrderValue}
-                                    onChange={e =>
-                                        setNewCoupon({ ...newCoupon, minimumOrderValue: parseFloat(e.target.value) })
-                                    }
-                                />
-                            </div>
-
-                            <div className='flex flex-col space-y-2'>
-                                <Label
-                                    htmlFor='usageLimit'
-                                    className='font-medium text-gray-900 dark:text-gray-200 text-[15px]'
-                                >
-                                    Giới hạn sử dụng
-                                </Label>
-                                <Input
-                                    id='usageLimit'
-                                    type='number'
-                                    className='rounded-md border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 !text-[15px] h-11'
-                                    placeholder='Nhập số lần sử dụng tối đa'
-                                    value={newCoupon.usageLimit}
-                                    onChange={e => setNewCoupon({ ...newCoupon, usageLimit: parseInt(e.target.value) })}
-                                />
-                            </div>
-
-                            <div className='flex flex-col space-y-2'>
-                                <Label
-                                    htmlFor='activationDate'
-                                    className='font-medium text-gray-900 dark:text-gray-200 text-[15px]'
-                                >
-                                    Ngày kích hoạt
-                                </Label>
-                                <Input
-                                    id='activationDate'
-                                    type='date'
-                                    className='rounded-md border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-[15px] h-11'
-                                    value={
-                                        newCoupon.activationDate
-                                            ? new Date(newCoupon.activationDate).toISOString().split('T')[0]
-                                            : ''
-                                    }
-                                    onChange={e =>
-                                        setNewCoupon({ ...newCoupon, activationDate: new Date(e.target.value) })
-                                    }
-                                />
-                            </div>
-
-                            <div className='flex flex-col space-y-2'>
-                                <Label
-                                    htmlFor='expiryDate'
-                                    className='font-medium text-gray-900 dark:text-gray-200 text-[15px]'
-                                >
-                                    Ngày hết hạn
-                                </Label>
-                                <Input
-                                    id='expiryDate'
-                                    type='date'
-                                    className='rounded-md border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 text-[15px] h-11'
-                                    value={
-                                        newCoupon.expiryDate
-                                            ? new Date(newCoupon.expiryDate).toISOString().split('T')[0]
-                                            : ''
-                                    }
-                                    onChange={e => setNewCoupon({ ...newCoupon, expiryDate: new Date(e.target.value) })}
-                                />
-                            </div>
-                        </div>
-                    </Box>
-
-                    <DialogFooter className='p-6 flex gap-4 bg-gray-100 rounded-b-lg'>
-                        <ButtonX
-                            variant='outline'
-                            onClick={() => setOpen(false)}
-                            className='flex-1 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 
-                       hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-[15px] h-11'
-                        >
-                            Hủy
-                        </ButtonX>
-                        <ButtonX
-                            onClick={handleAddCoupon}
-                            className='flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors text-[15px] h-11'
-                        >
-                            Thêm mã giảm giá
-                        </ButtonX>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog> */}
-
-            {/* <DialogCreate open={open} handleClose={() => setOpen(!open)} /> */}
         </>
     )
 }

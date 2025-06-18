@@ -1,10 +1,12 @@
 // src/components/EmployeeCountChart.js
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Box, Paper, Typography, FormControl, Select, MenuItem, InputLabel } from '@mui/material'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { SelectChangeEvent } from '@mui/material' // Import SelectChangeEvent
+import { useGetAvgOrderDurationQuery } from '@/services/OrderInsightsService'
+import Loading from '@/components/Loading'
 
 const generateRandomData = (t: any) => {
     const types = [
@@ -17,24 +19,41 @@ const generateRandomData = (t: any) => {
     ]
 
     return [
-        ['score', 'amount', 'product'],
+        ['score', 'amount', 'status'],
         ...types.map(type => {
             const value = Math.floor(Math.random() * 15) + 1
             return [value, value, type]
         })
     ]
 }
-
 const OrderStatusChart = () => {
     const { t } = useTranslation('common')
     const { theme } = useTheme()
     const [type, setType] = useState(0)
-    const [chartData, setChartData] = useState(generateRandomData(t))
+
+    const { data: chartDataResponse, isLoading: isChartDataLoading } = useGetAvgOrderDurationQuery(
+        type === 0 ? 7 : type === 1 ? 14 : 30
+    )
+    const chartData = chartDataResponse?.data
+
+    const translatedChartData = useMemo(() => {
+        if (!chartData) return []
+
+        return chartData.map(row => {
+            // row = [score, amount, status]
+            const [score, amount, status] = row
+            if (typeof status === 'string') {
+                return [score, amount, t(status)]
+            }
+            return row
+        })
+    }, [chartData, t])
 
     const handleTypeChange = (event: SelectChangeEvent<number>) => {
         setType(event.target.value as number)
-        setChartData(generateRandomData(t)) // cập nhật data mới
     }
+
+    console.log('chartDataResponse', generateRandomData(t))
 
     const option = {
         animation: true,
@@ -50,7 +69,7 @@ const OrderStatusChart = () => {
             }
         },
         dataset: {
-            source: chartData
+            source: translatedChartData
         },
         calculable: true,
         grid: {
@@ -119,7 +138,7 @@ const OrderStatusChart = () => {
                 type: 'bar',
                 encode: {
                     y: 'amount',
-                    x: 'product'
+                    x: 'status'
                 },
                 barWidth: '50%',
                 itemStyle: {
@@ -130,6 +149,10 @@ const OrderStatusChart = () => {
                 }
             }
         ]
+    }
+
+    if (isChartDataLoading || !chartDataResponse) {
+        return <Loading />
     }
 
     return (

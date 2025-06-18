@@ -5,7 +5,16 @@ import DisplayInfo from './DisplayInfo'
 import OrderStatusChart from './OrderStatusChart'
 import OrderValueChart from './OrderValueChart'
 import ReportTable from './ReportTable'
+import { useGetMonthlyOverviewQuery } from '@/services/OrderInsightsService'
+import Loading from '@/components/Loading'
+
 export default function WarrantyReportsPage() {
+    const { data: displayResponse, isLoading: isDisplayLoading } = useGetMonthlyOverviewQuery()
+
+    if (isDisplayLoading || !displayResponse) {
+        return <Loading />
+    }
+
     return (
         <Box
             sx={{
@@ -21,7 +30,7 @@ export default function WarrantyReportsPage() {
                     width: '100%'
                 }}
             >
-                <DisplayInfo />
+                <DisplayInfo responseData={displayResponse} />
             </Box>
 
             <Box

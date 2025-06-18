@@ -324,10 +324,10 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                 cursor: 'pointer'
                                             }}
                                             onClick={() => {
-                                                router.push(`/admin/purchases/detail?id=${row.id}`)
+                                                router.push(`/admin/purchases/${row.id}`)
                                             }}
                                         >
-                                            #{row.purchaseCode}
+                                            #{row.orderCode}
                                         </Typography>
                                     </TableCell>
 
@@ -345,7 +345,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                     height: '40px',
                                                     borderRadius: '50%'
                                                 }}
-                                                src={row.supplierAvatarPath || avatars[index]}
+                                                src={row.supplierAvatar || avatars[index]}
                                             />
                                             <Box
                                                 display='flex'
@@ -431,7 +431,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                 whiteSpace: 'nowrap'
                                             }}
                                         >
-                                            {row.itemCount}
+                                            {row.totalItems}
                                         </Typography>
                                     </TableCell>
 
@@ -440,6 +440,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                             sx={{
                                                 color: 'var(--text-color)',
                                                 fontSize: '15px',
+                                                fontWeight: 'bold',
                                                 maxWidth: '280px',
                                                 overflow: 'hidden',
                                                 textOverflow: 'ellipsis',
@@ -466,22 +467,22 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                 alignItems: 'center',
                                                 gap: '10px',
                                                 justifyContent: 'center',
-                                                border: getBorderColor(row.paymentStatus),
-                                                backgroundColor: getStatusBgColor(row.paymentStatus)
+                                                border: getBorderColor(row.orderStatus),
+                                                backgroundColor: getStatusBgColor(row.orderStatus)
                                             }}
                                         >
                                             <Typography
                                                 sx={{
                                                     fontSize: '13px',
                                                     overflow: 'hidden',
-                                                    color: getStatusTextColor(row.paymentStatus),
+                                                    color: getStatusTextColor(row.orderStatus),
                                                     fontWeight: 'bold',
                                                     textOverflow: 'ellipsis',
                                                     whiteSpace: 'nowrap'
                                                 }}
                                             >
-                                                {row.paymentStatus === 'paid' && t('COMMON.PURCHASE_ORDER.PAID')}
-                                                {row.paymentStatus === 'unpaid' && t('COMMON.PURCHASE_ORDER.UNPAID')}
+                                                {row.orderStatus === 'paid' && t('COMMON.PURCHASE_ORDER.PAID')}
+                                                {row.orderStatus === 'unpaid' && t('COMMON.PURCHASE_ORDER.UNPAID')}
                                             </Typography>
                                         </Box>
                                     </TableCell>
@@ -512,7 +513,7 @@ function DataTable({ data, setFilter, refetch }: IProps) {
                                                         }
                                                     }}
                                                     onClick={() => {
-                                                        router.push(`/admin/purchases/detail?id=${row.id}`)
+                                                        router.push(`/admin/purchases/${row.orderCode}`)
                                                     }}
                                                 >
                                                     <EyeIcon size={16} color='#2563eb' />

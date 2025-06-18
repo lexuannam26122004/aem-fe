@@ -5,8 +5,22 @@ import CouponUsageChart from './CouponUsageChart'
 import DisplayInfo from './DisplayInfo'
 import SalesHeatmapByTime from './SalesHeatmapByTime'
 import ReportTable from './ReportTable'
+import {
+    useGetCouponUsageRateQuery,
+    useGetQuotationOrderStatsQuery,
+    useGetWeeklySalesHeatmapQuery
+} from '@/services/RevenueServices'
+import Loading from '@/components/Loading'
 
 export default function RevenuePage() {
+    const { data: quotationStats, isLoading: isLoadingQuotation } = useGetQuotationOrderStatsQuery()
+    const { data: couponUsageRate, isLoading: isLoadingCouponUsage } = useGetCouponUsageRateQuery()
+    const { data: heatmap, isLoading: isLoadingHeatmap } = useGetWeeklySalesHeatmapQuery()
+
+    if (isLoadingQuotation || isLoadingHeatmap || isLoadingCouponUsage) {
+        return <Loading />
+    }
+
     return (
         <Box
             sx={{
@@ -28,7 +42,7 @@ export default function RevenuePage() {
                         width: 'calc(100% / 3 * 2 + 24px)'
                     }}
                 >
-                    <DisplayInfo />
+                    <DisplayInfo dataResponse={quotationStats} />
                 </Box>
 
                 <Box
@@ -38,7 +52,7 @@ export default function RevenuePage() {
                         borderRadius: '15px'
                     }}
                 >
-                    <CouponUsageChart />
+                    <CouponUsageChart responseData={couponUsageRate} />
                 </Box>
             </Box>
 
@@ -50,7 +64,7 @@ export default function RevenuePage() {
                     borderRadius: '15px'
                 }}
             >
-                <SalesHeatmapByTime />
+                <SalesHeatmapByTime responseData={heatmap} />
             </Box>
 
             <Box

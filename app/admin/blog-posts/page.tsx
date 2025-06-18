@@ -23,8 +23,6 @@ import { debounce } from 'lodash'
 import { useCallback } from 'react'
 import { CirclePlus } from 'lucide-react'
 import { IBlogPost, IBlogPostFilter } from '@/models/BlogPost'
-// import { useSearchSupplierQuery } from '@/services/SupplierService'
-// import { useGetCountPartnerQuery } from '@/services/SupplierService'
 
 function a11yProps(index: number) {
     return {
@@ -312,19 +310,48 @@ function Page() {
 
                 <Divider
                     sx={{
-                        borderColor: 'var(--border-color)'
+                        borderColor: 'var(--border-color)',
+                        borderStyle: 'dashed'
                     }}
                 />
 
                 <Box>
                     <Tabs
                         value={currentTab}
-                        onChange={(event, newValue) => handleChangeTabs(newValue)}
-                        aria-label='basic tabs example'
+                        onChange={(e, newValue) => handleChangeTabs(newValue)}
+                        variant='scrollable'
+                        scrollButtons={false}
+                        sx={{
+                            overflowX: 'auto',
+                            '& .MuiTabs-flexContainer': {
+                                flexWrap: 'nowrap'
+                            },
+                            '&::-webkit-scrollbar': {
+                                height: '6px'
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                                backgroundColor: '#ccc',
+                                borderRadius: '4px'
+                            },
+                            position: 'relative',
+                            '::after': {
+                                content: '""',
+                                display: 'block',
+                                width: '100%',
+                                bottom: '0',
+                                zIndex: 0,
+                                borderRadius: '1px',
+                                left: '0',
+                                position: 'absolute',
+                                height: '2px',
+                                backgroundColor: 'var(--border-tab)'
+                            }
+                        }}
                         slotProps={{
                             indicator: {
                                 sx: {
-                                    background: 'linear-gradient(to right,rgb(103, 255, 164),rgb(255, 182, 127))', // Màu của thanh indicator
+                                    zIndex: 1,
+                                    background: 'linear-gradient(to right,rgb(103, 255, 164),rgb(255, 182, 127))',
                                     height: '2px',
                                     borderRadius: '1px'
                                 }

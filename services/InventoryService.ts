@@ -1,30 +1,26 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from './api'
-import { IInventoryCreate, IInventoryFilter, IInventoryUpdate } from '@/models/Inventory'
+import { IInventoryCreate, IInventoryFilter, IInventoryProductFilter, IInventoryUpdate } from '@/models/Inventory'
 import { IResponse } from '@/models/Common'
 
 export const InventoryApis = createApi({
     reducerPath: 'InventoryApis',
-    baseQuery: createBaseQuery('admin/inventory'),
+    baseQuery: createBaseQuery('admin/inventories'),
     endpoints: builder => ({
         searchInventory: builder.query<IResponse, IInventoryFilter>({
             query: filter => {
                 const params = new URLSearchParams()
 
                 if (filter) {
+                    if (filter.page) params.append('Page', filter.page.toString())
                     if (filter.pageSize) params.append('PageSize', filter.pageSize.toString())
-                    if (filter.pageNumber) params.append('PageNumber', filter.pageNumber.toString())
                     if (filter.keyword) params.append('Keyword', filter.keyword)
-                    if (filter.isDesc) params.append('IsDescending', filter.isDesc.toString())
-                    if (filter.sortBy) params.append('SortBy', filter.sortBy)
-                    if (filter.isActive != undefined) params.append('IsActive', filter.isActive.toString())
                     if (filter.fromDate) params.append('FromDate', filter.fromDate)
                     if (filter.toDate) params.append('ToDate', filter.toDate)
-                    if (filter.status) params.append('Status', filter.status)
                 }
 
                 const queryString = params.toString()
-                return queryString ? `?${queryString}` : ''
+                return `${queryString ? `?${queryString}` : ''}`
             }
         }),
         createInventory: builder.mutation<void, IInventoryCreate>({
@@ -47,32 +43,30 @@ export const InventoryApis = createApi({
                 method: 'DELETE'
             })
         }),
-        getByIdInventory: builder.query<IResponse, number>({
-            query: id => `${id}`
-        }),
-        exportInventory: builder.query<IResponse, IInventoryFilter>({
-            query: filter => {
+        getByIdInventory: builder.query<IResponse, { id: number; filter?: IInventoryProductFilter }>({
+            query: ({ id, filter }) => {
                 const params = new URLSearchParams()
 
                 if (filter) {
-                    if (filter.pageSize) params.append('PageSize', filter.pageSize.toString())
-                    if (filter.pageNumber) params.append('PageNumber', filter.pageNumber.toString())
                     if (filter.keyword) params.append('Keyword', filter.keyword)
-                    if (filter.isDesc) params.append('IsDescending', filter.isDesc.toString())
-                    if (filter.sortBy) params.append('SortBy', filter.sortBy)
-                    if (filter.isActive != undefined) params.append('IsActive', filter.isActive.toString())
-                    if (filter.fromDate) params.append('FromDate', filter.fromDate)
-                    if (filter.toDate) params.append('ToDate', filter.toDate)
-                    if (filter.status) params.append('Status', filter.status)
+                    if (filter.categoryId) params.append('CategoryId', filter.categoryId.toString())
                 }
 
                 const queryString = params.toString()
-                return queryString ? `/export?${queryString}` : ''
+                return `${id}${queryString ? `?${queryString}` : ''}`
             }
         }),
+
         getCountType: builder.query<IResponse, void>({
             query: () => ({
                 url: '/count-type',
+                method: 'GET'
+            })
+        }),
+
+        getProducts: builder.query<IResponse, string>({
+            query: keyword => ({
+                url: `/search-products?keyword=${keyword}`,
                 method: 'GET'
             })
         })
@@ -85,6 +79,6 @@ export const {
     useUpdateInventoryMutation,
     useDeleteInventoryMutation,
     useGetByIdInventoryQuery,
-    useExportInventoryQuery,
-    useGetCountTypeQuery
+    useGetCountTypeQuery,
+    useGetProductsQuery
 } = InventoryApis

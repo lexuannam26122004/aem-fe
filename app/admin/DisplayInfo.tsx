@@ -4,6 +4,7 @@ import { Box, Paper, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import ReactECharts from 'echarts-for-react'
 import { useTheme } from 'next-themes'
+import { IResponse } from '@/models/Common'
 // import { useStatsDisplayQuery } from '@/services/TimekeepingService'
 
 const formatCurrency = (amount: number) => {
@@ -24,24 +25,11 @@ const getLastWeekDays = (daysOfWeek: string[]) => {
 
 const colors = ['#00a76f', '#3675ff', '#ff5630', '#f83696', '#ffab00', '#b863f0']
 
-const responseData = {
-    data: {
-        statsByDay: [
-            {
-                revenue: 14500000, // hôm nay
-                orders: 30,
-                newCustomers: 6
-            }
-        ],
-        rate: {
-            revenue: 7.41, // ((14500000 - 13500000) / 13500000) * 100
-            orders: 20.0, // ((30 - 25) / 25) * 100
-            newCustomers: 100.0 // ((6 - 3) / 3) * 100
-        }
-    }
+interface IPageProps {
+    dataResponse: IResponse
 }
 
-function Page() {
+function Page({ dataResponse }: IPageProps) {
     const { t } = useTranslation('common')
     const daysOfWeek = [
         t('COMMON.WEEK.SUNDAY'),
@@ -55,12 +43,12 @@ function Page() {
 
     // const { data: responseData, isLoading } = useStatsDisplayQuery(currentDate.toISOString().split('T')[0])
 
-    const revenue = responseData?.data?.statsByDay[0]?.revenue || 0
-    const orders = responseData?.data?.statsByDay[0]?.orders || 0
-    const newCustomers = responseData?.data?.statsByDay[0]?.newCustomers || 0
-    const revenuePercent = responseData?.data?.rate.revenue
-    const ordersPercent = responseData?.data?.rate.orders
-    const newCustomersPercent = responseData?.data?.rate.newCustomers
+    const revenue = dataResponse?.data?.statsByDay[0]?.revenue || 0
+    const orders = dataResponse?.data?.statsByDay[0]?.orders || 0
+    const newCustomers = dataResponse?.data?.statsByDay[0]?.newCustomers || 0
+    const revenuePercent = dataResponse?.data?.rate.revenue
+    const ordersPercent = dataResponse?.data?.rate.orders
+    const newCustomersPercent = dataResponse?.data?.rate.newCustomers
     const { theme } = useTheme()
 
     const getOption = (data: number[], color: string) => {
