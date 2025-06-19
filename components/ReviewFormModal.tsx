@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Star, MessageSquare, X, Loader2, Upload, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '@/hooks/useToast'
@@ -81,7 +81,7 @@ export default function ReviewFormModal({
                 .then(() => {
                     toast('Đánh giá sản phẩm thành công', 'success')
                 })
-        } catch (error) {
+        } catch {
             toast('Đánh giá sản phẩm thất bại', 'error')
         } finally {
             setIsLoading(false)
