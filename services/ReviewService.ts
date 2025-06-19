@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { createBaseQuery } from './api'
-import { IReviewFilter } from '@/models/Review'
+import { IReviewCreate, IReviewFilter } from '@/models/Review'
 import { IResponse } from '@/models/Common'
 
 export const ReviewApis = createApi({
@@ -24,10 +24,17 @@ export const ReviewApis = createApi({
                 return queryString ? `?${queryString}` : ''
             }
         }),
+        createReview: builder.mutation<IResponse, IReviewCreate>({
+            query: body => ({
+                url: ``,
+                method: 'POST',
+                body: body
+            })
+        }),
         getReviewByProductId: builder.query<IResponse, { productId: number; pageNumber: number }>({
             query: ({ productId, pageNumber }) => `by-product/${productId}?pageNumber=${pageNumber}`
         })
     })
 })
 
-export const { useSearchReviewQuery, useGetReviewByProductIdQuery } = ReviewApis
+export const { useSearchReviewQuery, useGetReviewByProductIdQuery, useCreateReviewMutation } = ReviewApis

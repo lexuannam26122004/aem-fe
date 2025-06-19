@@ -12,3 +12,11 @@ export interface IReview {
     likes: number
     dislikes: number
 }
+
+export interface IReviewCreate {
+    reviewDate: string
+    productId: number
+    rating: number
+    comment: string
+    images?: string[]
+}
